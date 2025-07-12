@@ -1,0 +1,151 @@
+/* Home Card */
+.homeCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.homeCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.homeImage {
+  height: 200px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.imagePlaceholder {
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.homeInfo {
+  padding: 1.5rem;
+}
+
+.homeType {
+  font-size: 0.75rem;
+  color: #ff6b6b;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.homeTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.homeDescription {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.viewButton {
+  color: #ff6b6b;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.viewButton:hover {
+  text-decoration: underline;
+  color: #ff5252;
+}
+
+/* Price section */
+.priceSection {
+  margin-top: 1rem;
+}
+
+.availability {
+  color: #22c55e;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.pricing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ff6b6b;
+}
+
+.originalPrice {
+  font-size: 0.9rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.bookButton {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.bookButton:hover {
+  background: #ff5252;
+  transform: translateY(-1px);
+}
+
+.bookButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.bookButton.booking {
+  background: #10b981;
+}
+
+.bookButton.booking::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 1s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+} 

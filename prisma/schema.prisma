@@ -1,0 +1,195 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String?
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  bookings  Booking[]
+  
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+// Branch model
+model Branch {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  location    String
+  address     String
+  phone       String
+  email       String
+  description String
+  amenities   String[] // Array of amenities
+  images      String[] // Array of image URLs
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  rooms       Room[]
+  
+  @@map("branches")
+}
+
+// Room model
+model Room {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  amenities     String[] // Array of amenities
+  images        String[] // Array of image URLs
+  basePrice     Int      // Base price in VND
+  discountPrice Int?     // Discounted price in VND
+  originalPrice Int?     // Original price for comparison
+  location      String
+  area          String
+  capacity      Int
+  bedrooms      Int
+  bathrooms     Int
+  features      String[] // Array of features
+  policies      String[] // Array of policies
+  checkIn       String
+  checkOut      String
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  branchId      String
+  branch        Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  timeSlots     TimeSlot[]
+  bookingSlots  BookingSlot[]
+  
+  @@map("rooms")
+}
+
+// TimeSlot model
+model TimeSlot {
+  id        String   @id @default(cuid())
+  time      String   // e.g., "9:30–12:30"
+  price     Int      // Price in VND
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  roomId       String
+  room         Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  bookingSlots BookingSlot[]
+  
+  @@map("time_slots")
+}
+
+// Booking model
+model Booking {
+  id                   String        @id @default(cuid())
+  fullName             String
+  phone                String
+  email                String?
+  cccd                 String        // Vietnamese ID number
+  guests               Int
+  notes                String?
+  paymentMethod        PaymentMethod
+  totalPrice           Int           // Total price in VND
+  basePrice            Int           // Base price before discount
+  discountAmount       Int           @default(0)
+  discountPercentage   Float         @default(0)
+  status               BookingStatus @default(PENDING)
+  frontIdImageUrl      String?
+  backIdImageUrl       String?
+  adminNotes           String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  paymentConfirmedAt   DateTime?
+  approvedAt           DateTime?
+  rejectedAt           DateTime?
+  
+  // Relations
+  userId               String?
+  user                 User?           @relation(fields: [userId], references: [id])
+  bookingSlots         BookingSlot[]
+  
+  @@map("bookings")
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  CARD
+}
+
+enum BookingStatus {
+  PENDING
+  PAYMENT_CONFIRMED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// BookingSlot model (Many-to-many relationship between Booking and TimeSlot)
+model BookingSlot {
+  id          String   @id @default(cuid())
+  bookingDate DateTime // The date for this booking slot
+  price       Int      // Price for this specific slot
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  timeSlotId  String
+  timeSlot    TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+  
+  @@unique([bookingId, roomId, timeSlotId, bookingDate])
+  @@map("booking_slots")
+}
+
+// Review model (for future implementation)
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // 1-5 stars
+  comment   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  userId    String
+  roomId    String
+  
+  @@map("reviews")
+}

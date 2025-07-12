@@ -1,0 +1,375 @@
+.page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.branchHeader {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.breadcrumb {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.breadcrumbLink {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.breadcrumbLink:hover {
+  color: white;
+}
+
+.breadcrumbSeparator {
+  margin: 0 0.5rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.breadcrumbCurrent {
+  color: white;
+  font-weight: 500;
+}
+
+.branchTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.branchInfo {
+  background: white;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.infoContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+.infoMain {
+  /* Main info styles */
+}
+
+.infoTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.contactInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.contactLabel {
+  font-weight: 500;
+  color: #333;
+  min-width: 80px;
+}
+
+.contactValue {
+  color: #666;
+}
+
+.amenities {
+  /* Amenities section */
+}
+
+.amenitiesTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.amenitiesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.amenityTag {
+  background: #f0f0f0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.roomSection {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.roomContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.roomSectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.roomGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.roomCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.roomCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.roomImageContainer {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.roomImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px 8px 0 0;
+}
+
+.roomBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.discountBadge {
+  background: #ff6b6b;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.roomContent {
+  padding: 1.5rem;
+}
+
+.roomName {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.roomDescription {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #666;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.roomDetails {
+  margin-bottom: 1rem;
+}
+
+.roomSpecs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.spec {
+  background: #f8f9fa;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.roomFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.featureTag {
+  background: #e8f5e8;
+  color: #2d5a2d;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.roomAmenities {
+  margin-bottom: 1rem;
+}
+
+.amenitiesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.amenityIcon {
+  background: #f0f0f0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.roomPricing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.priceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.currentPrice {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ff6b6b;
+}
+
+.originalPrice {
+  font-size: 0.9rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.availability {
+  background: #e8f5e8;
+  color: #2d5a2d;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.roomActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.bookButton {
+  flex: 1;
+  background: #ff6b6b;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.bookButton:hover {
+  background: #ee5a52;
+}
+
+.bookingSection {
+  background: white;
+  margin-top: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bookingContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.bookingSectionTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.bookingSubtitle {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .infoContainer {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .branchTitle {
+    font-size: 1.5rem;
+  }
+  
+  .roomGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .roomContainer {
+    padding: 1.5rem;
+  }
+  
+  .bookingContainer {
+    padding: 1.5rem;
+  }
+} 
