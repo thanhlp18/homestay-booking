@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Booking App - Vietnamese Home Rental Platform
 
-## Getting Started
+A modern, responsive booking platform for Vietnamese home rentals, inspired by Localhome.vn. Built with Next.js 15 and TypeScript.
 
-First, run the development server:
+## ✨ Features
 
+- 🏠 **Home Listings**: Beautiful cards showing rental properties with images, pricing, and details
+- 🌍 **Multi-Location Support**: Browse homes in different Vietnamese cities (Cần Thơ, An Giang, Kiên Giang)
+- 📅 **Booking Calendar**: Interactive calendar showing availability across all properties
+- 💰 **Dynamic Pricing**: Display original and discounted prices
+- 📱 **Responsive Design**: Mobile-friendly interface with collapsible navigation
+- 🎨 **Modern UI**: Clean design with gradient backgrounds and smooth animations
+- ⚡ **Interactive Booking**: One-click booking with loading states and confirmation
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd booking-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+## 🏗️ Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+booking-app/
+├── src/
+│   ├── app/
+│   │   ├── components/          # Reusable React components
+│   │   │   ├── Header.tsx       # Navigation header
+│   │   │   ├── Header.module.css
+│   │   │   ├── HomeCard.tsx     # Property listing card
+│   │   │   └── HomeCard.module.css
+│   │   ├── globals.css          # Global styles
+│   │   ├── layout.tsx           # Root layout
+│   │   ├── page.tsx             # Main page
+│   │   └── page.module.css      # Page-specific styles
+│   └── ...
+├── public/                      # Static assets
+├── package.json
+└── README.md
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Design Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Color Scheme**: Pink/red gradient theme matching Vietnamese rental platforms
+- **Typography**: Clean, readable fonts with proper hierarchy
+- **Cards**: Hover effects and smooth transitions
+- **Mobile-First**: Responsive design that works on all devices
+- **Interactive Elements**: Buttons with loading states and hover effects
 
-## Deploy on Vercel
+## 🛠️ Technology Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Frontend**: Next.js 15, React 18, TypeScript
+- **Styling**: CSS Modules, CSS Grid, Flexbox
+- **Build**: Turbopack (Next.js dev server)
+- **Package Manager**: npm
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Responsive Design
+
+The app is fully responsive and includes:
+- Mobile hamburger menu
+- Adaptive grid layouts
+- Touch-friendly interactive elements
+- Optimized calendar view for mobile
+
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 🎯 Key Components
+
+### Header Component
+- Responsive navigation with mobile menu
+- Sticky positioning
+- Gradient background matching theme
+
+### HomeCard Component
+- Reusable property listing component
+- Configurable for different display modes
+- Interactive booking functionality
+- Customizable gradient backgrounds
+
+### Main Page
+- Multiple sections for different locations
+- Dynamic data rendering
+- Booking calendar integration
+
+## 🌟 Future Enhancements
+
+- Backend API integration
+- User authentication
+- Payment gateway integration
+- Advanced search and filtering
+- Real-time availability updates
+- Email notifications
+- Multi-language support
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+# homestay-booking
