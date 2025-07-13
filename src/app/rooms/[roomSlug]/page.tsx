@@ -637,6 +637,7 @@ export default function RoomPage() {
               initialBookings={initialBookings}
               initialSelectedSlots={selectedSlots}
               slotPrice={50000}
+              submitOnSelect={true}
             />
           </div>
 

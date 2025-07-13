@@ -1,25 +1,236 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import { notFound } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import RoomBookingTable from '../../components/RoomBookingTable';
-import { getBranchBySlug, mockInitialBookings } from '../../data/bookingData';
 import styles from './branch.module.css';
+
+interface TimeSlot {
+  id: string;
+  time: string;
+  price: number;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  amenities: string[];
+  images: string[];
+  basePrice: number;
+  discountPrice?: number;
+  originalPrice?: number;
+  location: string;
+  area: string;
+  capacity: number;
+  bedrooms: number;
+  bathrooms: number;
+  features: string[];
+  policies: string[];
+  checkIn: string;
+  checkOut: string;
+  rating: number;
+  reviewCount: number;
+  timeSlots: TimeSlot[];
+}
+
+interface Branch {
+  id: string;
+  name: string;
+  slug: string;
+  location: string;
+  address: string;
+  phone: string;
+  email: string;
+  description: string;
+  amenities: string[];
+  images: string[];
+  latitude: number;
+  longitude: number;
+  rooms: Room[];
+}
+
+interface BookingTableBranch {
+  id: string;
+  name: string;
+  rooms: Array<{
+    id: string;
+    name: string;
+    timeSlots: TimeSlot[];
+  }>;
+}
+
+interface BookingStatus {
+  status: 'booked' | 'available' | 'selected' | 'promotion' | 'mystery';
+  price?: number;
+  originalPrice?: number;
+}
 
 export default function BranchPage() {
   const params = useParams();
+  const router = useRouter();
   const branchSlug = params.branchSlug as string;
   
-  const branch = getBranchBySlug(branchSlug);
-  
-  if (!branch) {
-    notFound();
+  const [branch, setBranch] = useState<Branch | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
+
+  // Fetch branch data from API
+  useEffect(() => {
+    const fetchBranchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch branches data to find the specific branch
+        const branchesResponse = await fetch('/api/branches');
+        if (!branchesResponse.ok) {
+          throw new Error('Failed to fetch branches data');
+        }
+        const branchesData = await branchesResponse.json();
+
+        if (!branchesData.success) {
+          throw new Error(branchesData.message || 'Failed to fetch branches data');
+        }
+
+        // Find the branch by slug
+        const foundBranch = branchesData.data.find((b: Branch) => b.slug === branchSlug);
+        
+        if (!foundBranch) {
+          throw new Error('Branch not found');
+        }
+
+        setBranch(foundBranch);
+
+        // Fetch existing bookings for the next 30 days
+        await fetchExistingBookings();
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load branch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBranchData();
+  }, [branchSlug]);
+
+  // Fetch existing bookings
+  const fetchExistingBookings = async () => {
+    try {
+      const today = new Date();
+      const endDate = new Date();
+      endDate.setDate(today.getDate() + 30);
+
+      const bookingsResponse = await fetch(
+        `/api/bookings?startDate=${today.toISOString().split('T')[0]}&endDate=${
+          endDate.toISOString().split('T')[0]
+        }`
+      );
+
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+
+        if (bookingsData.success && bookingsData.data) {
+          const bookingsMap: Record<
+            string,
+            Record<string, Record<string, Record<string, BookingStatus>>>
+          > = {};
+
+          bookingsData.data.forEach(
+            (booking: {
+              bookingSlots?: Array<{
+                bookingDate: string;
+                room: { branch: { id: string }; id: string };
+                timeSlot: { id: string };
+                price: number;
+              }>;
+            }) => {
+              booking.bookingSlots?.forEach(
+                (slot: {
+                  bookingDate: string;
+                  room: { branch: { id: string }; id: string };
+                  timeSlot: { id: string };
+                  price: number;
+                }) => {
+                  const dateKey = new Date(slot.bookingDate)
+                    .toISOString()
+                    .split("T")[0];
+                  const branchId = slot.room.branch.id;
+                  const roomId = slot.room.id;
+                  const timeSlotId = slot.timeSlot.id;
+
+                  if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
+                  if (!bookingsMap[dateKey][branchId])
+                    bookingsMap[dateKey][branchId] = {};
+                  if (!bookingsMap[dateKey][branchId][roomId])
+                    bookingsMap[dateKey][branchId][roomId] = {};
+
+                  bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                    status: "booked",
+                    price: slot.price,
+                  };
+                }
+              );
+            }
+          );
+
+          setInitialBookings(bookingsMap);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  const handleBookingSubmit = (selectedSlots: Array<{date: string; branchId: string; roomId: string; timeSlotId: string; price: number}>) => {
+    if (selectedSlots.length === 0) {
+      alert('Vui lòng chọn ít nhất một khung giờ!');
+      return;
+    }
+
+    // Find the room for the first selected slot
+    const firstSlot = selectedSlots[0];
+    const room = branch?.rooms.find(r => r.id === firstSlot.roomId);
+    
+    if (!room) {
+      alert('Không tìm thấy thông tin phòng!');
+      return;
+    }
+
+    // Encode selected slots and redirect to room detail page
+    const encodedSlots = encodeURIComponent(JSON.stringify(selectedSlots));
+    router.push(`/rooms/${room.slug}?selectedSlots=${encodedSlots}`);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        <div className={styles.loading}>
+          <p>Đang tải thông tin chi nhánh...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !branch) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        <div className={styles.error}>
+          <p>Lỗi: {error || 'Không tìm thấy chi nhánh'}</p>
+        </div>
+      </div>
+    );
   }
 
   // Convert branch data to booking table format
-  const branchForBookingTable = [{
+  const branchForBookingTable: BookingTableBranch[] = [{
     id: branch.id,
     name: branch.name,
     rooms: branch.rooms.map(room => ({
@@ -28,14 +239,6 @@ export default function BranchPage() {
       timeSlots: room.timeSlots
     }))
   }];
-
-  const handleBookingSubmit = (selectedSlots: Array<{date: string; branchId: string; roomId: string; timeSlotId: string; price: number}>) => {
-    console.log('Branch booking submitted:', selectedSlots);
-    const totalSlots = selectedSlots.length;
-    const totalPrice = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
-    
-    alert(`Đặt phòng thành công!\n- Số khung giờ: ${totalSlots}\n- Tổng tiền: ${totalPrice.toLocaleString('vi-VN')}đ\n\nCảm ơn bạn đã sử dụng dịch vụ!`);
-  };
 
   return (
     <div className={styles.page}>
@@ -104,9 +307,13 @@ export default function BranchPage() {
                       backgroundPosition: 'center'
                     }}
                   />
-                  <div className={styles.roomBadge}>
-                    <span className={styles.discountBadge}>-{room.price.discount}%</span>
-                  </div>
+                  {room.originalPrice && room.basePrice < room.originalPrice && (
+                    <div className={styles.roomBadge}>
+                      <span className={styles.discountBadge}>
+                        -{Math.round(((room.originalPrice - room.basePrice) / room.originalPrice) * 100)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className={styles.roomContent}>
@@ -143,11 +350,13 @@ export default function BranchPage() {
                   <div className={styles.roomPricing}>
                     <div className={styles.priceInfo}>
                       <span className={styles.currentPrice}>
-                        {room.price.base.toLocaleString('vi-VN')} đ/2 giờ
+                        {room.basePrice.toLocaleString('vi-VN')} đ/2 giờ
                       </span>
-                      <span className={styles.originalPrice}>
-                        {room.price.originalPrice?.toLocaleString('vi-VN')} đ/2 giờ
-                      </span>
+                      {room.originalPrice && (
+                        <span className={styles.originalPrice}>
+                          {room.originalPrice.toLocaleString('vi-VN')} đ/2 giờ
+                        </span>
+                      )}
                     </div>
                     <div className={styles.availability}>có thể nhận</div>
                   </div>
@@ -172,10 +381,11 @@ export default function BranchPage() {
           
           <RoomBookingTable
             branches={branchForBookingTable}
-            initialBookings={mockInitialBookings}
+            initialBookings={initialBookings}
             onBookingSubmit={handleBookingSubmit}
             daysCount={7}
             slotPrice={50000}
+            submitOnSelect={false}
           />
         </div>
       </div>

@@ -237,20 +237,13 @@ export default function Home() {
 
   // Handle booking submission - redirect to room detail page
   const handleBookingSubmit = (selectedSlots: Array<{ date: string; branchId: string; roomId: string; timeSlotId: string; price: number }>) => {
+    // Only proceed if there are selected slots
     if (selectedSlots.length === 0) {
-      alert('Vui lòng chọn ít nhất một khung giờ!');
-      return;
+      return; // Don't show alert, just return silently
     }
 
     // Find the room for the first selected slot
     const firstSlot = selectedSlots[0];
-    const branch = bookingTableBranches.find(b => b.id === firstSlot.branchId);
-    const room = branch?.rooms.find(r => r.id === firstSlot.roomId);
-    
-    if (!room) {
-      alert('Không tìm thấy thông tin phòng!');
-      return;
-    }
 
     // Find the room slug from the branches data
     const branchData = branches.find(b => b.id === firstSlot.branchId);
@@ -316,7 +309,6 @@ export default function Home() {
 
   // Get Can Tho homes (filtered by selected destination)
   const canThoHomes = filteredRooms.slice(0, 3).map(room => {
-    const branch = branches.find(b => b.id === room.branchId);
     return {
       title: room.name,
       description: room.description,
@@ -421,6 +413,7 @@ export default function Home() {
           daysCount={30}
           onBookingSubmit={handleBookingSubmit}
           initialBookings={initialBookings}
+          submitOnSelect={false}
         />
       </section>
 

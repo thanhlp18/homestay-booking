@@ -50,7 +50,7 @@
   margin: 2rem 0;
   position: relative;
 }
-
+/* 
 .bookingTableContainer::after {
   content: '';
   position: absolute;
@@ -61,7 +61,7 @@
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
   pointer-events: none;
   z-index: 1;
-}
+} */
 
 .tableWrapper {
   overflow-x: auto;
@@ -253,7 +253,7 @@
   transform: scale(1.02);
 }
 
-.available::after {
+/* .available::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -263,7 +263,7 @@
   height: 12px;
   border-radius: 50%;
   background: #ff566b;
-}
+} */
 
 .booked {
   background: #ff566b;
@@ -273,7 +273,7 @@
   position: relative;
 }
 
-.booked::after {
+/* .booked::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -283,17 +283,16 @@
   height: 12px;
   border-radius: 50%;
   background: #ff566b;
-}
+} */
 
 .selected {
-  background: #ebafb0;
-  color: transparent;
-  border: 2px solid #ebafb0;
+  border: 2px solid #ff566b;
+  background: rgba(255, 86, 107, 0.1);
   font-weight: bold;
   position: relative;
 }
 
-.selected::after {
+/* .selected::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -303,7 +302,7 @@
   height: 12px;
   border-radius: 50%;
   background: #ebafb0;
-}
+} */
 
 .promotion {
   background: linear-gradient(135deg, #10b981, #34d399);
