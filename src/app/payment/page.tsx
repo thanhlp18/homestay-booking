@@ -37,10 +37,42 @@ export default function PaymentPage() {
   const [timeRemaining, setTimeRemaining] = useState(288); // 4 minutes 48 seconds
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<{
+    status: string;
+    paymentConfirmed: boolean;
+    paymentConfirmedAt?: string;
+  } | null>(null);
 
   // Generate QR code URL
   const generateQRCodeUrl = (bookingId: string, amount: number) => {
     return `https://qr.sepay.vn/img?acc=43218082002&bank=TPBank&amount=${amount}&des=${bookingId}`;
+  };
+
+  // Check payment status
+  const checkPaymentStatus = async () => {
+    if (!bookingData?.bookingId) return;
+
+    try {
+      const response = await fetch(`/api/bookings/${bookingData.bookingId}/payment-status`);
+      const result = await response.json();
+
+      if (result.success) {
+        setPaymentStatus({
+          status: result.data.status,
+          paymentConfirmed: result.data.paymentConfirmed,
+          paymentConfirmedAt: result.data.paymentConfirmedAt
+        });
+
+        // If payment is confirmed, show success message
+        if (result.data.paymentConfirmed && result.data.status === 'PAYMENT_CONFIRMED') {
+          alert('Thanh toán thành công! Chúng tôi sẽ kiểm tra và phê duyệt đặt phòng của bạn trong thời gian sớm nhất.');
+          localStorage.removeItem('bookingData');
+          router.push('/');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+    }
   };
 
   useEffect(() => {
@@ -65,6 +97,21 @@ export default function PaymentPage() {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Poll for payment status every 5 seconds
+  useEffect(() => {
+    if (!bookingData?.bookingId) return;
+
+    // Check immediately
+    checkPaymentStatus();
+
+    // Then check every 5 seconds
+    const paymentTimer = setInterval(() => {
+      checkPaymentStatus();
+    }, 5000);
+
+    return () => clearInterval(paymentTimer);
+  }, [bookingData?.bookingId]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -174,7 +221,13 @@ export default function PaymentPage() {
                   </div>
                 </div>
                 <div className={styles.qrNote}>
-                  Trạng thái: Chờ thanh toán... ⏳
+                  {paymentStatus?.paymentConfirmed ? (
+                    <span style={{ color: '#48bb78', fontWeight: 'bold' }}>
+                      ✅ Thanh toán thành công! Đang xử lý...
+                    </span>
+                  ) : (
+                    <span>Trạng thái: Chờ thanh toán... ⏳</span>
+                  )}
                 </div>
               </div>
             </div>

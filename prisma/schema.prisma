@@ -139,6 +139,7 @@ model Booking {
   userId               String?
   user                 User?           @relation(fields: [userId], references: [id])
   bookingSlots         BookingSlot[]
+  paymentWebhooks      PaymentWebhook[]
   
   @@map("bookings")
 }
@@ -192,4 +193,30 @@ model Review {
   roomId    String
   
   @@map("reviews")
+}
+
+// PaymentWebhook model for storing bank transfer notifications
+model PaymentWebhook {
+  id              String   @id @default(cuid())
+  sepayId         Int      // ID giao dịch trên SePay
+  gateway         String   // Brand name của ngân hàng
+  transactionDate DateTime // Thời gian xảy ra giao dịch phía ngân hàng
+  accountNumber   String   // Số tài khoản ngân hàng
+  code            String?  // Mã code thanh toán
+  content         String   // Nội dung chuyển khoản
+  transferType    String   // Loại giao dịch (in/out)
+  transferAmount  Int      // Số tiền giao dịch
+  accumulated     Int      // Số dư tài khoản (lũy kế)
+  subAccount      String?  // Tài khoản ngân hàng phụ
+  referenceCode   String   // Mã tham chiếu của tin nhắn sms
+  description     String   // Toàn bộ nội dung tin nhắn sms
+  isProcessed     Boolean  @default(false) // Đã xử lý chưa
+  processedAt     DateTime? // Thời gian xử lý
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  bookingId       String?  // ID của booking nếu match được
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+  
+  @@map("payment_webhooks")
 }
