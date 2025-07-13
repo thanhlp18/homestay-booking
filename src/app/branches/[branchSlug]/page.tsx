@@ -143,10 +143,10 @@ export default function BranchPage() {
                   <div className={styles.roomPricing}>
                     <div className={styles.priceInfo}>
                       <span className={styles.currentPrice}>
-                        {room.price.base.toLocaleString('vi-VN')} đ/tháng
+                        {room.price.base.toLocaleString('vi-VN')} đ/2 giờ
                       </span>
                       <span className={styles.originalPrice}>
-                        {room.price.originalPrice?.toLocaleString('vi-VN')} đ/tháng
+                        {room.price.originalPrice?.toLocaleString('vi-VN')} đ/2 giờ
                       </span>
                     </div>
                     <div className={styles.availability}>có thể nhận</div>

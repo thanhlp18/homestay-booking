@@ -250,7 +250,7 @@ export default function PaymentPage() {
           <div className={styles.footerSection}>
             <div className={styles.footerLogo}>
               <span className={styles.logoIcon}>🏠</span>
-              <span className={styles.logoText}>Localhome.vn</span>
+              <span className={styles.logoText}>Minhome.vn</span>
             </div>
             <div className={styles.footerSubtext}>Homestay và lưu trú tại Việt Nam</div>
             <div className={styles.hotline}>Hotline: 0932.820.930</div>

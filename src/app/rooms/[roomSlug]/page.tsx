@@ -144,7 +144,22 @@ export default function RoomPage() {
             name: string;
             slug: string;
             description: string;
-            price: { base: number; discount?: number; originalPrice?: number };
+            amenities: string[];
+            images: string[];
+            basePrice: number;
+            discountPrice?: number;
+            originalPrice?: number;
+            location: string;
+            area: string;
+            capacity: number;
+            bedrooms: number;
+            bathrooms: number;
+            features: string[];
+            policies: string[];
+            checkIn: string;
+            checkOut: string;
+            rating: number;
+            reviewCount: number;
             timeSlots: Array<{ id: string; time: string; price: number }>;
           }>;
         } | null = null;
@@ -159,44 +174,22 @@ export default function RoomPage() {
               name: room.name,
               slug: room.slug,
               description: room.description,
-              amenities: [
-                "WiFi miễn phí",
-                "Điều hòa",
-                "TV",
-                "Máy giặt",
-                "Tủ lạnh",
-                "Bếp",
-              ],
-              images: [
-                "https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+1",
-                "https://images.placeholders.dev/800x600/764ba2/ffffff?text=Room+2",
-                "https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+3",
-              ],
-              basePrice: room.price.base,
-              discountPrice: room.price.discount,
-              originalPrice: room.price.originalPrice,
-              location: branch.location,
-              area: "45m²",
-              capacity: 4,
-              bedrooms: 2,
-              bathrooms: 1,
-              features: [
-                "Hồ bơi",
-                "View đẹp",
-                "Gần trung tâm",
-                "Tiện nghi đầy đủ",
-              ],
-              policies: [
-                "Nhận phòng từ 14:00",
-                "Trả phòng trước 12:00",
-                "Không hút thuốc trong phòng",
-                "Không nuôi thú cưng",
-                "Giữ yên lặng sau 22:00",
-              ],
-              checkIn: "14:00",
-              checkOut: "12:00",
-              rating: 4.8,
-              reviewCount: 127,
+              amenities: room.amenities,
+              images: room.images,
+              basePrice: room.basePrice,
+              discountPrice: room.discountPrice,
+              originalPrice: room.originalPrice,
+              location: room.location,
+              area: room.area,
+              capacity: room.capacity,
+              bedrooms: room.bedrooms,
+              bathrooms: room.bathrooms,
+              features: room.features,
+              policies: room.policies,
+              checkIn: room.checkIn,
+              checkOut: room.checkOut,
+              rating: room.rating,
+              reviewCount: room.reviewCount,
               branchId: branch.id,
               branchName: branch.name,
               branchLocation: branch.location,
@@ -500,11 +493,10 @@ export default function RoomPage() {
               <div
                 className={styles.roomImage}
                 style={{
-                  background: room.images[selectedImageIndex]
-                    ? `url(${room.images[selectedImageIndex]})`
-                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
+                  backgroundImage: `url(${room.images[selectedImageIndex]})`,
+                  backgroundPosition: 'center',
+                  backgroundSize: 'cover',
+                  backgroundRepeat: 'no-repeat',
                 }}
               />
             </div>
@@ -525,7 +517,7 @@ export default function RoomPage() {
               ))}
             </div>
             <div className={styles.amenitiesContainer}>
-              <h3 className={styles.sectionTitle}>Tiện mghi</h3>
+              <h3 className={styles.sectionTitle}>Tiện nghi</h3>
 
               {room.amenities.length > 0 && (
                 <div className={styles.amenitiesList}>
@@ -586,11 +578,11 @@ export default function RoomPage() {
               <div className={styles.pricing}>
                 <div className={styles.priceMain}>
                   <span className={styles.currentPrice}>
-                    {room.basePrice.toLocaleString("vi-VN")} đ/tháng
+                    {room.basePrice.toLocaleString("vi-VN")} đ/2 giờ
                   </span>
                   {room.originalPrice && (
                     <span className={styles.originalPrice}>
-                      {room.originalPrice.toLocaleString("vi-VN")} đ/tháng
+                      {room.originalPrice.toLocaleString("vi-VN")} đ/2 giờ
                     </span>
                   )}
                 </div>

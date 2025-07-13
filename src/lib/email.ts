@@ -30,11 +30,11 @@ const transporter = nodemailer.createTransport({
 // Email templates
 export const emailTemplates = {
   bookingConfirmation: (bookingData: BookingData) => ({
-    subject: `Xác nhận đặt phòng - ${bookingData.room} | Localhome.vn`,
+    subject: `Xác nhận đặt phòng - ${bookingData.room} | Minhome.vn`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">💚 Localhome.vn</h1>
+          <h1 style="margin: 0;">💚 Minhome.vn</h1>
           <p style="margin: 10px 0 0 0;">Xác nhận đặt phòng</p>
         </div>
         
@@ -67,7 +67,7 @@ export const emailTemplates = {
           </div>
           
           <div style="margin: 20px 0;">
-            <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của Localhome.vn!</p>
+            <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của Minhome.vn!</p>
             <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua:</p>
             <p>📞 Hotline: 0932.620.930</p>
             <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
@@ -75,7 +75,7 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 Localhome.vn - Hệ thống đặt phòng homestay</p>
+          <p style="margin: 0;">&copy; 2024 Minhome.vn - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
     `
@@ -87,7 +87,7 @@ export const emailTemplates = {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0;">🔔 Thông báo đặt phòng mới</h1>
-          <p style="margin: 10px 0 0 0;">Localhome.vn Admin Panel</p>
+          <p style="margin: 10px 0 0 0;">Minhome.vn Admin Panel</p>
         </div>
         
         <div style="padding: 20px; background: #f9f9f9;">
@@ -122,19 +122,19 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 Localhome.vn - Admin System</p>
+          <p style="margin: 0;">&copy; 2024 Minhome.vn - Admin System</p>
         </div>
       </div>
     `
   }),
 
   bookingApproval: (bookingData: BookingData) => ({
-    subject: `✅ Đặt phòng được phê duyệt - ${bookingData.room} | Localhome.vn`,
+    subject: `✅ Đặt phòng được phê duyệt - ${bookingData.room} | Minhome.vn`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0;">✅ Đặt phòng thành công!</h1>
-          <p style="margin: 10px 0 0 0;">Localhome.vn</p>
+          <p style="margin: 10px 0 0 0;">Minhome.vn</p>
         </div>
         
         <div style="padding: 20px; background: #f9f9f9;">
@@ -169,7 +169,7 @@ export const emailTemplates = {
           </div>
           
           <div style="margin: 20px 0;">
-            <p>Cảm ơn bạn đã tin tưởng Localhome.vn! Chúng tôi mong được phục vụ bạn.</p>
+            <p>Cảm ơn bạn đã tin tưởng Minhome.vn! Chúng tôi mong được phục vụ bạn.</p>
             <p>Chúc bạn có một kỳ nghỉ tuyệt vời!</p>
             <p>📞 Hotline: 0932.620.930</p>
             <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
@@ -177,19 +177,19 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 Localhome.vn - Hệ thống đặt phòng homestay</p>
+          <p style="margin: 0;">&copy; 2024 Minhome.vn - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
     `
   }),
 
   bookingRejection: (bookingData: BookingData, reason: string) => ({
-    subject: `❌ Đặt phòng bị từ chối - ${bookingData.room} | Localhome.vn`,
+    subject: `❌ Đặt phòng bị từ chối - ${bookingData.room} | Minhome.vn`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 20px; text-align: center;">
           <h1 style="margin: 0;">❌ Thông báo đặt phòng</h1>
-          <p style="margin: 10px 0 0 0;">Localhome.vn</p>
+          <p style="margin: 10px 0 0 0;">Minhome.vn</p>
         </div>
         
         <div style="padding: 20px; background: #f9f9f9;">
@@ -216,7 +216,7 @@ export const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 Localhome.vn - Hệ thống đặt phòng homestay</p>
+          <p style="margin: 0;">&copy; 2024 Minhome.vn - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
     `
@@ -229,7 +229,7 @@ export async function sendBookingConfirmation(bookingData: BookingData) {
   
   try {
     await transporter.sendMail({
-      from: `"Localhome.vn" <${process.env.GMAIL_USER}>`,
+      from: `"Minhome.vn" <${process.env.GMAIL_USER}>`,
       to: bookingData.email,
       subject,
       html,
@@ -248,7 +248,7 @@ export async function sendAdminNotification(bookingData: BookingData) {
   
   try {
     await transporter.sendMail({
-      from: `"Localhome.vn System" <${process.env.GMAIL_USER}>`,
+      from: `"Minhome.vn System" <${process.env.GMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL,
       subject,
       html,
@@ -267,7 +267,7 @@ export async function sendBookingApproval(bookingData: BookingData) {
   
   try {
     await transporter.sendMail({
-      from: `"Localhome.vn" <${process.env.GMAIL_USER}>`,
+      from: `"Minhome.vn" <${process.env.GMAIL_USER}>`,
       to: bookingData.email,
       subject,
       html,
@@ -286,7 +286,7 @@ export async function sendBookingRejection(bookingData: BookingData, reason: str
   
   try {
     await transporter.sendMail({
-      from: `"Localhome.vn" <${process.env.GMAIL_USER}>`,
+      from: `"Minhome.vn" <${process.env.GMAIL_USER}>`,
       to: bookingData.email,
       subject,
       html,

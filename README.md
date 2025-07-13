@@ -1,6 +1,6 @@
 # Booking App - Vietnamese Home Rental Platform
 
-A modern, responsive booking platform for Vietnamese home rentals, inspired by Localhome.vn. Built with Next.js 15 and TypeScript.
+A modern, responsive booking platform for Vietnamese home rentals, inspired by Minhome.vn. Built with Next.js 15 and TypeScript.
 
 ## ✨ Features
 

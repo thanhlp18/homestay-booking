@@ -17,7 +17,7 @@ async function main() {
       email: 'lovely@localhome.vn',
       description: 'Chi nhánh Lovely với không gian ấm cúng, hiện đại và đầy đủ tiện nghi',
       amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Hồ bơi'],
-      images: ['https://images.placeholders.dev/800x600/667eea/ffffff?text=Lovely+Branch'],
+      images: ['/images/branches/lovely-1.jpg'],
       latitude: 10.0346,
       longitude: 105.7887,
       rooms: [
@@ -28,9 +28,9 @@ async function main() {
           description: 'Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón, máy giặt, tủ lạnh, máy sấy tóc, view từ tầng cao nhìn ra sông Hàn',
           amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Hồ bơi', 'View sông'],
           images: [
-            'https://images.placeholders.dev/800x600/667eea/ffffff?text=Lovely+Room+1',
-            'https://images.placeholders.dev/800x600/764ba2/ffffff?text=Lovely+Room+2',
-            'https://images.placeholders.dev/800x600/667eea/ffffff?text=Lovely+Room+3'
+            '/images/rooms/lovely-room1-1.jpg',
+            '/images/rooms/lovely-room1-2.jpg',
+            '/images/rooms/lovely-room1-3.jpg'
           ],
           basePrice: 179000,
           discountPrice: 179000,
@@ -70,7 +70,7 @@ async function main() {
       email: 'tasty@localhome.vn',
       description: 'Chi nhánh Tasty 1 với phong cách hiện đại, tiện nghi cao cấp',
       amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Gym'],
-      images: ['https://images.placeholders.dev/800x600/ff6b6b/ffffff?text=Tasty+Branch'],
+      images: ['/images/branches/tasty-1.jpg'],
       latitude: 10.0278,
       longitude: 105.7769,
       rooms: [
@@ -81,9 +81,9 @@ async function main() {
           description: 'Căn hộ cao cấp với thiết kế hiện đại, đầy đủ tiện nghi, view đẹp, phù hợp cho gia đình và nhóm bạn',
           amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Gym', 'Balcony'],
           images: [
-            'https://images.placeholders.dev/800x600/ff6b6b/ffffff?text=Tasty+Room+1',
-            'https://images.placeholders.dev/800x600/ff8e8e/ffffff?text=Tasty+Room+2',
-            'https://images.placeholders.dev/800x600/ff6b6b/ffffff?text=Tasty+Room+3'
+            '/images/rooms/tasty-room1-1.jpg',
+            '/images/rooms/tasty-room1-2.jpg',
+            '/images/rooms/tasty-room1-3.jpg'
           ],
           basePrice: 219000,
           discountPrice: 219000,
@@ -123,7 +123,7 @@ async function main() {
       email: 'secret@localhome.vn',
       description: 'Chi nhánh Secret Home với không gian riêng tư, yên tĩnh',
       amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Garden'],
-      images: ['https://images.placeholders.dev/800x600/4facfe/ffffff?text=Secret+Branch'],
+      images: ['/images/branches/secret-1.jpg'],
       latitude: 10.0412,
       longitude: 105.7705,
       rooms: [
@@ -134,9 +134,9 @@ async function main() {
           description: 'Không gian riêng tư, yên tĩnh, phù hợp cho nghỉ ngơi thư giãn',
           amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp', 'Garden', 'Private space'],
           images: [
-            'https://images.placeholders.dev/800x600/4facfe/ffffff?text=Secret+Room+1',
-            'https://images.placeholders.dev/800x600/00f2fe/ffffff?text=Secret+Room+2',
-            'https://images.placeholders.dev/800x600/4facfe/ffffff?text=Secret+Room+3'
+            '/images/rooms/secret-room1-1.jpg',
+            '/images/rooms/secret-room1-2.jpg',
+            '/images/rooms/secret-room1-3.jpg'
           ],
           basePrice: 179000,
           discountPrice: 179000,
@@ -258,4 +258,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });

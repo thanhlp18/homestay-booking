@@ -9,6 +9,8 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
 }
 
 .homeCard:hover {
@@ -31,7 +33,10 @@
 }
 
 .homeInfo {
+  display: flex;
+  flex-direction: column;
   padding: 1.5rem;
+  flex: 1;
 }
 
 .homeType {
@@ -64,6 +69,7 @@
   font-weight: bold;
   font-size: 0.9rem;
   transition: color 0.3s;
+  margin-top: auto;
 }
 
 .viewButton:hover {
@@ -73,7 +79,7 @@
 
 /* Price section */
 .priceSection {
-  margin-top: 1rem;
+  margin-top: auto;
 }
 
 .availability {

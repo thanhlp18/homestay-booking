@@ -16,11 +16,21 @@ interface Room {
   slug: string;
   description: string;
   amenities: string[];
-  price: {
-    base: number;
-    discount?: number;
-    originalPrice?: number;
-  };
+  images: string[]; // Add this line
+  basePrice: number;
+  discountPrice?: number;
+  originalPrice?: number;
+  location: string;
+  area: string;
+  capacity: number;
+  bedrooms: number;
+  bathrooms: number;
+  features: string[];
+  policies: string[];
+  checkIn: string;
+  checkOut: string;
+  rating: number;
+  reviewCount: number;
   branchId: string;
   branchName: string;
   branchLocation: string;
@@ -32,17 +42,35 @@ interface BranchAPIResponse {
   name: string;
   slug: string;
   location: string;
+  address: string;
+  phone: string;
+  email: string;
+  description: string;
+  amenities: string[];
+  images: string[];
+  latitude: number;
+  longitude: number;
   rooms: Array<{
     id: string;
     name: string;
     slug: string;
     description: string;
     amenities: string[];
-    price: {
-      base: number;
-      discount?: number;
-      originalPrice?: number;
-    };
+    images: string[];
+    basePrice: number;
+    discountPrice?: number;
+    originalPrice?: number;
+    location: string;
+    area: string;
+    capacity: number;
+    bedrooms: number;
+    bathrooms: number;
+    features: string[];
+    policies: string[];
+    checkIn: string;
+    checkOut: string;
+    rating: number;
+    reviewCount: number;
     timeSlots: Array<{
       id: string;
       time: string;
@@ -113,11 +141,25 @@ export default function Home() {
               slug: room.slug,
               description: room.description,
               amenities: room.amenities || [],
-              price: room.price,
+              basePrice: room.basePrice,
+              discountPrice: room.discountPrice,
+              originalPrice: room.originalPrice,
+              location: room.location,
+              area: room.area,
+              capacity: room.capacity,
+              bedrooms: room.bedrooms,
+              bathrooms: room.bathrooms,
+              features: room.features,
+              policies: room.policies,
+              checkIn: room.checkIn,
+              checkOut: room.checkOut,
+              rating: room.rating,
+              reviewCount: room.reviewCount,
               branchId: branch.id,
               branchName: branch.name,
               branchLocation: branch.location,
               branchSlug: branch.slug,
+              images: room.images, // Add this line to include images
             });
           });
         });
@@ -253,7 +295,8 @@ export default function Home() {
     title: `Home - ${branch.location}`,
     type: "SWIMMING POOL • CẦU RỒNG",
     description: branch.rooms[0]?.description || "Căn hộ mới 100% với đầy đủ tiện nghi",
-    imageGradient: getGradientForBranch(branch.id),
+    imageUrl: branch.images[0], // Use the first branch image
+    imageGradient: getGradientForBranch(branch.id), // Fallback gradient
     branchSlug: branch.slug
   }));
 
@@ -272,15 +315,19 @@ export default function Home() {
   });
 
   // Get Can Tho homes (filtered by selected destination)
-  const canThoHomes = filteredRooms.slice(0, 3).map(room => ({
-    title: room.name,
-    description: room.description,
-    price: `${room.price.base.toLocaleString('vi-VN')} đ/tháng`,
-    originalPrice: room.price.originalPrice ? `${room.price.originalPrice.toLocaleString('vi-VN')} đ/tháng` : undefined,
-    availability: "có thể nhận",
-    imageGradient: getGradientForBranch(room.branchId),
-    roomSlug: room.slug
-  }));
+  const canThoHomes = filteredRooms.slice(0, 3).map(room => {
+    const branch = branches.find(b => b.id === room.branchId);
+    return {
+      title: room.name,
+      description: room.description,
+      price: `${room.basePrice.toLocaleString('vi-VN')} đ/2 giờ`,
+      originalPrice: room.originalPrice ? `${room.originalPrice.toLocaleString('vi-VN')} đ/2 giờ` : undefined,
+      availability: "có thể nhận",
+      imageUrl: room.images?.[0], // Add optional chaining to prevent error
+      imageGradient: getGradientForBranch(room.branchId), // Fallback gradient
+      roomSlug: room.slug
+    };
+  });
 
   return (
     <div className={styles.page}>
@@ -301,6 +348,7 @@ export default function Home() {
                 type={home.type}
                 description={home.description}
                 showDetails={true}
+                imageUrl={home.imageUrl}
                 imageGradient={home.imageGradient}
                 branchSlug={home.branchSlug}
                 amenities={amenities}
@@ -342,6 +390,7 @@ export default function Home() {
                   originalPrice={home.originalPrice}
                   availability={home.availability}
                   showBooking={true}
+                  imageUrl={home.imageUrl}
                   imageGradient={home.imageGradient}
                   roomSlug={home.roomSlug}
                   amenities={room?.amenities || []}
@@ -381,7 +430,7 @@ export default function Home() {
           <div className={styles.footerSection}>
             <div className={styles.footerLogo}>
               <span className={styles.logoIcon}>💚</span>
-              <span className={styles.logoText}>Localhome.vn</span>
+              <span className={styles.logoText}>Minhome.vn</span>
             </div>
             <p className={styles.footerText}>Hotline: 0932.620.930</p>
           </div>
@@ -410,7 +459,7 @@ export default function Home() {
         </div>
         
         <div className={styles.footerBottom}>
-          <p>© Copyright Localhome.vn 2024</p>
+          <p>© Copyright Minhome.vn 2024</p>
         </div>
       </footer>
     </div>

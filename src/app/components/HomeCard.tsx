@@ -13,6 +13,7 @@ interface HomeCardProps {
   availability?: string;
   showBooking?: boolean;
   showDetails?: boolean;
+  imageUrl?: string;
   imageGradient?: string;
   roomSlug?: string;
   branchSlug?: string;
@@ -45,6 +46,7 @@ export default function HomeCard({
   availability,
   showBooking = false,
   showDetails = false,
+  imageUrl,
   imageGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
   roomSlug,
   branchSlug,
@@ -60,10 +62,22 @@ export default function HomeCard({
     }, 1000);
   };
 
+  // Use imageUrl if available, otherwise fall back to gradient
+  const backgroundStyle = imageUrl 
+    ? { 
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }
+    : { background: imageGradient };
+
   return (
     <div className={styles.homeCard}>
-      <div className={styles.homeImage} style={{ background: imageGradient }}>
-        <div className={styles.imagePlaceholder}>🏠</div>
+      <div className={styles.homeImage} style={backgroundStyle}>
+        {!imageUrl && (
+          <div className={styles.imagePlaceholder}>🏠</div>
+        )}
       </div>
       <div className={styles.homeInfo}>
         {type && (
