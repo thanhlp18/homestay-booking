@@ -24,6 +24,7 @@ export async function GET() {
         name: room.name,
         slug: room.slug,
         description: room.description,
+        amenities: room.amenities,
         price: {
           base: 179000, // Default price, you can adjust based on your needs
           discount: 44,

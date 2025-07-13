@@ -16,7 +16,25 @@ interface HomeCardProps {
   imageGradient?: string;
   roomSlug?: string;
   branchSlug?: string;
+  amenities?: string[];
 }
+
+export const AMENITY_ICON_MAP: Record<string, string> = {
+  'WiFi miễn phí': '/tien_nghi/tien_nghi_wifi.png',
+  'Điều hòa': '/tien_nghi/tien_nghi_khac.png',
+  'TV': '/tien_nghi/tien_nghi_tivi.png',
+  'Máy giặt': '/tien_nghi/tien_nghi_khac.png',
+  'Tủ lạnh': '/tien_nghi/tien_nghi_khac.png',
+  'Bếp': '/tien_nghi/tien_nghi_khac.png',
+  'Hồ bơi': '/tien_nghi/tien_nghi_khac.png',
+  'Netflix': '/tien_nghi/tien_nghi_netflix.png',
+  'Ghế lười': '/tien_nghi/tien_nghi_ghe_luoi.png',
+  'Ghế sách': '/tien_nghi/tien_nghi_ghe_sach.png',
+  'Máy game': '/tien_nghi/tien_nghi_may_game.png',
+  'Gương king': '/tien_nghi/tien_nghi_guong_king.png',
+  'Bàn trang điểm': '/tien_nghi/tien_nghi_ban_trang_diem.png',
+  'Gương toàn thân': '/tien_nghi/tien_nghi_guong_toan_than.png',
+};
 
 export default function HomeCard({
   title,
@@ -29,7 +47,8 @@ export default function HomeCard({
   showDetails = false,
   imageGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
   roomSlug,
-  branchSlug
+  branchSlug,
+  amenities = [],
 }: HomeCardProps) {
   const [isBooking, setIsBooking] = useState(false);
 
@@ -54,7 +73,22 @@ export default function HomeCard({
         {description && (
           <p className={styles.homeDescription}>{description}</p>
         )}
-        
+        {amenities.length > 0 && (
+          <div className={styles.amenitiesGrid}>
+            {amenities.map((amenity) => (
+              <div className={styles.amenityIconWrapper} key={amenity}>
+                <span className={styles.amenityIconBg}>
+                  <img
+                    src={AMENITY_ICON_MAP[amenity] || '/tien_nghi/tien_nghi_khac.png'}
+                    alt={amenity}
+                    className={styles.amenityIconImg}
+                  />
+                </span>
+                <span className={styles.amenityTooltip}>{amenity}</span>
+              </div>
+            ))}
+          </div>
+        )}
         {showDetails && (
           branchSlug ? (
             <Link href={`/branches/${branchSlug}`} className={styles.viewButton}>
@@ -64,7 +98,6 @@ export default function HomeCard({
             <a href="#" className={styles.viewButton}>Xem chi tiết chỗ ở →</a>
           )
         )}
-        
         {showBooking && (
           <div className={styles.priceSection}>
             {availability && (

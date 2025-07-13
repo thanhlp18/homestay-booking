@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Header from '../../components/Header';
-import RoomBookingTable from '../../components/RoomBookingTable';
-import styles from './room.module.css';
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Header from "../../components/Header";
+import RoomBookingTable from "../../components/RoomBookingTable";
+import styles from "./room.module.css";
+import { AMENITY_ICON_MAP } from "@/app/components/HomeCard";
 
 interface TimeSlot {
   id: string;
@@ -70,7 +71,7 @@ interface SelectedSlot {
 }
 
 interface BookingStatus {
-  status: 'booked' | 'available' | 'selected' | 'promotion' | 'mystery';
+  status: "booked" | "available" | "selected" | "promotion" | "mystery";
   price?: number;
   originalPrice?: number;
 }
@@ -80,7 +81,7 @@ export default function RoomPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomSlug = params.roomSlug as string;
-  
+
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [frontIdImage, setFrontIdImage] = useState<File | null>(null);
   const [backIdImage, setBackIdImage] = useState<File | null>(null);
@@ -89,19 +90,26 @@ export default function RoomPage() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [room, setRoom] = useState<Room | null>(null);
-  const [bookingTableBranches, setBookingTableBranches] = useState<BookingTableBranch[]>([]);
-  const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
+  const [bookingTableBranches, setBookingTableBranches] = useState<
+    BookingTableBranch[]
+  >([]);
+  const [initialBookings, setInitialBookings] = useState<
+    Record<
+      string,
+      Record<string, Record<string, Record<string, BookingStatus>>>
+    >
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState<BookingFormData>({
-    fullName: '',
-    phone: '',
-    email: '',
-    cccd: '',
-    guests: '',
-    notes: '',
-    paymentMethod: 'cash'
+    fullName: "",
+    phone: "",
+    email: "",
+    cccd: "",
+    guests: "",
+    notes: "",
+    paymentMethod: "cash",
   });
 
   // Load room data from API
@@ -112,59 +120,88 @@ export default function RoomPage() {
         setError(null);
 
         // Fetch branches data to find the room
-        const branchesResponse = await fetch('/api/branches');
+        const branchesResponse = await fetch("/api/branches");
         if (!branchesResponse.ok) {
-          throw new Error('Failed to fetch branches data');
+          throw new Error("Failed to fetch branches data");
         }
         const branchesData = await branchesResponse.json();
 
         if (!branchesData.success) {
-          throw new Error(branchesData.message || 'Failed to fetch branches data');
+          throw new Error(
+            branchesData.message || "Failed to fetch branches data"
+          );
         }
 
         // Find the room by slug
         let foundRoom: Room | null = null;
-        let foundBranch: { id: string; name: string; location: string; slug: string; rooms: Array<{ id: string; name: string; slug: string; description: string; price: { base: number; discount?: number; originalPrice?: number }; timeSlots: Array<{ id: string; time: string; price: number }> }> } | null = null;
+        let foundBranch: {
+          id: string;
+          name: string;
+          location: string;
+          slug: string;
+          rooms: Array<{
+            id: string;
+            name: string;
+            slug: string;
+            description: string;
+            price: { base: number; discount?: number; originalPrice?: number };
+            timeSlots: Array<{ id: string; time: string; price: number }>;
+          }>;
+        } | null = null;
 
         for (const branch of branchesData.data) {
-          const room = branch.rooms?.find((r: { slug: string }) => r.slug === roomSlug);
+          const room = branch.rooms?.find(
+            (r: { slug: string }) => r.slug === roomSlug
+          );
           if (room) {
             foundRoom = {
               id: room.id,
               name: room.name,
               slug: room.slug,
               description: room.description,
-              amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp'],
+              amenities: [
+                "WiFi miễn phí",
+                "Điều hòa",
+                "TV",
+                "Máy giặt",
+                "Tủ lạnh",
+                "Bếp",
+              ],
               images: [
-                'https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+1',
-                'https://images.placeholders.dev/800x600/764ba2/ffffff?text=Room+2',
-                'https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+3'
+                "https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+1",
+                "https://images.placeholders.dev/800x600/764ba2/ffffff?text=Room+2",
+                "https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+3",
               ],
               basePrice: room.price.base,
               discountPrice: room.price.discount,
               originalPrice: room.price.originalPrice,
               location: branch.location,
-              area: '45m²',
+              area: "45m²",
               capacity: 4,
               bedrooms: 2,
               bathrooms: 1,
-              features: ['Hồ bơi', 'View đẹp', 'Gần trung tâm', 'Tiện nghi đầy đủ'],
-              policies: [
-                'Nhận phòng từ 14:00',
-                'Trả phòng trước 12:00',
-                'Không hút thuốc trong phòng',
-                'Không nuôi thú cưng',
-                'Giữ yên lặng sau 22:00'
+              features: [
+                "Hồ bơi",
+                "View đẹp",
+                "Gần trung tâm",
+                "Tiện nghi đầy đủ",
               ],
-              checkIn: '14:00',
-              checkOut: '12:00',
+              policies: [
+                "Nhận phòng từ 14:00",
+                "Trả phòng trước 12:00",
+                "Không hút thuốc trong phòng",
+                "Không nuôi thú cưng",
+                "Giữ yên lặng sau 22:00",
+              ],
+              checkIn: "14:00",
+              checkOut: "12:00",
               rating: 4.8,
               reviewCount: 127,
               branchId: branch.id,
               branchName: branch.name,
               branchLocation: branch.location,
               branchSlug: branch.slug,
-              timeSlots: room.timeSlots || []
+              timeSlots: room.timeSlots || [],
             };
             foundBranch = branch;
             break;
@@ -172,22 +209,26 @@ export default function RoomPage() {
         }
 
         if (!foundRoom) {
-          throw new Error('Room not found');
+          throw new Error("Room not found");
         }
 
         setRoom(foundRoom);
 
         // Create booking table data for this room only
         if (foundBranch) {
-          const bookingTableData: BookingTableBranch[] = [{
-            id: foundBranch.id,
-            name: foundBranch.name,
-            rooms: [{
-              id: foundRoom.id,
-              name: foundRoom.name,
-              timeSlots: foundRoom.timeSlots
-            }]
-          }];
+          const bookingTableData: BookingTableBranch[] = [
+            {
+              id: foundBranch.id,
+              name: foundBranch.name,
+              rooms: [
+                {
+                  id: foundRoom.id,
+                  name: foundRoom.name,
+                  timeSlots: foundRoom.timeSlots,
+                },
+              ],
+            },
+          ];
 
           setBookingTableBranches(bookingTableData);
         }
@@ -196,18 +237,19 @@ export default function RoomPage() {
         await fetchExistingBookings();
 
         // Check for selected slots from URL parameters
-        const selectedSlotsParam = searchParams.get('selectedSlots');
+        const selectedSlotsParam = searchParams.get("selectedSlots");
         if (selectedSlotsParam) {
           try {
             const slots = JSON.parse(decodeURIComponent(selectedSlotsParam));
             setSelectedSlots(slots);
           } catch (error) {
-            console.error('Error parsing selected slots:', error);
+            console.error("Error parsing selected slots:", error);
           }
         }
-
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load room data');
+        setError(
+          err instanceof Error ? err.message : "Failed to load room data"
+        );
       } finally {
         setLoading(false);
       }
@@ -222,38 +264,65 @@ export default function RoomPage() {
       const today = new Date();
       const endDate = new Date();
       endDate.setDate(today.getDate() + 30);
-      
-      const bookingsResponse = await fetch(`/api/bookings?startDate=${today.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
-      
+
+      const bookingsResponse = await fetch(
+        `/api/bookings?startDate=${today.toISOString().split("T")[0]}&endDate=${
+          endDate.toISOString().split("T")[0]
+        }`
+      );
+
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json();
-        
+
         if (bookingsData.success && bookingsData.data) {
-          const bookingsMap: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>> = {};
-          
-          bookingsData.data.forEach((booking: { bookingSlots?: Array<{ bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }> }) => {
-            booking.bookingSlots?.forEach((slot: { bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }) => {
-              const dateKey = new Date(slot.bookingDate).toISOString().split('T')[0];
-              const branchId = slot.room.branch.id;
-              const roomId = slot.room.id;
-              const timeSlotId = slot.timeSlot.id;
-              
-              if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
-              if (!bookingsMap[dateKey][branchId]) bookingsMap[dateKey][branchId] = {};
-              if (!bookingsMap[dateKey][branchId][roomId]) bookingsMap[dateKey][branchId][roomId] = {};
-              
-              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
-                status: 'booked',
-                price: slot.price
-              };
-            });
-          });
-          
+          const bookingsMap: Record<
+            string,
+            Record<string, Record<string, Record<string, BookingStatus>>>
+          > = {};
+
+          bookingsData.data.forEach(
+            (booking: {
+              bookingSlots?: Array<{
+                bookingDate: string;
+                room: { branch: { id: string }; id: string };
+                timeSlot: { id: string };
+                price: number;
+              }>;
+            }) => {
+              booking.bookingSlots?.forEach(
+                (slot: {
+                  bookingDate: string;
+                  room: { branch: { id: string }; id: string };
+                  timeSlot: { id: string };
+                  price: number;
+                }) => {
+                  const dateKey = new Date(slot.bookingDate)
+                    .toISOString()
+                    .split("T")[0];
+                  const branchId = slot.room.branch.id;
+                  const roomId = slot.room.id;
+                  const timeSlotId = slot.timeSlot.id;
+
+                  if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
+                  if (!bookingsMap[dateKey][branchId])
+                    bookingsMap[dateKey][branchId] = {};
+                  if (!bookingsMap[dateKey][branchId][roomId])
+                    bookingsMap[dateKey][branchId][roomId] = {};
+
+                  bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                    status: "booked",
+                    price: slot.price,
+                  };
+                }
+              );
+            }
+          );
+
           setInitialBookings(bookingsMap);
         }
       }
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error("Error fetching bookings:", error);
     }
   };
 
@@ -273,19 +342,22 @@ export default function RoomPage() {
       <div className={styles.page}>
         <Header />
         <div className={styles.error}>
-          <p>Lỗi: {error || 'Không tìm thấy phòng'}</p>
+          <p>Lỗi: {error || "Không tìm thấy phòng"}</p>
         </div>
       </div>
     );
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: "front" | "back"
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        if (type === 'front') {
+        if (type === "front") {
           setFrontIdImage(file);
           setFrontIdPreview(result);
         } else {
@@ -297,11 +369,13 @@ export default function RoomPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -311,21 +385,21 @@ export default function RoomPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (selectedSlots.length === 0) {
-      alert('Vui lòng chọn ít nhất một khung giờ từ bảng lịch đặt phòng!');
+      alert("Vui lòng chọn ít nhất một khung giờ từ bảng lịch đặt phòng!");
       return;
     }
-    
+
     setShowConfirmation(true);
   };
 
   const handleConfirmBooking = async () => {
     try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
+      const response = await fetch("/api/bookings", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           fullName: formData.fullName,
@@ -334,23 +408,30 @@ export default function RoomPage() {
           cccd: formData.cccd,
           guests: parseInt(formData.guests),
           notes: formData.notes || undefined,
-          paymentMethod: formData.paymentMethod.toUpperCase() as 'CASH' | 'TRANSFER' | 'CARD',
-          selectedSlots: selectedSlots
+          paymentMethod: formData.paymentMethod.toUpperCase() as
+            | "CASH"
+            | "TRANSFER"
+            | "CARD",
+          selectedSlots: selectedSlots,
         }),
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
-        alert(`Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString('vi-VN')}đ`);
+        alert(
+          `Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString(
+            "vi-VN"
+          )}đ`
+        );
         // Redirect to home page or show success message
-        router.push('/');
+        router.push("/");
       } else {
         alert(`Lỗi: ${result.message}`);
       }
     } catch (error) {
-      console.error('Booking submission error:', error);
-      alert('Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.');
+      console.error("Booking submission error:", error);
+      alert("Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.");
     }
   };
 
@@ -359,29 +440,33 @@ export default function RoomPage() {
   };
 
   const formatSelectedSlots = () => {
-    if (selectedSlots.length === 0) return 'Chưa chọn khung giờ';
-    
-    return selectedSlots.map(slot => {
-      const date = new Date(slot.date).toLocaleDateString('vi-VN');
-      const branch = bookingTableBranches.find(b => b.id === slot.branchId);
-      const roomData = branch?.rooms.find(r => r.id === slot.roomId);
-      const timeSlot = roomData?.timeSlots.find(ts => ts.id === slot.timeSlotId);
-      
-      return `${date} (${timeSlot?.time})`;
-    }).join(', ');
+    if (selectedSlots.length === 0) return "Chưa chọn khung giờ";
+
+    return selectedSlots
+      .map((slot) => {
+        const date = new Date(slot.date).toLocaleDateString("vi-VN");
+        const branch = bookingTableBranches.find((b) => b.id === slot.branchId);
+        const roomData = branch?.rooms.find((r) => r.id === slot.roomId);
+        const timeSlot = roomData?.timeSlots.find(
+          (ts) => ts.id === slot.timeSlotId
+        );
+
+        return `${date} (${timeSlot?.time})`;
+      })
+      .join(", ");
   };
 
   const calculateTotalPrice = () => {
     const baseTotal = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
     const slotCount = selectedSlots.length;
-    
+
     let discount = 0;
     if (slotCount >= 3) {
       discount = 0.1; // 10% discount for 3+ slots
     } else if (slotCount === 2) {
       discount = 0.05; // 5% discount for 2 slots
     }
-    
+
     const finalTotal = baseTotal * (1 - discount);
     return { baseTotal, discount, finalTotal, slotCount };
   };
@@ -391,12 +476,14 @@ export default function RoomPage() {
   return (
     <div className={styles.page}>
       <Header />
-      
+
       {/* Room Header */}
       <div className={styles.roomHeader}>
         <div className={styles.headerContent}>
           <div className={styles.breadcrumb}>
-            <Link href="/" className={styles.breadcrumbLink}>Trang chủ</Link>
+            <Link href="/" className={styles.breadcrumbLink}>
+              Trang chủ
+            </Link>
             <span className={styles.breadcrumbSeparator}>›</span>
             <span className={styles.breadcrumbCurrent}>{room.name}</span>
           </div>
@@ -410,14 +497,14 @@ export default function RoomPage() {
           {/* Room Images */}
           <div className={styles.imageSection}>
             <div className={styles.mainImage}>
-              <div 
+              <div
                 className={styles.roomImage}
-                style={{ 
-                  background: room.images[selectedImageIndex] ? 
-                    `url(${room.images[selectedImageIndex]})` : 
-                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
+                style={{
+                  background: room.images[selectedImageIndex]
+                    ? `url(${room.images[selectedImageIndex]})`
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
                 }}
               />
             </div>
@@ -425,15 +512,40 @@ export default function RoomPage() {
               {room.images.map((image, index) => (
                 <div
                   key={index}
-                  className={`${styles.thumbnail} ${index === selectedImageIndex ? styles.thumbnailActive : ''}`}
-                  style={{ 
+                  className={`${styles.thumbnail} ${
+                    index === selectedImageIndex ? styles.thumbnailActive : ""
+                  }`}
+                  style={{
                     background: `url(${image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                   }}
                   onClick={() => setSelectedImageIndex(index)}
                 />
               ))}
+            </div>
+            <div className={styles.amenitiesContainer}>
+              <h3 className={styles.sectionTitle}>Tiện mghi</h3>
+
+              {room.amenities.length > 0 && (
+                <div className={styles.amenitiesList}>
+                  {room.amenities.map((amenity) => (
+                    <div className={styles.amenityRow} key={amenity}>
+                      <span className={styles.amenityIconBox}>
+                        <img
+                          src={
+                            AMENITY_ICON_MAP[amenity] ||
+                            "/tien_nghi/tien_nghi_khac.png"
+                          }
+                          alt={amenity}
+                          className={styles.amenityIconImg}
+                        />
+                      </span>
+                      <span className={styles.amenityText}>{amenity}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -443,9 +555,11 @@ export default function RoomPage() {
               <h2 className={styles.roomName}>{room.name}</h2>
               <div className={styles.roomRating}>
                 <span className={styles.rating}>⭐ {room.rating}</span>
-                <span className={styles.reviews}>({room.reviewCount} đánh giá)</span>
+                <span className={styles.reviews}>
+                  ({room.reviewCount} đánh giá)
+                </span>
               </div>
-              
+
               <div className={styles.roomSpecs}>
                 <div className={styles.spec}>
                   <span className={styles.specIcon}>👥</span>
@@ -453,11 +567,15 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.spec}>
                   <span className={styles.specIcon}>🏠</span>
-                  <span className={styles.specText}>{room.bedrooms} phòng ngủ</span>
+                  <span className={styles.specText}>
+                    {room.bedrooms} phòng ngủ
+                  </span>
                 </div>
                 <div className={styles.spec}>
                   <span className={styles.specIcon}>🚿</span>
-                  <span className={styles.specText}>{room.bathrooms} phòng tắm</span>
+                  <span className={styles.specText}>
+                    {room.bathrooms} phòng tắm
+                  </span>
                 </div>
                 <div className={styles.spec}>
                   <span className={styles.specIcon}>📐</span>
@@ -468,17 +586,23 @@ export default function RoomPage() {
               <div className={styles.pricing}>
                 <div className={styles.priceMain}>
                   <span className={styles.currentPrice}>
-                    {room.basePrice.toLocaleString('vi-VN')} đ/tháng
+                    {room.basePrice.toLocaleString("vi-VN")} đ/tháng
                   </span>
                   {room.originalPrice && (
                     <span className={styles.originalPrice}>
-                      {room.originalPrice.toLocaleString('vi-VN')} đ/tháng
+                      {room.originalPrice.toLocaleString("vi-VN")} đ/tháng
                     </span>
                   )}
                 </div>
                 {room.originalPrice && room.basePrice < room.originalPrice && (
                   <div className={styles.discountBadge}>
-                    Tiết kiệm {Math.round(((room.originalPrice - room.basePrice) / room.originalPrice) * 100)}%
+                    Tiết kiệm{" "}
+                    {Math.round(
+                      ((room.originalPrice - room.basePrice) /
+                        room.originalPrice) *
+                        100
+                    )}
+                    %
                   </div>
                 )}
               </div>
@@ -487,7 +611,6 @@ export default function RoomPage() {
                 <h3 className={styles.sectionTitle}>Mô tả</h3>
                 <p className={styles.descriptionText}>{room.description}</p>
               </div>
-
               <div className={styles.features}>
                 <h3 className={styles.sectionTitle}>Đặc điểm nổi bật</h3>
                 <div className={styles.featureList}>
@@ -499,37 +622,6 @@ export default function RoomPage() {
                   ))}
                 </div>
               </div>
-
-              <div className={styles.amenities}>
-                <h3 className={styles.sectionTitle}>Tiện nghi</h3>
-                <div className={styles.amenityGrid}>
-                  {room.amenities.map((amenity, index) => (
-                    <div key={index} className={styles.amenityItem}>
-                      {amenity}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.policies}>
-                <h3 className={styles.sectionTitle}>Chính sách</h3>
-                <div className={styles.policyList}>
-                  <div className={styles.policyItem}>
-                    <span className={styles.policyLabel}>Nhận phòng:</span>
-                    <span className={styles.policyValue}>{room.checkIn}</span>
-                  </div>
-                  <div className={styles.policyItem}>
-                    <span className={styles.policyLabel}>Trả phòng:</span>
-                    <span className={styles.policyValue}>{room.checkOut}</span>
-                  </div>
-                  {room.policies.map((policy, index) => (
-                    <div key={index} className={styles.policyItem}>
-                      <span className={styles.policyIcon}>•</span>
-                      <span className={styles.policyText}>{policy}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -537,11 +629,15 @@ export default function RoomPage() {
         {/* Booking Form Section */}
         <div className={styles.bookingSection}>
           <h2 className={styles.bookingTitle}>Thông tin Đặt phòng</h2>
-          
+
           {/* Time Slot Selection Table */}
           <div className={styles.timeSlotSection}>
-            <h3 className={styles.formSectionTitle}>Lịch đặt phòng thời gian thực</h3>
-            <p className={styles.tableDescription}>Chọn khung giờ phù hợp với bạn</p>
+            <h3 className={styles.formSectionTitle}>
+              Lịch đặt phòng thời gian thực
+            </h3>
+            <p className={styles.tableDescription}>
+              Chọn khung giờ phù hợp với bạn
+            </p>
             <RoomBookingTable
               branches={bookingTableBranches}
               daysCount={30}
@@ -555,55 +651,57 @@ export default function RoomPage() {
           <div className={styles.bookingForm}>
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formSection}>
-                <h3 className={styles.formSectionTitle}>Thông tin khách hàng</h3>
+                <h3 className={styles.formSectionTitle}>
+                  Thông tin khách hàng
+                </h3>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Họ và tên *</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       name="fullName"
-                      className={styles.input} 
-                      placeholder="Nhập họ và tên" 
+                      className={styles.input}
+                      placeholder="Nhập họ và tên"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      required 
+                      required
                     />
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Số điện thoại *</label>
-                    <input 
-                      type="tel" 
+                    <input
+                      type="tel"
                       name="phone"
-                      className={styles.input} 
-                      placeholder="Nhập số điện thoại" 
+                      className={styles.input}
+                      placeholder="Nhập số điện thoại"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      required 
+                      required
                     />
                   </div>
                 </div>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Email</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       name="email"
-                      className={styles.input} 
-                      placeholder="Nhập email" 
+                      className={styles.input}
+                      placeholder="Nhập email"
                       value={formData.email}
                       onChange={handleInputChange}
                     />
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>CCCD/CMND *</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       name="cccd"
-                      className={styles.input} 
-                      placeholder="Nhập số CCCD/CMND" 
+                      className={styles.input}
+                      placeholder="Nhập số CCCD/CMND"
                       value={formData.cccd}
                       onChange={handleInputChange}
-                      required 
+                      required
                     />
                   </div>
                 </div>
@@ -614,20 +712,30 @@ export default function RoomPage() {
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Mặt trước *</label>
-                    <div className={`${styles.imageUpload} ${frontIdImage ? styles.uploaded : ''}`}>
-                      <input 
-                        type="file" 
-                        className={styles.fileInput} 
-                        accept="image/*" 
-                        required 
-                        onChange={(e) => handleFileUpload(e, 'front')}
+                    <div
+                      className={`${styles.imageUpload} ${
+                        frontIdImage ? styles.uploaded : ""
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        className={styles.fileInput}
+                        accept="image/*"
+                        required
+                        onChange={(e) => handleFileUpload(e, "front")}
                         aria-label="Tải lên ảnh mặt trước CCCD"
                       />
                       {frontIdPreview ? (
                         <div className={styles.imagePreview}>
-                          <img src={frontIdPreview} alt="CCCD mặt trước" className={styles.previewImage} />
+                          <img
+                            src={frontIdPreview}
+                            alt="CCCD mặt trước"
+                            className={styles.previewImage}
+                          />
                           <div className={styles.previewOverlay}>
-                            <span className={styles.fileName}>{frontIdImage?.name}</span>
+                            <span className={styles.fileName}>
+                              {frontIdImage?.name}
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -640,20 +748,30 @@ export default function RoomPage() {
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Mặt sau *</label>
-                    <div className={`${styles.imageUpload} ${backIdImage ? styles.uploaded : ''}`}>
-                      <input 
-                        type="file" 
-                        className={styles.fileInput} 
-                        accept="image/*" 
-                        required 
-                        onChange={(e) => handleFileUpload(e, 'back')}
+                    <div
+                      className={`${styles.imageUpload} ${
+                        backIdImage ? styles.uploaded : ""
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        className={styles.fileInput}
+                        accept="image/*"
+                        required
+                        onChange={(e) => handleFileUpload(e, "back")}
                         aria-label="Tải lên ảnh mặt sau CCCD"
                       />
                       {backIdPreview ? (
                         <div className={styles.imagePreview}>
-                          <img src={backIdPreview} alt="CCCD mặt sau" className={styles.previewImage} />
+                          <img
+                            src={backIdPreview}
+                            alt="CCCD mặt sau"
+                            className={styles.previewImage}
+                          />
                           <div className={styles.previewOverlay}>
-                            <span className={styles.fileName}>{backIdImage?.name}</span>
+                            <span className={styles.fileName}>
+                              {backIdImage?.name}
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -667,9 +785,10 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.idCardNotice}>
                   <p className={styles.noticeText}>
-                    * Thông tin CCCD của bạn được lưu trữ và bảo mật riêng tư để khai báo 
-                    lưu trú, sẽ được xóa bỏ sau khi bạn check-out. Bạn vui lòng chọn đúng 
-                    ảnh CCCD của người Đặt phòng và chịu trách nhiệm với thông tin trên.
+                    * Thông tin CCCD của bạn được lưu trữ và bảo mật riêng tư để
+                    khai báo lưu trú, sẽ được xóa bỏ sau khi bạn check-out. Bạn
+                    vui lòng chọn đúng ảnh CCCD của người Đặt phòng và chịu
+                    trách nhiệm với thông tin trên.
                   </p>
                 </div>
               </div>
@@ -685,9 +804,9 @@ export default function RoomPage() {
                   </div>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Số lượng khách *</label>
-                    <select 
+                    <select
                       name="guests"
-                      className={styles.select} 
+                      className={styles.select}
                       value={formData.guests}
                       onChange={handleInputChange}
                       required
@@ -704,11 +823,11 @@ export default function RoomPage() {
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Ghi chú</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       name="notes"
-                      className={styles.input} 
-                      placeholder="Yêu cầu đặc biệt (nếu có)" 
+                      className={styles.input}
+                      placeholder="Yêu cầu đặc biệt (nếu có)"
                       value={formData.notes}
                       onChange={handleInputChange}
                     />
@@ -717,7 +836,9 @@ export default function RoomPage() {
               </div>
 
               <div className={styles.formSection}>
-                <h3 className={styles.formSectionTitle}>Thông tin thanh toán</h3>
+                <h3 className={styles.formSectionTitle}>
+                  Thông tin thanh toán
+                </h3>
                 <div className={styles.priceBreakdown}>
                   <div className={styles.priceRow}>
                     <span>Số khung giờ:</span>
@@ -725,51 +846,55 @@ export default function RoomPage() {
                   </div>
                   <div className={styles.priceRow}>
                     <span>Tổng tiền gốc:</span>
-                    <span>{baseTotal.toLocaleString('vi-VN')} đ</span>
+                    <span>{baseTotal.toLocaleString("vi-VN")} đ</span>
                   </div>
                   {discount > 0 && (
                     <div className={styles.priceRow}>
                       <span>Giảm giá ({(discount * 100).toFixed(0)}%):</span>
                       <span className={styles.discount}>
-                        -{(baseTotal * discount).toLocaleString('vi-VN')} đ
+                        -{(baseTotal * discount).toLocaleString("vi-VN")} đ
                       </span>
                     </div>
                   )}
                   <div className={`${styles.priceRow} ${styles.totalRow}`}>
                     <span>Tổng thanh toán:</span>
-                    <span className={styles.totalPrice}>{finalTotal.toLocaleString('vi-VN')} đ</span>
+                    <span className={styles.totalPrice}>
+                      {finalTotal.toLocaleString("vi-VN")} đ
+                    </span>
                   </div>
                 </div>
-                
+
                 <div className={styles.paymentMethods}>
-                  <h4 className={styles.paymentTitle}>Phương thức thanh toán</h4>
+                  <h4 className={styles.paymentTitle}>
+                    Phương thức thanh toán
+                  </h4>
                   <div className={styles.paymentOptions}>
                     <label className={styles.paymentOption}>
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="cash" 
-                        checked={formData.paymentMethod === 'cash'}
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={formData.paymentMethod === "cash"}
                         onChange={handleInputChange}
                       />
                       <span>Thanh toán tiền mặt khi nhận phòng</span>
                     </label>
                     <label className={styles.paymentOption}>
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="transfer" 
-                        checked={formData.paymentMethod === 'transfer'}
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="transfer"
+                        checked={formData.paymentMethod === "transfer"}
                         onChange={handleInputChange}
                       />
                       <span>Chuyển khoản ngân hàng</span>
                     </label>
                     <label className={styles.paymentOption}>
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="card" 
-                        checked={formData.paymentMethod === 'card'}
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="card"
+                        checked={formData.paymentMethod === "card"}
                         onChange={handleInputChange}
                       />
                       <span>Thanh toán bằng thẻ</span>
@@ -781,11 +906,24 @@ export default function RoomPage() {
               <div className={styles.formSection}>
                 <div className={styles.termsSection}>
                   <label className={styles.termsLabel}>
-                    <input type="checkbox" className={styles.checkbox} required />
-                    <span>Tôi đã đọc và đồng ý với <a href="#" className={styles.link}>điều khoản sử dụng</a> và <a href="#" className={styles.link}>chính sách bảo mật</a></span>
+                    <input
+                      type="checkbox"
+                      className={styles.checkbox}
+                      required
+                    />
+                    <span>
+                      Tôi đã đọc và đồng ý với{" "}
+                      <a href="#" className={styles.link}>
+                        điều khoản sử dụng
+                      </a>{" "}
+                      và{" "}
+                      <a href="#" className={styles.link}>
+                        chính sách bảo mật
+                      </a>
+                    </span>
                   </label>
                 </div>
-                
+
                 <div className={styles.formActions}>
                   <button type="submit" className={styles.submitButton}>
                     Xác nhận đặt phòng
@@ -806,7 +944,7 @@ export default function RoomPage() {
           <div className={styles.confirmationModal}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>Xác nhận đặt phòng</h2>
-              <button 
+              <button
                 className={styles.closeButton}
                 onClick={handleEditInfo}
                 aria-label="Đóng modal"
@@ -814,7 +952,7 @@ export default function RoomPage() {
                 ×
               </button>
             </div>
-            
+
             <div className={styles.modalContent}>
               <div className={styles.bookingLocation}>
                 <strong>Bạn đang đặt phòng tại:</strong>
@@ -822,11 +960,13 @@ export default function RoomPage() {
                   {room.name} - {room.location}
                 </span>
               </div>
-              
+
               <div className={styles.bookingDetails}>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Tên khách hàng:</span>
-                  <span className={styles.detailValue}>{formData.fullName}</span>
+                  <span className={styles.detailValue}>
+                    {formData.fullName}
+                  </span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Số điện thoại:</span>
@@ -834,7 +974,9 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Chi nhánh:</span>
-                  <span className={styles.detailValue}>{room.name} - {room.location}</span>
+                  <span className={styles.detailValue}>
+                    {room.name} - {room.location}
+                  </span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Tên phòng:</span>
@@ -842,28 +984,30 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Khung giờ:</span>
-                  <span className={styles.detailValue}>{formatSelectedSlots()}</span>
+                  <span className={styles.detailValue}>
+                    {formatSelectedSlots()}
+                  </span>
                 </div>
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Số tiền tạm tính:</span>
                   <span className={styles.detailValue}>
-                    {finalTotal.toLocaleString('vi-VN')} đ
+                    {finalTotal.toLocaleString("vi-VN")} đ
                   </span>
                 </div>
               </div>
-              
+
               <div className={styles.bookingNotice}>
-                <strong>KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG BẢO TRƯỚC 3 TIẾNG TRƯỚC GIỜ CHECK IN</strong>
+                <strong>
+                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG BẢO TRƯỚC 3 TIẾNG
+                  TRƯỚC GIỜ CHECK IN
+                </strong>
               </div>
-              
+
               <div className={styles.modalActions}>
-                <button 
-                  className={styles.editButton}
-                  onClick={handleEditInfo}
-                >
+                <button className={styles.editButton} onClick={handleEditInfo}>
                   Sửa lại thông tin
                 </button>
-                <button 
+                <button
                   className={styles.confirmButton}
                   onClick={handleConfirmBooking}
                 >
@@ -876,4 +1020,4 @@ export default function RoomPage() {
       )}
     </div>
   );
-} 
+}

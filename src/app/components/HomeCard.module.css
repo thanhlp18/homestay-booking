@@ -1,5 +1,9 @@
 /* Home Card */
 .homeCard {
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
   background: white;
   border-radius: 12px;
   overflow: hidden;
@@ -148,4 +152,73 @@
   100% {
     left: 100%;
   }
+} 
+
+.amenitiesGrid {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.amenityIconWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+.amenityIconBg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.amenityIconImg {
+  max-width: 70%;
+  max-height: 70%;
+  display: block;
+  object-fit: contain;
+}
+
+.amenityTooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: -44px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 1000;
+}
+
+.amenityIconWrapper:hover .amenityTooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.amenityTooltip::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 8px 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent #222 transparent;
 } 

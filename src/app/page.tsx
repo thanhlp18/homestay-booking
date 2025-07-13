@@ -15,6 +15,7 @@ interface Room {
   name: string;
   slug: string;
   description: string;
+  amenities: string[];
   price: {
     base: number;
     discount?: number;
@@ -36,6 +37,7 @@ interface BranchAPIResponse {
     name: string;
     slug: string;
     description: string;
+    amenities: string[];
     price: {
       base: number;
       discount?: number;
@@ -77,6 +79,7 @@ export default function Home() {
   const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
 
 
 
@@ -109,6 +112,7 @@ export default function Home() {
               name: room.name,
               slug: room.slug,
               description: room.description,
+              amenities: room.amenities || [],
               price: room.price,
               branchId: branch.id,
               branchName: branch.name,
@@ -131,6 +135,9 @@ export default function Home() {
         })) || [];
         
         setBookingTableBranches(bookingTableData);
+        
+        // Set initial selected destination to "Tất cả" (Show All)
+        setSelectedDestination('Tất cả');
         
         // Fetch existing bookings for the next 30 days
         await fetchExistingBookings();
@@ -250,8 +257,22 @@ export default function Home() {
     branchSlug: branch.slug
   }));
 
-  // Get Can Tho homes (first 3 rooms)
-  const canThoHomes = rooms.slice(0, 3).map(room => ({
+  // Extract unique destinations from branches data
+  const uniqueDestinations = ['Tất cả', ...Array.from(new Set(branches.map(branch => {
+    const locationParts = branch.location.split(', ');
+    return locationParts[0]; // Get the first part (e.g., "Đại Ngàn" from "Đại Ngàn, Ninh Kiều, Cần Thơ")
+  })))];
+
+  // Filter rooms by selected destination
+  const filteredRooms = selectedDestination === 'Tất cả' ? rooms : rooms.filter(room => {
+    const roomBranch = branches.find(b => b.id === room.branchId);
+    if (!roomBranch) return false;
+    const locationParts = roomBranch.location.split(', ');
+    return locationParts[0] === selectedDestination;
+  });
+
+  // Get Can Tho homes (filtered by selected destination)
+  const canThoHomes = filteredRooms.slice(0, 3).map(room => ({
     title: room.name,
     description: room.description,
     price: `${room.price.base.toLocaleString('vi-VN')} đ/tháng`,
@@ -270,17 +291,22 @@ export default function Home() {
       <section className={styles.featuredSection}>
         <h2 className={styles.sectionTitle}>Danh sách tất cả các Home</h2>
         <div className={styles.homeGrid}>
-          {featuredHomes.map((home, index) => (
-            <HomeCard
-              key={index}
-              title={home.title}
-              type={home.type}
-              description={home.description}
-              showDetails={true}
-              imageGradient={home.imageGradient}
-              branchSlug={home.branchSlug}
-            />
-          ))}
+          {featuredHomes.map((home, index) => {
+            const branch = branches.find(b => b.slug === home.branchSlug);
+            const amenities = branch?.rooms[0]?.amenities || [];
+            return (
+              <HomeCard
+                key={index}
+                title={home.title}
+                type={home.type}
+                description={home.description}
+                showDetails={true}
+                imageGradient={home.imageGradient}
+                branchSlug={home.branchSlug}
+                amenities={amenities}
+              />
+            );
+          })}
         </div>
       </section>
 
@@ -289,34 +315,50 @@ export default function Home() {
         <h2 className={styles.sectionTitle}>Điểm đến</h2>
         <p className={styles.sectionSubtitle}>tại Tp.Cần Thơ</p>
         <div className={styles.destinationTabs}>
-          <button className={styles.tab}>Đại Ngàn</button>
-          <button className={styles.tab}>Cái Khế</button>
-          <button className={styles.tab}>Hưng Phát</button>
-          <button className={styles.tab}>Bến Ninh Kiều</button>
-          <button className={styles.tab}>Hưng Phú</button>
-          <button className={styles.tab}>Phạm Ngũ Lão</button>
-          <button className={styles.tab}>Lê Hồng Phong</button>
-          <button className={styles.tab}>Xuân Khánh</button>
-          <button className={styles.tab}>Chu Văn An</button>
-          <button className={styles.tab}>Khu khác trở lên</button>
-          <button className={styles.tab}>Hưng Lợi</button>
+          {uniqueDestinations.map((destination) => (
+            <button 
+              key={destination}
+              className={`${styles.tab} ${selectedDestination === destination ? styles.activeTab : ''}`}
+              onClick={() => setSelectedDestination(destination)}
+            >
+              {destination}
+            </button>
+          ))}
         </div>
 
-        <h3 className={styles.locationTitle}>Home - Đại Ngàn, Ninh Kiều</h3>
+        <h3 className={styles.locationTitle}>
+          {selectedDestination === 'Tất cả' ? 'Tất cả các Home tại Tp.Cần Thơ' : `Home - ${selectedDestination}, Ninh Kiều`}
+        </h3>
         <div className={styles.homeGrid}>
-          {canThoHomes.map((home, index) => (
-            <HomeCard
-              key={index}
-              title={home.title}
-              description={home.description}
-              price={home.price}
-              originalPrice={home.originalPrice}
-              availability={home.availability}
-              showBooking={true}
-              imageGradient={home.imageGradient}
-              roomSlug={home.roomSlug}
-            />
-          ))}
+          {canThoHomes.length > 0 ? (
+            canThoHomes.map((home, index) => {
+              const room = rooms.find(r => r.slug === home.roomSlug);
+              return (
+                <HomeCard
+                  key={index}
+                  title={home.title}
+                  description={home.description}
+                  price={home.price}
+                  originalPrice={home.originalPrice}
+                  availability={home.availability}
+                  showBooking={true}
+                  imageGradient={home.imageGradient}
+                  roomSlug={home.roomSlug}
+                  amenities={room?.amenities || []}
+                />
+              );
+            })
+          ) : (
+            <div style={{ 
+              gridColumn: '1 / -1', 
+              textAlign: 'center', 
+              padding: '2rem',
+              color: '#666',
+              fontSize: '1.1rem'
+            }}>
+              Không có phòng nào khả dụng tại {selectedDestination}
+            </div>
+          )}
         </div>
       </section>
 
