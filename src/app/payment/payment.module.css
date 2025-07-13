@@ -9,14 +9,7 @@
   padding: 20px;
 }
 
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  font-size: 18px;
-  color: #666;
-}
+
 
 /* Success Section */
 .successSection {

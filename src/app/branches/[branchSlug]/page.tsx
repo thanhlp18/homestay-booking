@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import RoomBookingTable from '../../components/RoomBookingTable';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import styles from './branch.module.css';
 
 interface TimeSlot {
@@ -211,9 +212,7 @@ export default function BranchPage() {
     return (
       <div className={styles.page}>
         <Header />
-        <div className={styles.loading}>
-          <p>Đang tải thông tin chi nhánh...</p>
-        </div>
+        <LoadingSpinner text="Đang tải thông tin chi nhánh..." />
       </div>
     );
   }

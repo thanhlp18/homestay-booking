@@ -1,0 +1,90 @@
+.demoContainer {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.demoTitle {
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.spinnerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.spinnerCard {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.spinnerCard h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.demoActions {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.demoButton {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.demoButton:hover {
+  background: linear-gradient(135deg, #ff5252, #f44336);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+.fullPageDemo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .demoContainer {
+    padding: 1rem;
+  }
+  
+  .spinnerGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .spinnerCard {
+    padding: 1.5rem;
+  }
+  
+  .demoTitle {
+    font-size: 1.5rem;
+  }
+} 

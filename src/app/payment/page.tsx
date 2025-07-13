@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import styles from './payment.module.css';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface SelectedSlot {
   date: string;
@@ -124,9 +125,7 @@ export default function PaymentPage() {
     return (
       <div className={styles.page}>
         <Header />
-        <div className={styles.loading}>
-          <p>Đang tải thông tin đặt phòng...</p>
-        </div>
+        <LoadingSpinner text="Đang tải thông tin đặt phòng..." />
       </div>
     );
   }

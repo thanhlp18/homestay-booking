@@ -1,24 +1,4 @@
-/* Loading and Error States */
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 50vh;
-  font-size: 18px;
-  color: #666;
-}
-
-.loading::after {
-  content: '';
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e2e8f0;
-  border-top: 2px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-left: 10px;
-}
-
+/* Error States */
 .error {
   background-color: #fff5f5;
   border: 1px solid #feb2b2;
@@ -28,11 +8,6 @@
   margin: 20px 0;
   text-align: center;
   font-size: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 /* Global styles */

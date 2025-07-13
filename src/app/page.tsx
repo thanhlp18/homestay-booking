@@ -6,6 +6,7 @@ import Header from './components/Header';
 import HomeCard from './components/HomeCard';
 import DemoNotice from './components/DemoNotice';
 import RoomBookingTable from './components/RoomBookingTable';
+import LoadingSpinner from './components/LoadingSpinner';
 import styles from "./page.module.css";
 
 
@@ -264,9 +265,7 @@ export default function Home() {
       <div className={styles.page}>
         <DemoNotice />
         <Header />
-        <div className={styles.loading}>
-          <p>Đang tải dữ liệu...</p>
-        </div>
+        <LoadingSpinner text="Đang tải dữ liệu..." />
       </div>
     );
   }

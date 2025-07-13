@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import styles from './admin.module.css';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface BookingRecord {
   id: string;
@@ -171,9 +172,7 @@ export default function AdminPage() {
     return (
       <div className={styles.page}>
         <Header />
-        <div className={styles.loading}>
-          <p>Đang tải dữ liệu...</p>
-        </div>
+        <LoadingSpinner text="Đang tải dữ liệu..." />
       </div>
     );
   }

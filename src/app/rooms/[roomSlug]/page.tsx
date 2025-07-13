@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "../../components/Header";
 import RoomBookingTable from "../../components/RoomBookingTable";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./room.module.css";
 import { AMENITY_ICON_MAP } from "@/app/components/HomeCard";
 
@@ -323,9 +324,7 @@ export default function RoomPage() {
     return (
       <div className={styles.page}>
         <Header />
-        <div className={styles.loading}>
-          <p>Đang tải thông tin phòng...</p>
-        </div>
+        <LoadingSpinner text="Đang tải thông tin phòng..." />
       </div>
     );
   }
