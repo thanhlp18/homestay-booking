@@ -311,8 +311,8 @@ export default function Home() {
     return {
       title: room.name,
       description: room.description,
-      price: `${room.basePrice.toLocaleString('vi-VN')} đ/2 giờ`,
-      originalPrice: room.originalPrice ? `${room.originalPrice.toLocaleString('vi-VN')} đ/2 giờ` : undefined,
+      price: `${room.basePrice.toLocaleString('vi-VN')} đ/ngày`,
+      originalPrice: room.originalPrice ? `${room.originalPrice.toLocaleString('vi-VN')} đ/ngày` : undefined,
       availability: "có thể nhận",
       imageUrl: room.images?.[0], // Add optional chaining to prevent error
       imageGradient: getGradientForBranch(room.branchId), // Fallback gradient

@@ -577,11 +577,11 @@ export default function RoomPage() {
               <div className={styles.pricing}>
                 <div className={styles.priceMain}>
                   <span className={styles.currentPrice}>
-                    {room.basePrice.toLocaleString("vi-VN")} đ/2 giờ
+                    {room.basePrice.toLocaleString("vi-VN")} đ/ngày
                   </span>
                   {room.originalPrice && (
                     <span className={styles.originalPrice}>
-                      {room.originalPrice.toLocaleString("vi-VN")} đ/2 giờ
+                      {room.originalPrice.toLocaleString("vi-VN")} đ/ngày
                     </span>
                   )}
                 </div>
