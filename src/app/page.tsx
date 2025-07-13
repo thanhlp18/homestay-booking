@@ -1,93 +1,265 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from './components/Header';
 import HomeCard from './components/HomeCard';
 import DemoNotice from './components/DemoNotice';
 import RoomBookingTable from './components/RoomBookingTable';
-import { mockBranches, mockInitialBookings } from './data/bookingData';
 import styles from "./page.module.css";
 
+
+
+interface Room {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: {
+    base: number;
+    discount?: number;
+    originalPrice?: number;
+  };
+  branchId: string;
+  branchName: string;
+  branchLocation: string;
+  branchSlug: string;
+}
+
+interface BranchAPIResponse {
+  id: string;
+  name: string;
+  slug: string;
+  location: string;
+  rooms: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    price: {
+      base: number;
+      discount?: number;
+      originalPrice?: number;
+    };
+    timeSlots: Array<{
+      id: string;
+      time: string;
+      price: number;
+    }>;
+  }>;
+}
+
+interface BookingTableBranch {
+  id: string;
+  name: string;
+  rooms: Array<{
+    id: string;
+    name: string;
+    timeSlots: Array<{
+      id: string;
+      time: string;
+      price: number;
+    }>;
+  }>;
+}
+
+interface BookingStatus {
+  status: 'booked' | 'available' | 'selected' | 'promotion' | 'mystery';
+  price?: number;
+  originalPrice?: number;
+}
+
 export default function Home() {
-  // Handle booking submission
-  const handleBookingSubmit = (selectedSlots: Array<{date: string; branchId: string; roomId: string; timeSlotId: string; price: number}>) => {
-    console.log('Booking submitted:', selectedSlots);
-    const totalSlots = selectedSlots.length;
-    const totalPrice = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
-    
-    alert(`Đặt phòng thành công!\n- Số khung giờ: ${totalSlots}\n- Tổng tiền: ${totalPrice.toLocaleString('vi-VN')}đ\n\nCảm ơn bạn đã sử dụng dịch vụ!`);
+  const router = useRouter();
+  const [branches, setBranches] = useState<BranchAPIResponse[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [bookingTableBranches, setBookingTableBranches] = useState<BookingTableBranch[]>([]);
+  const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+
+
+  // Fetch branches and rooms data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch branches data
+        const branchesResponse = await fetch('/api/branches');
+        if (!branchesResponse.ok) {
+          throw new Error('Failed to fetch branches data');
+        }
+        const branchesData = await branchesResponse.json();
+        
+        if (!branchesData.success) {
+          throw new Error(branchesData.message || 'Failed to fetch branches data');
+        }
+        
+        setBranches(branchesData.data);
+        
+        // Transform branches data to rooms format for easy display
+        const roomsData: Room[] = [];
+        branchesData.data?.forEach((branch: BranchAPIResponse) => {
+          branch.rooms?.forEach((room: BranchAPIResponse['rooms'][0]) => {
+            roomsData.push({
+              id: room.id,
+              name: room.name,
+              slug: room.slug,
+              description: room.description,
+              price: room.price,
+              branchId: branch.id,
+              branchName: branch.name,
+              branchLocation: branch.location,
+              branchSlug: branch.slug,
+            });
+          });
+        });
+        setRooms(roomsData);
+        
+        // Transform data for RoomBookingTable component
+        const bookingTableData: BookingTableBranch[] = branchesData.data?.map((branch: BranchAPIResponse) => ({
+          id: branch.id,
+          name: branch.name,
+          rooms: branch.rooms?.map((room: BranchAPIResponse['rooms'][0]) => ({
+            id: room.id,
+            name: room.name,
+            timeSlots: room.timeSlots || []
+          })) || []
+        })) || [];
+        
+        setBookingTableBranches(bookingTableData);
+        
+        // Fetch existing bookings for the next 30 days
+        await fetchExistingBookings();
+        
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Fetch existing bookings
+  const fetchExistingBookings = async () => {
+    try {
+      const today = new Date();
+      const endDate = new Date();
+      endDate.setDate(today.getDate() + 30);
+      
+      const bookingsResponse = await fetch(`/api/bookings?startDate=${today.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
+      
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+        
+        if (bookingsData.success && bookingsData.data) {
+          const bookingsMap: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>> = {};
+          
+          bookingsData.data.forEach((booking: { bookingSlots?: Array<{ bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }> }) => {
+            booking.bookingSlots?.forEach((slot: { bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }) => {
+              const dateKey = new Date(slot.bookingDate).toISOString().split('T')[0];
+              const branchId = slot.room.branch.id;
+              const roomId = slot.room.id;
+              const timeSlotId = slot.timeSlot.id;
+              
+              if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
+              if (!bookingsMap[dateKey][branchId]) bookingsMap[dateKey][branchId] = {};
+              if (!bookingsMap[dateKey][branchId][roomId]) bookingsMap[dateKey][branchId][roomId] = {};
+              
+              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                status: 'booked',
+                price: slot.price
+              };
+            });
+          });
+          
+          setInitialBookings(bookingsMap);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
   };
 
-  const featuredHomes = [
-    {
-      title: "Home - Đại Ngàn, Ninh Kiều",
-      type: "SWIMMING POOL • CẦU RỒNG",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón, máy giặt, tủ lạnh, máy sấy tóc, view từ tầng cao nhìn ra sông Hàn",
-      imageGradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-    },
-    {
-      title: "Home - Cái Khế, Ninh Kiều",
-      type: "SWIMMING POOL • CẦU RỒNG",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón, máy giặt, tủ lạnh, máy sấy tóc, view từ tầng cao nhìn ra sông Hàn",
-      imageGradient: "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)"
-    },
-    {
-      title: "Home - Hưng Phát, Ninh Kiều",
-      type: "SWIMMING POOL • CẦU RỒNG",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón, máy giặt, tủ lạnh, máy sấy tóc, view từ tầng cao nhìn ra sông Hàn",
-      imageGradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+  // Handle booking submission - redirect to room detail page
+  const handleBookingSubmit = (selectedSlots: Array<{ date: string; branchId: string; roomId: string; timeSlotId: string; price: number }>) => {
+    if (selectedSlots.length === 0) {
+      alert('Vui lòng chọn ít nhất một khung giờ!');
+      return;
     }
-  ];
 
-  const canThoHomes = [
-    {
-      title: "Lovely",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón",
-      price: "179.000 đ/tháng",
-      originalPrice: "319.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-    },
-    {
-      title: "Tasty 1",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón",
-      price: "219.000 đ/tháng",
-      originalPrice: "399.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)"
-    },
-    {
-      title: "Secret Home",
-      description: "Căn hộ mới 100% có hồ bơi, view cầu rồng, bãi biển gần chợ Hàn, chợ cơn, free xe đưa đón",
-      price: "179.000 đ/tháng",
-      originalPrice: "319.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+    // Find the room for the first selected slot
+    const firstSlot = selectedSlots[0];
+    const branch = bookingTableBranches.find(b => b.id === firstSlot.branchId);
+    const room = branch?.rooms.find(r => r.id === firstSlot.roomId);
+    
+    if (!room) {
+      alert('Không tìm thấy thông tin phòng!');
+      return;
     }
-  ];
 
-  const anGiangHomes = [
-    {
-      title: "Lola House",
-      price: "399.000 đ/tháng",
-      originalPrice: "539.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-    },
-    {
-      title: "Happy",
-      price: "399.000 đ/tháng",
-      originalPrice: "599.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)"
-    },
-    {
-      title: "Tế Tế Home",
-      price: "399.000 đ/tháng",
-      originalPrice: "595.000 đ/tháng",
-      availability: "có thể nhận",
-      imageGradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+    // Find the room slug from the branches data
+    const branchData = branches.find(b => b.id === firstSlot.branchId);
+    const roomData = branchData?.rooms.find(r => r.id === firstSlot.roomId);
+    
+    if (!roomData?.slug) {
+      alert('Không tìm thấy thông tin phòng!');
+      return;
     }
-  ];
+
+    // Encode selected slots and redirect to room detail page
+    const encodedSlots = encodeURIComponent(JSON.stringify(selectedSlots));
+    router.push(`/rooms/${roomData.slug}?selectedSlots=${encodedSlots}`);
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <DemoNotice />
+        <Header />
+        <div className={styles.loading}>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <DemoNotice />
+        <Header />
+        <div className={styles.error}>
+          <p>Lỗi: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Get featured homes (all branches)
+  const featuredHomes = branches.map(branch => ({
+    title: `Home - ${branch.location}`,
+    type: "SWIMMING POOL • CẦU RỒNG",
+    description: branch.rooms[0]?.description || "Căn hộ mới 100% với đầy đủ tiện nghi",
+    imageGradient: getGradientForBranch(branch.id),
+    branchSlug: branch.slug
+  }));
+
+  // Get Can Tho homes (first 3 rooms)
+  const canThoHomes = rooms.slice(0, 3).map(room => ({
+    title: room.name,
+    description: room.description,
+    price: `${room.price.base.toLocaleString('vi-VN')} đ/tháng`,
+    originalPrice: room.price.originalPrice ? `${room.price.originalPrice.toLocaleString('vi-VN')} đ/tháng` : undefined,
+    availability: "có thể nhận",
+    imageGradient: getGradientForBranch(room.branchId),
+    roomSlug: room.slug
+  }));
 
   return (
     <div className={styles.page}>
@@ -106,7 +278,7 @@ export default function Home() {
               description={home.description}
               showDetails={true}
               imageGradient={home.imageGradient}
-              branchSlug={index === 0 ? 'lovely' : index === 1 ? 'tasty-1' : 'secret-home'}
+              branchSlug={home.branchSlug}
             />
           ))}
         </div>
@@ -142,34 +314,7 @@ export default function Home() {
               availability={home.availability}
               showBooking={true}
               imageGradient={home.imageGradient}
-              roomSlug={index === 0 ? 'lovely-room' : index === 1 ? 'tasty-1-room' : 'secret-home-room'}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* An Giang Section */}
-      <section className={styles.destinationsSection}>
-        <h2 className={styles.sectionTitle}>Điểm đến</h2>
-        <p className={styles.sectionSubtitle}>tại An Giang - Kiên Giang</p>
-        <div className={styles.destinationTabs}>
-          <button className={styles.tab}>Tỉy Đức 1, Rạch Sỏi</button>
-          <button className={styles.tab}>Thị xã Kỳ Rạch Sỏi</button>
-          <button className={styles.tab}>Mỹ Phước, Long Xuyên</button>
-        </div>
-
-        <h3 className={styles.locationTitle}>Home - Tỉy Đức 2, Rạch Giá</h3>
-        <div className={styles.homeGrid}>
-          {anGiangHomes.map((home, index) => (
-            <HomeCard
-              key={index}
-              title={home.title}
-              price={home.price}
-              originalPrice={home.originalPrice}
-              availability={home.availability}
-              showBooking={true}
-              imageGradient={home.imageGradient}
-              roomSlug={index === 0 ? 'lovely-room' : index === 1 ? 'tasty-1-room' : 'secret-home-room'}
+              roomSlug={home.roomSlug}
             />
           ))}
         </div>
@@ -177,15 +322,14 @@ export default function Home() {
 
       {/* Interactive Room Booking Table */}
       <section className={styles.calendarSection}>
-        <h2 className={styles.sectionTitle}>Lịch đặt phòng thời gian thực</h2>
-        <p className={styles.sectionSubtitle}>Chọn khung giờ phù hợp với bạn</p>
+        <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
+        <p className={styles.sectionSubtitle}>Tất cả các phòng với khung giờ có sẵn</p>
         
         <RoomBookingTable
-          branches={mockBranches}
-          initialBookings={mockInitialBookings}
+          branches={bookingTableBranches}
+          daysCount={30}
           onBookingSubmit={handleBookingSubmit}
-          daysCount={7}
-          slotPrice={50000}
+          initialBookings={initialBookings}
         />
       </section>
 
@@ -229,4 +373,19 @@ export default function Home() {
       </footer>
     </div>
   );
+}
+
+// Helper function to get gradient for different branches
+function getGradientForBranch(branchId: string): string {
+  const gradients = [
+    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)",
+    "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+  ];
+  
+  const index = branchId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % gradients.length;
+  return gradients[index];
 }

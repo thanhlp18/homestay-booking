@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './RoomBookingTable.module.css';
 
 // Types
@@ -43,6 +43,7 @@ interface RoomBookingTableProps {
   slotPrice?: number;
   onBookingSubmit?: (selectedSlots: SelectedSlot[]) => void;
   initialBookings?: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>;
+  initialSelectedSlots?: SelectedSlot[];
 }
 
 export default function RoomBookingTable({
@@ -51,10 +52,18 @@ export default function RoomBookingTable({
   daysCount = 7,
   slotPrice = 50000,
   onBookingSubmit,
-  initialBookings = {}
+  initialBookings = {},
+  initialSelectedSlots = []
 }: RoomBookingTableProps) {
-  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
+  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>(initialSelectedSlots);
   const [bookings] = useState(initialBookings);
+
+  // Update selected slots when initialSelectedSlots prop changes
+  useEffect(() => {
+    if (initialSelectedSlots.length > 0) {
+      setSelectedSlots(initialSelectedSlots);
+    }
+  }, [initialSelectedSlots]);
 
   // Generate dates
   const generateDates = () => {
@@ -177,26 +186,28 @@ export default function RoomBookingTable({
   };
 
   // Get cell content based on status
-  const getCellContent = (dateKey: string, branchId: string, roomId: string, timeSlotId: string) => {
-    const bookingStatus = getBookingStatus(dateKey, branchId, roomId, timeSlotId);
-    const selected = isSelected(dateKey, branchId, roomId, timeSlotId);
-    
-    if (selected) return 'Đang chọn';
-    
-    switch (bookingStatus.status) {
-      case 'booked':
-        return 'Đã đặt';
-      case 'promotion':
-        return '🎁 Khuyến mãi';
-      case 'mystery':
-        return '🛍️ Túi mù';
-      default:
-        return 'Còn trống';
-    }
+  const getCellContent = () => {
+    return ''; // No text content, only visual indicators
   };
 
   return (
     <div className={styles.bookingTableContainer}>
+      {/* Legend */}
+      <div className={styles.legend}>
+        <div className={styles.legendItem}>
+          <div className={`${styles.legendDot} ${styles.available}`}></div>
+          <span>Còn trống</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={`${styles.legendDot} ${styles.selected}`}></div>
+          <span>Đang chọn</span>
+        </div>
+        <div className={styles.legendItem}>
+          <div className={`${styles.legendDot} ${styles.booked}`}></div>
+          <span>Đã đặt</span>
+        </div>
+      </div>
+      
       <div className={styles.tableWrapper}>
         <table className={styles.bookingTable}>
           {/* Header */}
@@ -267,7 +278,7 @@ export default function RoomBookingTable({
                         className={getCellClass(dateInfo.key, branch.id, room.id, timeSlot.id)}
                         onClick={() => handleCellClick(dateInfo.key, branch.id, room.id, timeSlot)}
                       >
-                        {getCellContent(dateInfo.key, branch.id, room.id, timeSlot.id)}
+                        {getCellContent()}
                       </td>
                     ))
                   )

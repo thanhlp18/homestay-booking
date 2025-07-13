@@ -1,13 +1,55 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
-import { useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import RoomBookingTable from '../../components/RoomBookingTable';
-import { getRoomBySlug, detailedBranches } from '../../data/bookingData';
 import styles from './room.module.css';
+
+interface TimeSlot {
+  id: string;
+  time: string;
+  price: number;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  amenities: string[];
+  images: string[];
+  basePrice: number;
+  discountPrice?: number;
+  originalPrice?: number;
+  location: string;
+  area: string;
+  capacity: number;
+  bedrooms: number;
+  bathrooms: number;
+  features: string[];
+  policies: string[];
+  checkIn: string;
+  checkOut: string;
+  rating: number;
+  reviewCount: number;
+  branchId: string;
+  branchName: string;
+  branchLocation: string;
+  branchSlug: string;
+  timeSlots: TimeSlot[];
+}
+
+interface BookingTableBranch {
+  id: string;
+  name: string;
+  rooms: Array<{
+    id: string;
+    name: string;
+    timeSlots: TimeSlot[];
+  }>;
+}
 
 interface BookingFormData {
   fullName: string;
@@ -27,10 +69,18 @@ interface SelectedSlot {
   price: number;
 }
 
+interface BookingStatus {
+  status: 'booked' | 'available' | 'selected' | 'promotion' | 'mystery';
+  price?: number;
+  originalPrice?: number;
+}
+
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const roomSlug = params.roomSlug as string;
+  
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [frontIdImage, setFrontIdImage] = useState<File | null>(null);
   const [backIdImage, setBackIdImage] = useState<File | null>(null);
@@ -38,6 +88,12 @@ export default function RoomPage() {
   const [backIdPreview, setBackIdPreview] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
+  const [room, setRoom] = useState<Room | null>(null);
+  const [bookingTableBranches, setBookingTableBranches] = useState<BookingTableBranch[]>([]);
+  const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState<BookingFormData>({
     fullName: '',
     phone: '',
@@ -47,45 +103,181 @@ export default function RoomPage() {
     notes: '',
     paymentMethod: 'cash'
   });
-  
-  const room = getRoomBySlug(roomSlug);
-  
-  if (!room) {
-    notFound();
-  }
 
-  // Filter branches to only include the current room
-  const getCurrentRoomBranches = () => {
-    // Find the branch that contains this room
-    const currentBranch = detailedBranches.find(branch => 
-      branch.rooms.some(r => r.id === room.id)
-    );
-    
-    if (!currentBranch) {
-      // If no branch found, create a mock branch with just this room
-      return [{
-        id: 'current-room-branch',
-        name: room.location,
-        rooms: [{
-          id: room.id,
-          name: room.name,
-          timeSlots: room.timeSlots || [
-            { id: 'morning', time: '9:30–12:30', price: 50000 },
-            { id: 'afternoon', time: '13:00–16:00', price: 50000 },
-            { id: 'evening', time: '16:30–19:30', price: 60000 },
-          ]
-        }]
-      }];
+  // Load room data from API
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch branches data to find the room
+        const branchesResponse = await fetch('/api/branches');
+        if (!branchesResponse.ok) {
+          throw new Error('Failed to fetch branches data');
+        }
+        const branchesData = await branchesResponse.json();
+
+        if (!branchesData.success) {
+          throw new Error(branchesData.message || 'Failed to fetch branches data');
+        }
+
+        // Find the room by slug
+        let foundRoom: Room | null = null;
+        let foundBranch: { id: string; name: string; location: string; slug: string; rooms: Array<{ id: string; name: string; slug: string; description: string; price: { base: number; discount?: number; originalPrice?: number }; timeSlots: Array<{ id: string; time: string; price: number }> }> } | null = null;
+
+        for (const branch of branchesData.data) {
+          const room = branch.rooms?.find((r: { slug: string }) => r.slug === roomSlug);
+          if (room) {
+            foundRoom = {
+              id: room.id,
+              name: room.name,
+              slug: room.slug,
+              description: room.description,
+              amenities: ['WiFi miễn phí', 'Điều hòa', 'TV', 'Máy giặt', 'Tủ lạnh', 'Bếp'],
+              images: [
+                'https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+1',
+                'https://images.placeholders.dev/800x600/764ba2/ffffff?text=Room+2',
+                'https://images.placeholders.dev/800x600/667eea/ffffff?text=Room+3'
+              ],
+              basePrice: room.price.base,
+              discountPrice: room.price.discount,
+              originalPrice: room.price.originalPrice,
+              location: branch.location,
+              area: '45m²',
+              capacity: 4,
+              bedrooms: 2,
+              bathrooms: 1,
+              features: ['Hồ bơi', 'View đẹp', 'Gần trung tâm', 'Tiện nghi đầy đủ'],
+              policies: [
+                'Nhận phòng từ 14:00',
+                'Trả phòng trước 12:00',
+                'Không hút thuốc trong phòng',
+                'Không nuôi thú cưng',
+                'Giữ yên lặng sau 22:00'
+              ],
+              checkIn: '14:00',
+              checkOut: '12:00',
+              rating: 4.8,
+              reviewCount: 127,
+              branchId: branch.id,
+              branchName: branch.name,
+              branchLocation: branch.location,
+              branchSlug: branch.slug,
+              timeSlots: room.timeSlots || []
+            };
+            foundBranch = branch;
+            break;
+          }
+        }
+
+        if (!foundRoom) {
+          throw new Error('Room not found');
+        }
+
+        setRoom(foundRoom);
+
+        // Create booking table data for this room only
+        if (foundBranch) {
+          const bookingTableData: BookingTableBranch[] = [{
+            id: foundBranch.id,
+            name: foundBranch.name,
+            rooms: [{
+              id: foundRoom.id,
+              name: foundRoom.name,
+              timeSlots: foundRoom.timeSlots
+            }]
+          }];
+
+          setBookingTableBranches(bookingTableData);
+        }
+
+        // Fetch existing bookings for the next 30 days
+        await fetchExistingBookings();
+
+        // Check for selected slots from URL parameters
+        const selectedSlotsParam = searchParams.get('selectedSlots');
+        if (selectedSlotsParam) {
+          try {
+            const slots = JSON.parse(decodeURIComponent(selectedSlotsParam));
+            setSelectedSlots(slots);
+          } catch (error) {
+            console.error('Error parsing selected slots:', error);
+          }
+        }
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load room data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoomData();
+  }, [roomSlug, searchParams]);
+
+  // Fetch existing bookings
+  const fetchExistingBookings = async () => {
+    try {
+      const today = new Date();
+      const endDate = new Date();
+      endDate.setDate(today.getDate() + 30);
+      
+      const bookingsResponse = await fetch(`/api/bookings?startDate=${today.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
+      
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+        
+        if (bookingsData.success && bookingsData.data) {
+          const bookingsMap: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>> = {};
+          
+          bookingsData.data.forEach((booking: { bookingSlots?: Array<{ bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }> }) => {
+            booking.bookingSlots?.forEach((slot: { bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }) => {
+              const dateKey = new Date(slot.bookingDate).toISOString().split('T')[0];
+              const branchId = slot.room.branch.id;
+              const roomId = slot.room.id;
+              const timeSlotId = slot.timeSlot.id;
+              
+              if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
+              if (!bookingsMap[dateKey][branchId]) bookingsMap[dateKey][branchId] = {};
+              if (!bookingsMap[dateKey][branchId][roomId]) bookingsMap[dateKey][branchId][roomId] = {};
+              
+              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                status: 'booked',
+                price: slot.price
+              };
+            });
+          });
+          
+          setInitialBookings(bookingsMap);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
     }
-    
-    // Return only the branch containing this room, but filter to only this room
-    return [{
-      ...currentBranch,
-      rooms: currentBranch.rooms.filter(r => r.id === room.id)
-    }];
   };
 
-  const currentRoomBranches = getCurrentRoomBranches();
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        <div className={styles.loading}>
+          <p>Đang tải thông tin phòng...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !room) {
+    return (
+      <div className={styles.page}>
+        <Header />
+        <div className={styles.error}>
+          <p>Lỗi: {error || 'Không tìm thấy phòng'}</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: 'front' | 'back') => {
     const file = event.target.files?.[0];
@@ -128,38 +320,38 @@ export default function RoomPage() {
     setShowConfirmation(true);
   };
 
-  const handleConfirmBooking = () => {
-    // Calculate total price with discounts
-    const calculateTotal = () => {
-      const baseTotal = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
-      const slotCount = selectedSlots.length;
+  const handleConfirmBooking = async () => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          phone: formData.phone,
+          email: formData.email || undefined,
+          cccd: formData.cccd,
+          guests: parseInt(formData.guests),
+          notes: formData.notes || undefined,
+          paymentMethod: formData.paymentMethod.toUpperCase() as 'CASH' | 'TRANSFER' | 'CARD',
+          selectedSlots: selectedSlots
+        }),
+      });
+
+      const result = await response.json();
       
-      let discount = 0;
-      if (slotCount >= 3) {
-        discount = 0.1; // 10% discount for 3+ slots
-      } else if (slotCount === 2) {
-        discount = 0.05; // 5% discount for 2 slots
+      if (result.success) {
+        alert(`Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString('vi-VN')}đ`);
+        // Redirect to home page or show success message
+        router.push('/');
+      } else {
+        alert(`Lỗi: ${result.message}`);
       }
-      
-      const finalTotal = baseTotal * (1 - discount);
-      return { baseTotal, discount, finalTotal, slotCount };
-    };
-
-    const { finalTotal } = calculateTotal();
-
-    // Store booking data for payment page
-    const bookingData = {
-      ...formData,
-      room: room.name,
-      location: room.location,
-      price: finalTotal,
-      selectedSlots: selectedSlots,
-      frontIdImage: frontIdImage?.name,
-      backIdImage: backIdImage?.name
-    };
-    
-    localStorage.setItem('bookingData', JSON.stringify(bookingData));
-    router.push('/payment');
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      alert('Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.');
+    }
   };
 
   const handleEditInfo = () => {
@@ -171,7 +363,7 @@ export default function RoomPage() {
     
     return selectedSlots.map(slot => {
       const date = new Date(slot.date).toLocaleDateString('vi-VN');
-      const branch = currentRoomBranches.find(b => b.id === slot.branchId);
+      const branch = bookingTableBranches.find(b => b.id === slot.branchId);
       const roomData = branch?.rooms.find(r => r.id === slot.roomId);
       const timeSlot = roomData?.timeSlots.find(ts => ts.id === slot.timeSlotId);
       
@@ -251,7 +443,7 @@ export default function RoomPage() {
               <h2 className={styles.roomName}>{room.name}</h2>
               <div className={styles.roomRating}>
                 <span className={styles.rating}>⭐ {room.rating}</span>
-                <span className={styles.reviews}>({room.reviews} đánh giá)</span>
+                <span className={styles.reviews}>({room.reviewCount} đánh giá)</span>
               </div>
               
               <div className={styles.roomSpecs}>
@@ -276,15 +468,19 @@ export default function RoomPage() {
               <div className={styles.pricing}>
                 <div className={styles.priceMain}>
                   <span className={styles.currentPrice}>
-                    {room.price.base.toLocaleString('vi-VN')} đ/tháng
+                    {room.basePrice.toLocaleString('vi-VN')} đ/tháng
                   </span>
-                  <span className={styles.originalPrice}>
-                    {room.price.originalPrice?.toLocaleString('vi-VN')} đ/tháng
-                  </span>
+                  {room.originalPrice && (
+                    <span className={styles.originalPrice}>
+                      {room.originalPrice.toLocaleString('vi-VN')} đ/tháng
+                    </span>
+                  )}
                 </div>
-                <div className={styles.discountBadge}>
-                  Tiết kiệm {room.price.discount}%
-                </div>
+                {room.originalPrice && room.basePrice < room.originalPrice && (
+                  <div className={styles.discountBadge}>
+                    Tiết kiệm {Math.round(((room.originalPrice - room.basePrice) / room.originalPrice) * 100)}%
+                  </div>
+                )}
               </div>
 
               <div className={styles.description}>
@@ -347,8 +543,11 @@ export default function RoomPage() {
             <h3 className={styles.formSectionTitle}>Lịch đặt phòng thời gian thực</h3>
             <p className={styles.tableDescription}>Chọn khung giờ phù hợp với bạn</p>
             <RoomBookingTable
-              branches={currentRoomBranches}
+              branches={bookingTableBranches}
+              daysCount={30}
               onBookingSubmit={handleBookingTableSubmit}
+              initialBookings={initialBookings}
+              initialSelectedSlots={selectedSlots}
               slotPrice={50000}
             />
           </div>

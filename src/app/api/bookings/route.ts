@@ -206,20 +206,50 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint to retrieve bookings (for admin)
+// GET endpoint to retrieve bookings (for admin and date range queries)
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '10');
     const status = url.searchParams.get('status');
+    const startDate = url.searchParams.get('startDate');
+    const endDate = url.searchParams.get('endDate');
     
     const skip = (page - 1) * limit;
     
     // Build where clause
-    const where: { status?: 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED' } = {};
+    const where: { 
+      status?: 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+      bookingSlots?: {
+        some: {
+          bookingDate?: {
+            gte?: Date;
+            lte?: Date;
+          };
+        };
+      };
+    } = {};
+    
     if (status && ['PENDING', 'PAYMENT_CONFIRMED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(status)) {
       where.status = status as 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+    }
+    
+    // Add date range filter if provided
+    if (startDate || endDate) {
+      where.bookingSlots = {
+        some: {
+          bookingDate: {}
+        }
+      };
+      
+      if (startDate) {
+        where.bookingSlots.some.bookingDate!.gte = new Date(startDate);
+      }
+      
+      if (endDate) {
+        where.bookingSlots.some.bookingDate!.lte = new Date(endDate);
+      }
     }
     
     // Get bookings with pagination
