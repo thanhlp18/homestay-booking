@@ -8,15 +8,54 @@ interface RouteParams {
   }>;
 }
 
-// PATCH endpoint for updating booking status (approve/reject)
+// PATCH endpoint for updating booking status (approve/reject/payment confirmation)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { action, reason } = body;
+    const { action, reason, status } = body;
 
-    // Validate action
-    if (!['approve', 'reject'].includes(action)) {
+    // Handle direct status update (for payment confirmation)
+    if (status) {
+      if (!['PENDING', 'PAYMENT_CONFIRMED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(status)) {
+        return NextResponse.json(
+          { success: false, message: 'Trạng thái không hợp lệ' },
+          { status: 400 }
+        );
+      }
+
+      const booking = await prisma.booking.findUnique({
+        where: { id },
+      });
+
+      if (!booking) {
+        return NextResponse.json(
+          { success: false, message: 'Không tìm thấy đơn đặt phòng' },
+          { status: 404 }
+        );
+      }
+
+      const updatedBooking = await prisma.booking.update({
+        where: { id },
+        data: {
+          status: status as 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED',
+          updatedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Cập nhật trạng thái thành công',
+        data: {
+          bookingId: updatedBooking.id,
+          status: updatedBooking.status,
+          updatedAt: updatedBooking.updatedAt,
+        },
+      });
+    }
+
+    // Handle action-based updates (approve/reject)
+    if (!action || !['approve', 'reject'].includes(action)) {
       return NextResponse.json(
         { success: false, message: 'Hành động không hợp lệ' },
         { status: 400 }

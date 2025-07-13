@@ -177,8 +177,14 @@
   gap: 10px;
 }
 
+.bankLogoImg {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
 .mbLogo {
-  background: #004d9f;
+  background: #e53e3e;
   color: white;
   padding: 8px 12px;
   border-radius: 4px;

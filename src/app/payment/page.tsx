@@ -28,6 +28,7 @@ interface BookingData {
   selectedSlots: SelectedSlot[];
   frontIdImage?: string;
   backIdImage?: string;
+  bookingId: string;
 }
 
 export default function PaymentPage() {
@@ -36,6 +37,11 @@ export default function PaymentPage() {
   const [timeRemaining, setTimeRemaining] = useState(288); // 4 minutes 48 seconds
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Generate QR code URL
+  const generateQRCodeUrl = (bookingId: string, amount: number) => {
+    return `https://qr.sepay.vn/img?acc=43218082002&bank=TPBank&amount=${amount}&des=${bookingId}`;
+  };
 
   useEffect(() => {
     const storedData = localStorage.getItem('bookingData');
@@ -73,33 +79,21 @@ export default function PaymentPage() {
     setError(null);
     
     try {
-      // Prepare booking data for API
-      const apiBookingData = {
-        fullName: bookingData.fullName,
-        phone: bookingData.phone,
-        email: bookingData.email,
-        cccd: bookingData.cccd,
-        guests: parseInt(bookingData.guests),
-        notes: bookingData.notes,
-        paymentMethod: 'TRANSFER',
-        selectedSlots: bookingData.selectedSlots,
-        frontIdImageUrl: bookingData.frontIdImage,
-        backIdImageUrl: bookingData.backIdImage,
-      };
-
-      // Submit to API
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
+      // Update booking status to PAYMENT_CONFIRMED
+      const response = await fetch(`/api/admin/bookings/${bookingData.bookingId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(apiBookingData),
+        body: JSON.stringify({
+          status: 'PAYMENT_CONFIRMED'
+        }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Có lỗi xảy ra khi xử lý đặt phòng');
+        throw new Error(result.message || 'Có lỗi xảy ra khi xác nhận thanh toán');
       }
 
       // Clear booking data from localStorage
@@ -110,7 +104,7 @@ export default function PaymentPage() {
       router.push('/');
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xử lý đặt phòng');
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xác nhận thanh toán');
     } finally {
       setIsSubmitting(false);
     }
@@ -154,19 +148,29 @@ export default function PaymentPage() {
               <div className={styles.qrSection}>
                 <div className={styles.qrCode}>
                   <div className={styles.qrPlaceholder}>
-                    <div className={styles.qrGrid}>
-                      {[...Array(100)].map((_, i) => (
-                        <div key={i} className={styles.qrPixel} />
-                      ))}
-                    </div>
+                    {bookingData && (
+                      <img 
+                        src={generateQRCodeUrl(bookingData.bookingId, bookingData.price)}
+                        alt="QR Code for payment"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    )}
                   </div>
                   <div className={styles.qrLabels}>
-                    <span className={styles.qrLabel}>napas247</span>
-                    <span className={styles.qrLabel}>MB</span>
+                    <span className={styles.qrLabel}>TPBank</span>
                     <span className={styles.qrLabel}>VietQR</span>
+                    <span className={styles.qrLabel}>QR Pay</span>
                   </div>
                   <div className={styles.qrStatus}>
-                    <span className={styles.statusButton}>Tải ảnh QR</span>
+                    <a 
+                      href={bookingData ? generateQRCodeUrl(bookingData.bookingId, bookingData.price) : '#'}
+                      download="payment-qr.png"
+                      className={styles.statusButton}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Tải ảnh QR
+                    </a>
                   </div>
                 </div>
                 <div className={styles.qrNote}>
@@ -179,17 +183,21 @@ export default function PaymentPage() {
               <h3 className={styles.methodTitle}>Cách 2: Chuyển khoản thủ công theo thông tin</h3>
               <div className={styles.bankInfo}>
                 <div className={styles.bankLogo}>
-                  <span className={styles.mbLogo}>MB</span>
-                  <span className={styles.bankName}>Ngân hàng MBBank</span>
+                  <img 
+                    src="/logo-TPBank.svg" 
+                    alt="TPBank Logo" 
+                    className={styles.bankLogoImg}
+                  />
+                  <span className={styles.bankName}>Ngân hàng TPBank</span>
                 </div>
                 <div className={styles.bankDetails}>
                   <div className={styles.bankRow}>
                     <span className={styles.bankLabel}>Chủ tài khoản:</span>
-                    <span className={styles.bankValue}>Trần Kim Tài</span>
+                    <span className={styles.bankValue}>Lê Phước Thành</span>
                   </div>
                   <div className={styles.bankRow}>
                     <span className={styles.bankLabel}>Số TK:</span>
-                    <span className={styles.bankValue}>VQRQABQSL8296</span>
+                    <span className={styles.bankValue}>43218082002</span>
                   </div>
                   <div className={styles.bankRow}>
                     <span className={styles.bankLabel}>Số tiền:</span>
@@ -197,11 +205,11 @@ export default function PaymentPage() {
                   </div>
                   <div className={styles.bankRow}>
                     <span className={styles.bankLabel}>Nội dung CK:</span>
-                    <span className={styles.bankValue}>LC18504</span>
+                    <span className={styles.bankValue}>{bookingData.bookingId}</span>
                   </div>
                 </div>
                 <div className={styles.bankNote}>
-                  <p>Lưu ý: Vui lòng ghi nguyên nội dung chuyển khoản LC18504 để hệ thống tự động xác nhận thanh toán</p>
+                  <p>Lưu ý: Vui lòng ghi nguyên nội dung chuyển khoản {bookingData.bookingId} để hệ thống tự động xác nhận thanh toán</p>
                 </div>
               </div>
             </div>
@@ -283,7 +291,7 @@ export default function PaymentPage() {
           <p className={styles.footerText}>
             Hộ kinh doanh LOCAL HOME / Địa chỉ: Số B1 07, chung cư Cadif - HH1, Hưng Phú, Q. Cái Răng, TP. Cần Thơ / Mã số hộ kinh doanh: 
             8340126748 - 002 do Phòng Tài Chính - Kế Hoạch Quận Cái Răng cấp lần đầu ngày 13/11/2024. Điện thoại: 0901416888. Chủ trách nhiệm 
-            nội dung: Trần Kim Tài
+            nội dung: Lê Phước Thành
           </p>
         </div>
         

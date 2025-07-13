@@ -411,13 +411,32 @@ export default function RoomPage() {
       const result = await response.json();
 
       if (result.success) {
-        alert(
-          `Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString(
-            "vi-VN"
-          )}đ`
-        );
-        // Redirect to home page or show success message
-        router.push("/");
+        if (formData.paymentMethod === "transfer") {
+          // Store booking data for payment page
+          const bookingData = {
+            fullName: formData.fullName,
+            phone: formData.phone,
+            email: formData.email,
+            cccd: formData.cccd,
+            guests: formData.guests,
+            notes: formData.notes,
+            paymentMethod: formData.paymentMethod,
+            room: room.name,
+            location: room.location,
+            price: result.data.totalPrice,
+            selectedSlots: selectedSlots,
+            bookingId: result.data.bookingId,
+          };
+          localStorage.setItem('bookingData', JSON.stringify(bookingData));
+          router.push('/payment');
+        } else {
+          alert(
+            `Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString(
+              "vi-VN"
+            )}đ`
+          );
+          router.push("/");
+        }
       } else {
         alert(`Lỗi: ${result.message}`);
       }
