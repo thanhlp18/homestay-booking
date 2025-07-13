@@ -40,7 +40,6 @@ interface RoomBookingTableProps {
   branches: Branch[];
   startDate?: Date;
   daysCount?: number;
-  slotPrice?: number;
   onBookingSubmit?: (selectedSlots: SelectedSlot[]) => void;
   initialBookings?: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>;
   initialSelectedSlots?: SelectedSlot[];
@@ -70,7 +69,6 @@ export default function RoomBookingTable({
   branches,
   startDate = new Date(),
   daysCount = 7,
-  slotPrice = 50000,
   onBookingSubmit,
   initialBookings = {},
   initialSelectedSlots = [],
@@ -157,7 +155,7 @@ export default function RoomBookingTable({
       // Add to selection
       const newSlot: SelectedSlot = {
         ...slotIdentifier,
-        price: timeSlot.price || slotPrice
+        price: timeSlot.price
       };
       setSelectedSlots(prev => [...prev, newSlot]);
     }

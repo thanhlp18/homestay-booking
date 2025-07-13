@@ -383,7 +383,6 @@ export default function BranchPage() {
             initialBookings={initialBookings}
             onBookingSubmit={handleBookingSubmit}
             daysCount={7}
-            slotPrice={50000}
             submitOnSelect={false}
           />
         </div>

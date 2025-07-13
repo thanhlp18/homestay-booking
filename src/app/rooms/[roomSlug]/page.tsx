@@ -635,7 +635,6 @@ export default function RoomPage() {
               onBookingSubmit={handleBookingTableSubmit}
               initialBookings={initialBookings}
               initialSelectedSlots={selectedSlots}
-              slotPrice={50000}
               submitOnSelect={true}
             />
           </div>

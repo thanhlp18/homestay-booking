@@ -19,7 +19,7 @@ interface RoomBookingTableProps {
   branches: Branch[];                    // Required: Array of branches with rooms and time slots
   startDate?: Date;                      // Optional: Starting date (default: today)
   daysCount?: number;                    // Optional: Number of days to display (default: 7)
-  slotPrice?: number;                    // Optional: Default price per slot (default: 50000)
+  // Note: Prices are automatically loaded from the database via timeSlots
   onBookingSubmit?: (selectedSlots: SelectedSlot[]) => void; // Optional: Callback for booking submission
   initialBookings?: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>; // Optional: Pre-existing bookings
 }
