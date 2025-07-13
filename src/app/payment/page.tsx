@@ -93,7 +93,7 @@ export default function PaymentPage() {
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 5000);
 
     return () => clearInterval(timer);
   }, []);
@@ -274,13 +274,13 @@ export default function PaymentPage() {
                 {error}
               </div>
             )}
-            <button 
+            {/* <button 
               onClick={handleConfirmTransfer} 
               className={styles.confirmTransferBtn}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đã chuyển khoản'}
-            </button>
+            </button> */}
             <button 
               onClick={handleBackToHome} 
               className={styles.cancelBtn}
@@ -310,7 +310,7 @@ export default function PaymentPage() {
           <div className={styles.footerSection}>
             <div className={styles.footerLogo}>
               <span className={styles.logoIcon}>🏠</span>
-              <span className={styles.logoText}>Minhome.vn</span>
+              <span className={styles.logoText}>TidyToto</span>
             </div>
             <div className={styles.footerSubtext}>Homestay và lưu trú tại Việt Nam</div>
             <div className={styles.hotline}>Hotline: 0932.820.930</div>

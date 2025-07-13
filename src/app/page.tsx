@@ -422,9 +422,9 @@ export default function Home() {
           <div className={styles.footerSection}>
             <div className={styles.footerLogo}>
               <span className={styles.logoIcon}>💚</span>
-              <span className={styles.logoText}>Minhome.vn</span>
+              <span className={styles.logoText}>TidyToto</span>
             </div>
-            <p className={styles.footerText}>Hotline: 0932.620.930</p>
+            <p className={styles.footerText}>Hotline: 0939000000</p>
           </div>
           
           <div className={styles.footerSection}>
@@ -451,7 +451,7 @@ export default function Home() {
         </div>
         
         <div className={styles.footerBottom}>
-          <p>© Copyright Minhome.vn 2024</p>
+          <p>© Copyright TidyToto 2024</p>
         </div>
       </footer>
     </div>

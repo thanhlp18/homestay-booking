@@ -14,7 +14,7 @@ async function main() {
       location: "Đại Ngàn, Ninh Kiều, Cần Thơ",
       address:
         "Số 123 Đường Đại Ngàn, Phường Đại Ngàn, Quận Ninh Kiều, TP. Cần Thơ",
-      phone: "0932.620.930",
+      phone: "0939000000",
       email: "lovely@localhome.vn",
       description:
         "Chi nhánh Lovely với không gian ấm cúng, hiện đại và đầy đủ tiện nghi",
@@ -76,7 +76,7 @@ async function main() {
       location: "Cái Khế, Ninh Kiều, Cần Thơ",
       address:
         "Số 456 Đường Cái Khế, Phường Cái Khế, Quận Ninh Kiều, TP. Cần Thơ",
-      phone: "0932.620.930",
+      phone: "0939000000",
       email: "tasty@localhome.vn",
       description:
         "Chi nhánh Tasty 1 với phong cách hiện đại, tiện nghi cao cấp",
@@ -137,7 +137,7 @@ async function main() {
       location: "Hưng Phát, Ninh Kiều, Cần Thơ",
       address:
         "Số 789 Đường Hưng Phát, Phường Hưng Phát, Quận Ninh Kiều, TP. Cần Thơ",
-      phone: "0932.620.930",
+      phone: "0939000000",
       email: "secret@localhome.vn",
       description: "Chi nhánh Secret Home với không gian riêng tư, yên tĩnh",
       amenities: ["WiFi miễn phí", "TV", "Garden"],
