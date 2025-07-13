@@ -1,0 +1,145 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  margin-bottom: 3rem;
+}
+
+.backLink {
+  display: inline-block;
+  color: #ff6b6b;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  transition: color 0.3s ease;
+}
+
+.backLink:hover {
+  color: #ff5252;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.lastUpdated {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.section h2 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid #ff6b6b;
+  padding-bottom: 0.5rem;
+}
+
+.section p {
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.section ul, .section ol {
+  color: #555;
+  line-height: 1.7;
+  padding-left: 1.5rem;
+}
+
+.section li {
+  margin-bottom: 0.5rem;
+}
+
+.guaranteeTypes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.guaranteeType {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+  text-align: center;
+}
+
+.guaranteeType h3 {
+  color: #333;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.guaranteeType p {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.contactInfo {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #ff6b6b;
+}
+
+.contactInfo p {
+  margin-bottom: 0.5rem;
+}
+
+.contactInfo p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+  
+  .content {
+    padding: 1.5rem;
+  }
+  
+  .section h2 {
+    font-size: 1.3rem;
+  }
+  
+  .guaranteeTypes {
+    grid-template-columns: 1fr;
+  }
+} 

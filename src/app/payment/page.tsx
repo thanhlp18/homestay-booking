@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import styles from './payment.module.css';
 import LoadingSpinner from '../components/LoadingSpinner';
+import Link from 'next/link';
 
 interface SelectedSlot {
   date: string;
@@ -313,17 +314,17 @@ export default function PaymentPage() {
               <span className={styles.logoText}>TidyToto</span>
             </div>
             <div className={styles.footerSubtext}>Homestay và lưu trú tại Việt Nam</div>
-            <div className={styles.hotline}>Hotline: 0932.820.930</div>
+            <div className={styles.hotline}>Hotline: 0932000000</div>
           </div>
           
           <div className={styles.footerSection}>
             <h3 className={styles.footerTitle}>Chính sách</h3>
             <ul className={styles.footerLinks}>
-              <li>Chính sách bảo mật thông tin</li>
-              <li>Nội quy và quy định</li>
-              <li>Hình thức thanh toán</li>
-              <li>Hướng dẫn sử dụng</li>
-              <li>Hướng dẫn từ Check in</li>
+              <li><Link href="/policies/privacy">Chính sách bảo mật thông tin</Link></li>
+              <li><Link href="/policies/promotion">Chính sách khuyến mãi</Link></li>
+              <li><Link href="/policies/guarantee">Chính sách bảo đảm</Link></li>
+              <li><Link href="/guides/usage">Hướng dẫn sử dụng</Link></li>
+              <li><Link href="/guides/handover">Hướng dẫn bàn giao</Link></li>
             </ul>
           </div>
           

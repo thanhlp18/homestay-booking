@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Header from './components/Header';
 import HomeCard from './components/HomeCard';
 import DemoNotice from './components/DemoNotice';
@@ -430,11 +431,11 @@ export default function Home() {
           <div className={styles.footerSection}>
             <h4>Chính sách</h4>
             <ul>
-              <li>Chính sách bảo mật thông tin</li>
-              <li>Chính sách khuyến mãi</li>
-              <li>Chính sách bảo đảm</li>
-              <li>Hướng dẫn sử dụng</li>
-              <li>Hướng dẫn bàn giao</li>
+              <li><Link href="/policies/privacy">Chính sách bảo mật thông tin</Link></li>
+              <li><Link href="/policies/promotion">Chính sách khuyến mãi</Link></li>
+              <li><Link href="/policies/guarantee">Chính sách bảo đảm</Link></li>
+              <li><Link href="/guides/usage">Hướng dẫn sử dụng</Link></li>
+              <li><Link href="/guides/handover">Hướng dẫn bàn giao</Link></li>
             </ul>
           </div>
           
