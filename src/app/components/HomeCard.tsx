@@ -22,12 +22,7 @@ interface HomeCardProps {
 
 export const AMENITY_ICON_MAP: Record<string, string> = {
   'WiFi miễn phí': '/tien_nghi/tien_nghi_wifi.png',
-  'Điều hòa': '/tien_nghi/tien_nghi_khac.png',
   'TV': '/tien_nghi/tien_nghi_tivi.png',
-  'Máy giặt': '/tien_nghi/tien_nghi_khac.png',
-  'Tủ lạnh': '/tien_nghi/tien_nghi_khac.png',
-  'Bếp': '/tien_nghi/tien_nghi_khac.png',
-  'Hồ bơi': '/tien_nghi/tien_nghi_khac.png',
   'Netflix': '/tien_nghi/tien_nghi_netflix.png',
   'Ghế lười': '/tien_nghi/tien_nghi_ghe_luoi.png',
   'Ghế sách': '/tien_nghi/tien_nghi_ghe_sach.png',

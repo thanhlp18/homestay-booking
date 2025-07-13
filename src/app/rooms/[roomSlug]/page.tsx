@@ -880,16 +880,6 @@ export default function RoomPage() {
                       />
                       <span>Chuyển khoản ngân hàng</span>
                     </label>
-                    <label className={styles.paymentOption}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="card"
-                        checked={formData.paymentMethod === "card"}
-                        onChange={handleInputChange}
-                      />
-                      <span>Thanh toán bằng thẻ</span>
-                    </label>
                   </div>
                 </div>
               </div>
