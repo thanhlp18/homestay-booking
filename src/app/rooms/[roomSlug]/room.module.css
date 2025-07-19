@@ -1048,13 +1048,13 @@
   background: #f8f9fa;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
-  padding: 1rem;
-  min-height: 50px;
+  padding: 0.8rem;
+  min-height: 40px;
   display: flex;
   align-items: center;
   font-size: 0.9rem;
   color: #333;
-  line-height: 1.5;
+  /* line-height: 1.5; */
 }
 
 .selectedSlotsDisplay:empty::before {

@@ -1095,29 +1095,25 @@ export default function RoomPage() {
                       </div>
                     )}
                   </div>
-                </div>
-                {formData.bookingType === "timeSlots" && (
-                  <div className={styles.formRow}>
+                  {formData.bookingType === "timeSlots" && (
                     <div className={styles.formGroup}>
                       <label className={styles.label}>Khung giờ đã chọn</label>
                       <div className={styles.selectedSlotsDisplay}>
                         {formatSelectedSlots()}
                       </div>
                     </div>
-                  </div>
-                )}
-                {formData.bookingType === "fullDay" && fullDaySelection && (
-                  <div className={styles.formRow}>
+                  )}
+                  {formData.bookingType === "fullDay" && fullDaySelection && (
                     <div className={styles.formGroup}>
                       <label className={styles.label}>Ngày đã chọn</label>
                       <div className={styles.selectedSlotsDisplay}>
                         {new Date(fullDaySelection.date).toLocaleDateString('vi-VN')} - Cả ngày
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
                 <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
+                  <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
                     <label className={styles.label}>Ghi chú</label>
                     <input
                       type="text"
