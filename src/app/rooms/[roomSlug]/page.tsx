@@ -100,6 +100,7 @@ export default function RoomPage() {
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [fullDaySelection, setFullDaySelection] = useState<FullDaySelection | null>(null);
   const [fullDayValidationError, setFullDayValidationError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [room, setRoom] = useState<Room | null>(null);
   const [bookingTableBranches, setBookingTableBranches] = useState<
     BookingTableBranch[]
@@ -488,7 +489,11 @@ export default function RoomPage() {
   };
 
   const handleConfirmBooking = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
     try {
+      setIsSubmitting(true);
+      
       // Prepare the slots to submit
       let slotsToSubmit = selectedSlots;
       let isFullDayBooking = false;
@@ -568,6 +573,8 @@ export default function RoomPage() {
     } catch (error) {
       console.error("Booking submission error:", error);
       alert("Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1235,10 +1242,18 @@ export default function RoomPage() {
                 </div>
 
                 <div className={styles.formActions}>
-                  <button type="submit" className={styles.submitButton}>
-                    Xác nhận đặt phòng
+                  <button 
+                    type="submit" 
+                    className={styles.submitButton}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Đang xử lý..." : "Xác nhận đặt phòng"}
                   </button>
-                  <button type="button" className={styles.cancelButton}>
+                  <button 
+                    type="button" 
+                    className={styles.cancelButton}
+                    disabled={isSubmitting}
+                  >
                     Hủy bỏ
                   </button>
                 </div>
@@ -1319,14 +1334,19 @@ export default function RoomPage() {
               </div>
 
               <div className={styles.modalActions}>
-                <button className={styles.editButton} onClick={handleEditInfo}>
+                <button 
+                  className={styles.editButton} 
+                  onClick={handleEditInfo}
+                  disabled={isSubmitting}
+                >
                   Sửa lại thông tin
                 </button>
                 <button
                   className={styles.confirmButton}
                   onClick={handleConfirmBooking}
+                  disabled={isSubmitting}
                 >
-                  Đặt phòng
+                  {isSubmitting ? "Đang xử lý..." : "Đặt phòng"}
                 </button>
               </div>
             </div>

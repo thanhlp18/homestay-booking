@@ -805,6 +805,30 @@
   transform: translateY(-1px);
 }
 
+.confirmButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.confirmButton:disabled:hover {
+  background: #ccc;
+  transform: none;
+}
+
+.editButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.editButton:disabled:hover {
+  background: #ccc;
+  transform: none;
+}
+
 /* Submit button update */
 .submitButton {
   background: linear-gradient(135deg, #f56565, #e53e3e);
@@ -824,6 +848,18 @@
   transform: translateY(-1px);
 }
 
+.submitButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.submitButton:disabled:hover {
+  background: #ccc;
+  transform: none;
+}
+
 .cancelButton {
   background: #6c757d;
   color: white;
@@ -841,6 +877,18 @@
 .cancelButton:hover {
   background: #5a6268;
   transform: translateY(-2px);
+}
+
+.cancelButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.cancelButton:disabled:hover {
+  background: #ccc;
+  transform: none;
 }
 
 /* Responsive Design */
