@@ -49,6 +49,7 @@ model Branch {
   images      String[] // Array of image URLs
   latitude    Float?
   longitude   Float?
+  googleMapUrl String?  // Google Maps link for the branch
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Header from './components/Header';
-import HomeCard from './components/HomeCard';
-import DemoNotice from './components/DemoNotice';
-import RoomBookingTable from './components/RoomBookingTable';
-import LoadingSpinner from './components/LoadingSpinner';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Header from "./components/Header";
+import HomeCard from "./components/HomeCard";
+import DemoNotice from "./components/DemoNotice";
+import RoomBookingTable from "./components/RoomBookingTable";
+import LoadingSpinner from "./components/LoadingSpinner";
 import styles from "./page.module.css";
-
-
+import Image from "next/image";
+import { FaMapMarkerAlt } from 'react-icons/fa';
 
 interface Room {
   id: string;
@@ -52,6 +52,7 @@ interface BranchAPIResponse {
   images: string[];
   latitude: number;
   longitude: number;
+  googleMapUrl?: string;
   rooms: Array<{
     id: string;
     name: string;
@@ -96,7 +97,7 @@ interface BookingTableBranch {
 }
 
 interface BookingStatus {
-  status: 'booked' | 'available' | 'selected' | 'promotion' | 'mystery';
+  status: "booked" | "available" | "selected" | "promotion" | "mystery";
   price?: number;
   originalPrice?: number;
 }
@@ -105,13 +106,18 @@ export default function Home() {
   const router = useRouter();
   const [branches, setBranches] = useState<BranchAPIResponse[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [bookingTableBranches, setBookingTableBranches] = useState<BookingTableBranch[]>([]);
-  const [initialBookings, setInitialBookings] = useState<Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>>({});
+  const [bookingTableBranches, setBookingTableBranches] = useState<
+    BookingTableBranch[]
+  >([]);
+  const [initialBookings, setInitialBookings] = useState<
+    Record<
+      string,
+      Record<string, Record<string, Record<string, BookingStatus>>>
+    >
+  >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<string>('');
-
-
+  const [selectedDestination, setSelectedDestination] = useState<string>("");
 
   // Fetch branches and rooms data from API
   useEffect(() => {
@@ -119,24 +125,26 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Fetch branches data
-        const branchesResponse = await fetch('/api/branches');
+        const branchesResponse = await fetch("/api/branches");
         if (!branchesResponse.ok) {
-          throw new Error('Failed to fetch branches data');
+          throw new Error("Failed to fetch branches data");
         }
         const branchesData = await branchesResponse.json();
-        
+
         if (!branchesData.success) {
-          throw new Error(branchesData.message || 'Failed to fetch branches data');
+          throw new Error(
+            branchesData.message || "Failed to fetch branches data"
+          );
         }
-        
+
         setBranches(branchesData.data);
-        
+
         // Transform branches data to rooms format for easy display
         const roomsData: Room[] = [];
         branchesData.data?.forEach((branch: BranchAPIResponse) => {
-          branch.rooms?.forEach((room: BranchAPIResponse['rooms'][0]) => {
+          branch.rooms?.forEach((room: BranchAPIResponse["rooms"][0]) => {
             roomsData.push({
               id: room.id,
               name: room.name,
@@ -166,28 +174,29 @@ export default function Home() {
           });
         });
         setRooms(roomsData);
-        
+
         // Transform data for RoomBookingTable component
-        const bookingTableData: BookingTableBranch[] = branchesData.data?.map((branch: BranchAPIResponse) => ({
-          id: branch.id,
-          name: branch.name,
-          rooms: branch.rooms?.map((room: BranchAPIResponse['rooms'][0]) => ({
-            id: room.id,
-            name: room.name,
-            timeSlots: room.timeSlots || []
-          })) || []
-        })) || [];
-        
+        const bookingTableData: BookingTableBranch[] =
+          branchesData.data?.map((branch: BranchAPIResponse) => ({
+            id: branch.id,
+            name: branch.name,
+            rooms:
+              branch.rooms?.map((room: BranchAPIResponse["rooms"][0]) => ({
+                id: room.id,
+                name: room.name,
+                timeSlots: room.timeSlots || [],
+              })) || [],
+          })) || [];
+
         setBookingTableBranches(bookingTableData);
-        
+
         // Set initial selected destination to "Tất cả" (Show All)
-        setSelectedDestination('Tất cả');
-        
+        setSelectedDestination("Tất cả");
+
         // Fetch existing bookings for the next 30 days
         await fetchExistingBookings();
-        
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
+        setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
         setLoading(false);
       }
@@ -202,43 +211,78 @@ export default function Home() {
       const today = new Date();
       const endDate = new Date();
       endDate.setDate(today.getDate() + 30);
-      
-      const bookingsResponse = await fetch(`/api/bookings?startDate=${today.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
-      
+
+      const bookingsResponse = await fetch(
+        `/api/bookings?startDate=${today.toISOString().split("T")[0]}&endDate=${
+          endDate.toISOString().split("T")[0]
+        }`
+      );
+
       if (bookingsResponse.ok) {
         const bookingsData = await bookingsResponse.json();
-        
+
         if (bookingsData.success && bookingsData.data) {
-          const bookingsMap: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>> = {};
-          
-          bookingsData.data.forEach((booking: { bookingSlots?: Array<{ bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }> }) => {
-            booking.bookingSlots?.forEach((slot: { bookingDate: string; room: { branch: { id: string }; id: string }; timeSlot: { id: string }; price: number }) => {
-              const dateKey = new Date(slot.bookingDate).toISOString().split('T')[0];
-              const branchId = slot.room.branch.id;
-              const roomId = slot.room.id;
-              const timeSlotId = slot.timeSlot.id;
-              
-              if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
-              if (!bookingsMap[dateKey][branchId]) bookingsMap[dateKey][branchId] = {};
-              if (!bookingsMap[dateKey][branchId][roomId]) bookingsMap[dateKey][branchId][roomId] = {};
-              
-              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
-                status: 'booked',
-                price: slot.price
-              };
-            });
-          });
-          
+          const bookingsMap: Record<
+            string,
+            Record<string, Record<string, Record<string, BookingStatus>>>
+          > = {};
+
+          bookingsData.data.forEach(
+            (booking: {
+              bookingSlots?: Array<{
+                bookingDate: string;
+                room: { branch: { id: string }; id: string };
+                timeSlot: { id: string };
+                price: number;
+              }>;
+            }) => {
+              booking.bookingSlots?.forEach(
+                (slot: {
+                  bookingDate: string;
+                  room: { branch: { id: string }; id: string };
+                  timeSlot: { id: string };
+                  price: number;
+                }) => {
+                  const dateKey = new Date(slot.bookingDate)
+                    .toISOString()
+                    .split("T")[0];
+                  const branchId = slot.room.branch.id;
+                  const roomId = slot.room.id;
+                  const timeSlotId = slot.timeSlot.id;
+
+                  if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
+                  if (!bookingsMap[dateKey][branchId])
+                    bookingsMap[dateKey][branchId] = {};
+                  if (!bookingsMap[dateKey][branchId][roomId])
+                    bookingsMap[dateKey][branchId][roomId] = {};
+
+                  bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                    status: "booked",
+                    price: slot.price,
+                  };
+                }
+              );
+            }
+          );
+
           setInitialBookings(bookingsMap);
         }
       }
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error("Error fetching bookings:", error);
     }
   };
 
   // Handle booking submission - redirect to room detail page
-  const handleBookingSubmit = (selectedSlots: Array<{ date: string; branchId: string; roomId: string; timeSlotId: string; price: number }>) => {
+  const handleBookingSubmit = (
+    selectedSlots: Array<{
+      date: string;
+      branchId: string;
+      roomId: string;
+      timeSlotId: string;
+      price: number;
+    }>
+  ) => {
     // Only proceed if there are selected slots
     if (selectedSlots.length === 0) {
       return; // Don't show alert, just return silently
@@ -248,11 +292,11 @@ export default function Home() {
     const firstSlot = selectedSlots[0];
 
     // Find the room slug from the branches data
-    const branchData = branches.find(b => b.id === firstSlot.branchId);
-    const roomData = branchData?.rooms.find(r => r.id === firstSlot.roomId);
-    
+    const branchData = branches.find((b) => b.id === firstSlot.branchId);
+    const roomData = branchData?.rooms.find((r) => r.id === firstSlot.roomId);
+
     if (!roomData?.slug) {
-      alert('Không tìm thấy thông tin phòng!');
+      alert("Không tìm thấy thông tin phòng!");
       return;
     }
 
@@ -284,40 +328,59 @@ export default function Home() {
   }
 
   // Get featured homes (all branches)
-  const featuredHomes = branches.map(branch => ({
+  const featuredHomes = branches.map((branch) => ({
     title: `Home - ${branch.location}`,
     type: "SWIMMING POOL • CẦU RỒNG",
-    description: branch.rooms[0]?.description || "Căn hộ mới 100% với đầy đủ tiện nghi",
+    description:
+      branch.rooms[0]?.description || "Căn hộ mới 100% với đầy đủ tiện nghi",
     imageUrl: branch.images[0], // Use the first branch image
     imageGradient: getGradientForBranch(branch.id), // Fallback gradient
-    branchSlug: branch.slug
+    branchSlug: branch.slug,
+    googleMapUrl: branch.googleMapUrl,
   }));
 
   // Extract unique destinations from branches data
-  const uniqueDestinations = ['Tất cả', ...Array.from(new Set(branches.map(branch => {
-    const locationParts = branch.location.split(', ');
-    return locationParts[0]; // Get the first part (e.g., "Đại Ngàn" from "Đại Ngàn, Ninh Kiều, Cần Thơ")
-  })))];
+  const uniqueDestinations = [
+    "Tất cả",
+    ...Array.from(
+      new Set(
+        branches.map((branch) => {
+          const locationParts = branch.location.split(", ");
+          return locationParts[0]; // Get the first part (e.g., "Đại Ngàn" from "Đại Ngàn, Ninh Kiều, Cần Thơ")
+        })
+      )
+    ),
+  ];
 
   // Filter rooms by selected destination
-  const filteredRooms = selectedDestination === 'Tất cả' ? rooms : rooms.filter(room => {
-    const roomBranch = branches.find(b => b.id === room.branchId);
-    if (!roomBranch) return false;
-    const locationParts = roomBranch.location.split(', ');
-    return locationParts[0] === selectedDestination;
-  });
+  const filteredRooms =
+    selectedDestination === "Tất cả"
+      ? rooms
+      : rooms.filter((room) => {
+          const roomBranch = branches.find((b) => b.id === room.branchId);
+          if (!roomBranch) return false;
+          const locationParts = roomBranch.location.split(", ");
+          return locationParts[0] === selectedDestination;
+        });
 
+  const branchInformationFitter = selectedDestination !== "Tất cả" ? branches.filter((branch) => {
+    const locationParts = branch.location.split(", ");
+    return locationParts[0] === selectedDestination;
+  })[0] : null
+console.log(branchInformationFitter)
   // Get Can Tho homes (filtered by selected destination)
-  const canThoHomes = filteredRooms.slice(0, 3).map(room => {
+  const canThoHomes = filteredRooms.slice(0, 3).map((room) => {
     return {
       title: room.name,
       description: room.description,
-      price: `${room.basePrice.toLocaleString('vi-VN')} đ/ngày`,
-      originalPrice: room.originalPrice ? `${room.originalPrice.toLocaleString('vi-VN')} đ/ngày` : undefined,
+      price: `${room.basePrice.toLocaleString("vi-VN")} đ/ngày`,
+      originalPrice: room.originalPrice
+        ? `${room.originalPrice.toLocaleString("vi-VN")} đ/ngày`
+        : undefined,
       availability: "có thể nhận",
       imageUrl: room.images?.[0], // Add optional chaining to prevent error
       imageGradient: getGradientForBranch(room.branchId), // Fallback gradient
-      roomSlug: room.slug
+      roomSlug: room.slug,
     };
   });
 
@@ -331,20 +394,21 @@ export default function Home() {
         <h2 className={styles.sectionTitle}>Danh sách tất cả các Home</h2>
         <div className={styles.homeGrid}>
           {featuredHomes.map((home, index) => {
-            const branch = branches.find(b => b.slug === home.branchSlug);
+            const branch = branches.find((b) => b.slug === home.branchSlug);
             const amenities = branch?.rooms[0]?.amenities || [];
             return (
-              <HomeCard
-                key={index}
-                title={home.title}
-                type={home.type}
-                description={home.description}
-                showDetails={true}
-                imageUrl={home.imageUrl}
-                imageGradient={home.imageGradient}
-                branchSlug={home.branchSlug}
-                amenities={amenities}
-              />
+              <div key={index} style={{ position: "relative" }}>
+                <HomeCard
+                  title={home.title}
+                  type={home.type}
+                  description={home.description}
+                  showDetails={true}
+                  imageUrl={home.imageUrl}
+                  imageGradient={home.imageGradient}
+                  branchSlug={home.branchSlug}
+                  amenities={amenities}
+                />
+              </div>
             );
           })}
         </div>
@@ -356,9 +420,11 @@ export default function Home() {
         <p className={styles.sectionSubtitle}>tại Tp.Cần Thơ</p>
         <div className={styles.destinationTabs}>
           {uniqueDestinations.map((destination) => (
-            <button 
+            <button
               key={destination}
-              className={`${styles.tab} ${selectedDestination === destination ? styles.activeTab : ''}`}
+              className={`${styles.tab} ${
+                selectedDestination === destination ? styles.activeTab : ""
+              }`}
               onClick={() => setSelectedDestination(destination)}
             >
               {destination}
@@ -366,13 +432,28 @@ export default function Home() {
           ))}
         </div>
 
-        <h3 className={styles.locationTitle}>
-          {selectedDestination === 'Tất cả' ? 'Tất cả các Home tại Tp.Cần Thơ' : `Home - ${selectedDestination}, Ninh Kiều`}
-        </h3>
+        <div className={styles.locationHeader}>
+          <h3 className={styles.locationTitle}>
+            {selectedDestination === "Tất cả"
+              ? "Tất cả các Home tại Tp.Cần Thơ"
+              : `Home - ${selectedDestination}, Ninh Kiều`}
+          </h3>
+          {branchInformationFitter && branchInformationFitter.googleMapUrl && (
+            <a
+              href={branchInformationFitter.googleMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.googleMapButton}
+            >
+              <FaMapMarkerAlt className={styles.googleMapButtonIcon} />
+              View on Google Map
+            </a>
+          )}
+        </div>
         <div className={styles.homeGrid}>
           {canThoHomes.length > 0 ? (
             canThoHomes.map((home, index) => {
-              const room = rooms.find(r => r.slug === home.roomSlug);
+              const room = rooms.find((r) => r.slug === home.roomSlug);
               return (
                 <HomeCard
                   key={index}
@@ -390,13 +471,15 @@ export default function Home() {
               );
             })
           ) : (
-            <div style={{ 
-              gridColumn: '1 / -1', 
-              textAlign: 'center', 
-              padding: '2rem',
-              color: '#666',
-              fontSize: '1.1rem'
-            }}>
+            <div
+              style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                padding: "2rem",
+                color: "#666",
+                fontSize: "1.1rem",
+              }}
+            >
               Không có phòng nào khả dụng tại {selectedDestination}
             </div>
           )}
@@ -406,8 +489,10 @@ export default function Home() {
       {/* Interactive Room Booking Table */}
       <section className={styles.calendarSection}>
         <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
-        <p className={styles.sectionSubtitle}>Tất cả các phòng với khung giờ có sẵn</p>
-        
+        <p className={styles.sectionSubtitle}>
+          Tất cả các phòng với khung giờ có sẵn
+        </p>
+
         <RoomBookingTable
           branches={bookingTableBranches}
           daysCount={30}
@@ -427,30 +512,73 @@ export default function Home() {
             </div>
             <p className={styles.footerText}>Hotline: 0939000000</p>
           </div>
-          
+
           <div className={styles.footerSection}>
             <h4>Chính sách</h4>
             <ul>
-              <li><Link href="/policies/privacy">Chính sách bảo mật thông tin</Link></li>
-              <li><Link href="/policies/promotion">Chính sách khuyến mãi</Link></li>
-              <li><Link href="/policies/guarantee">Chính sách bảo đảm</Link></li>
-              <li><Link href="/guides/usage">Hướng dẫn sử dụng</Link></li>
-              <li><Link href="/guides/handover">Hướng dẫn bàn giao</Link></li>
+              <li>
+                <Link href="/policies/privacy">
+                  Chính sách bảo mật thông tin
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/promotion">Chính sách khuyến mãi</Link>
+              </li>
+              <li>
+                <Link href="/policies/guarantee">Chính sách bảo đảm</Link>
+              </li>
+              <li>
+                <Link href="/guides/usage">Hướng dẫn sử dụng</Link>
+              </li>
+              <li>
+                <Link href="/guides/handover">Hướng dẫn bàn giao</Link>
+              </li>
             </ul>
           </div>
-          
+
           <div className={styles.footerSection}>
             <h4>Hỗ trợ thanh toán</h4>
             <div className={styles.paymentMethods}>
-              <span>💳 Visa</span>
-              <span>💳 MasterCard</span>
-              <span>💳 ATM</span>
-              <span>💳 Napas</span>
-              <span>💳 Momo</span>
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/visa.png"}
+                alt={"Visa"}
+              />
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/master.png"}
+                alt={"Master card"}
+              />
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/atm.png"}
+                alt={"ATM"}
+              />
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/momo.png"}
+                alt={"MOMO"}
+              />{" "}
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/vnpay.png"}
+                alt={"VNPay"}
+              />
+              <Image
+                height={31.2}
+                width={50}
+                src={"/images/payment/vietqr.png"}
+                alt={"Viet QR"}
+              />
             </div>
           </div>
         </div>
-        
+
         <div className={styles.footerBottom}>
           <p>© Copyright TidyToto 2024</p>
         </div>
@@ -467,9 +595,11 @@ function getGradientForBranch(branchId: string): string {
     "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
     "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
     "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-    "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
+    "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
   ];
-  
-  const index = branchId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % gradients.length;
+
+  const index =
+    branchId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+    gradients.length;
   return gradients[index];
 }

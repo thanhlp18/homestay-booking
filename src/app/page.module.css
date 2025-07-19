@@ -16,7 +16,6 @@
   flex-direction: column;
   min-height: 100vh;
   /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
-  font-family: Arial, sans-serif;
 }
 
 /* Main content */
@@ -223,8 +222,8 @@
 
 .paymentMethods span {
   background: rgba(255, 255, 255, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
+  padding: 0.25rem;
+  border-radius: 12px;
   font-size: 0.8rem;
 }
 
@@ -265,4 +264,40 @@
   .calendarTabs {
     justify-content: flex-start;
   }
+}
+
+/* Google Map Button */
+.googleMapButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 400;
+  font-size: 14px;
+  color: #6B7280;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+}
+
+.googleMapButton:hover {
+  color: #ff6b6b;
+}
+
+.googleMapButtonIcon {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+.locationHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.locationTitle {
+  margin: 0;
 }

@@ -27,6 +27,7 @@ export async function GET() {
       images: branch.images,
       latitude: branch.latitude,
       longitude: branch.longitude,
+      googleMapUrl: branch.googleMapUrl,
       rooms: branch.rooms.map(room => ({
         id: room.id,
         name: room.name,
@@ -69,5 +70,61 @@ export async function GET() {
       },
       { status: 500 }
     );
+  }
+} 
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const branch = await prisma.branch.create({
+      data: {
+        name: body.name,
+        slug: body.slug,
+        location: body.location,
+        address: body.address,
+        phone: body.phone,
+        email: body.email,
+        description: body.description,
+        amenities: body.amenities,
+        images: body.images,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        googleMapUrl: body.googleMapUrl,
+      },
+    });
+    return NextResponse.json({ success: true, data: branch });
+  } catch (error) {
+    console.error('Error creating branch:', error);
+    return NextResponse.json({ success: false, message: 'Failed to create branch' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    if (!body.id) {
+      return NextResponse.json({ success: false, message: 'Branch id is required' }, { status: 400 });
+    }
+    const branch = await prisma.branch.update({
+      where: { id: body.id },
+      data: {
+        name: body.name,
+        slug: body.slug,
+        location: body.location,
+        address: body.address,
+        phone: body.phone,
+        email: body.email,
+        description: body.description,
+        amenities: body.amenities,
+        images: body.images,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        googleMapUrl: body.googleMapUrl,
+      },
+    });
+    return NextResponse.json({ success: true, data: branch });
+  } catch (error) {
+    console.error('Error updating branch:', error);
+    return NextResponse.json({ success: false, message: 'Failed to update branch' }, { status: 500 });
   }
 } 
