@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import styles from './payment.module.css';
@@ -43,6 +43,7 @@ export default function PaymentPage() {
     paymentConfirmed: boolean;
     paymentConfirmedAt?: string;
   } | null>(null);
+  const paymentTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate QR code URL
   const generateQRCodeUrl = (bookingId: string, amount: number) => {
@@ -64,11 +65,14 @@ export default function PaymentPage() {
           paymentConfirmedAt: result.data.paymentConfirmedAt
         });
 
-        // If payment is confirmed, show success message
-        if (result.data.paymentConfirmed && result.data.status === 'PAYMENT_CONFIRMED') {
-          alert('Thanh toán thành công! Chúng tôi sẽ kiểm tra và phê duyệt đặt phòng của bạn trong thời gian sớm nhất.');
-          localStorage.removeItem('bookingData');
-          router.push('/');
+        // If payment is confirmed, show success message but stay on page
+        if (result.data.paymentConfirmed && (result.data.status === 'PAYMENT_CONFIRMED' || result.data.status === 'APPROVED')) {
+          // Stop checking payment status
+          if (paymentTimerRef.current) {
+            clearInterval(paymentTimerRef.current);
+            paymentTimerRef.current = null;
+          }
+          console.log('Payment confirmed, stopped polling and staying on payment page');
         }
       }
     } catch (error) {
@@ -107,11 +111,16 @@ export default function PaymentPage() {
     checkPaymentStatus();
 
     // Then check every 5 seconds
-    const paymentTimer = setInterval(() => {
+    paymentTimerRef.current = setInterval(() => {
       checkPaymentStatus();
     }, 5000);
 
-    return () => clearInterval(paymentTimer);
+    return () => {
+      if (paymentTimerRef.current) {
+        clearInterval(paymentTimerRef.current);
+        paymentTimerRef.current = null;
+      }
+    };
   }, [bookingData?.bookingId]);
 
   const formatTime = (seconds: number) => {
@@ -177,13 +186,24 @@ export default function PaymentPage() {
             <div className={styles.checkmark}>✓</div>
           </div>
           <h1 className={styles.successTitle}>Đặt hàng thành công!</h1>
-          <div className={styles.timeRemaining}>
-            Booking có hiệu lực còn {formatTime(timeRemaining)}
-          </div>
+          {!paymentStatus?.paymentConfirmed && (
+            <div className={styles.timeRemaining}>
+              Booking có hiệu lực còn {formatTime(timeRemaining)}
+            </div>
+          )}
+          {paymentStatus?.paymentConfirmed && (
+            <div className={styles.paymentConfirmed}>
+              <div style={{ color: '#48bb78', fontWeight: 'bold', fontSize: '1.2rem', marginTop: '1rem' }}>
+                ✅ Thanh toán thành công! 
+                {paymentStatus.status === 'APPROVED' ? ' Đặt phòng đã được phê duyệt.' : ' Đang xử lý phê duyệt...'}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className={styles.paymentSection}>
-          <h2 className={styles.paymentTitle}>Hướng dẫn thanh toán qua chuyển khoản ngân hàng</h2>
+        {!paymentStatus?.paymentConfirmed && (
+          <div className={styles.paymentSection}>
+            <h2 className={styles.paymentTitle}>Hướng dẫn thanh toán qua chuyển khoản ngân hàng</h2>
           
           <div className={styles.paymentMethods}>
             <div className={styles.paymentMethod}>
@@ -277,15 +297,55 @@ export default function PaymentPage() {
             >
               {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đã chuyển khoản'}
             </button> */}
-            <button 
-              onClick={handleBackToHome} 
-              className={styles.cancelBtn}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Đang hủy...' : '← Hủy đặt phòng'}
-            </button>
+            {!paymentStatus?.paymentConfirmed && (
+              <button 
+                onClick={handleBackToHome} 
+                className={styles.cancelBtn}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Đang hủy...' : '← Hủy đặt phòng'}
+              </button>
+            )}
           </div>
         </div>
+        )}
+
+        {paymentStatus?.paymentConfirmed && (
+          <div className={styles.paymentSuccessSection}>
+            <div className={styles.successInfo}>
+              <h2 className={styles.successSectionTitle}>Thanh toán đã hoàn tất</h2>
+              <div className={styles.successMessage}>
+                <p>✅ Giao dịch của bạn đã được xử lý thành công</p>
+                {paymentStatus.status === 'APPROVED' ? (
+                  <p>🎉 Đặt phòng đã được tự động phê duyệt và xác nhận</p>
+                ) : (
+                  <p>⏳ Đặt phòng đang được xử lý và sẽ sớm được phê duyệt</p>
+                )}
+                <p>📧 Email xác nhận đã được gửi đến địa chỉ của bạn</p>
+                <p>📞 Chúng tôi sẽ liên hệ với bạn để xác nhận chi tiết trong thời gian sớm nhất</p>
+              </div>
+              <div className={styles.nextSteps}>
+                <h3>Các bước tiếp theo:</h3>
+                <ul>
+                  <li>Kiểm tra email để xem thông tin chi tiết đặt phòng</li>
+                  <li>Chuẩn bị giấy tờ tùy thân (CCCD/CMND) khi nhận phòng</li>
+                  <li>Liên hệ hotline 0932000000 nếu cần hỗ trợ</li>
+                </ul>
+              </div>
+              <div className={styles.successActions}>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('bookingData');
+                    router.push('/');
+                  }}
+                  className={styles.homeButton}
+                >
+                  ← Trở về trang chủ
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className={styles.promoSection}>
           <div className={styles.promoBanner}>

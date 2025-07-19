@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendBookingApproval } from '@/lib/email';
 
 interface WebhookPayload {
   id: number;                              // ID giao dịch trên SePay
@@ -62,7 +63,19 @@ export async function POST(request: NextRequest) {
           id: potentialBookingId,
           totalPrice: body.transferAmount,
           status: 'PENDING'
-        }
+        },
+        include: {
+          bookingSlots: {
+            include: {
+              room: {
+                include: {
+                  branch: true,
+                },
+              },
+              timeSlot: true,
+            },
+          },
+        },
       });
       console.log({booking})
       if (booking) {
@@ -91,25 +104,60 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // If booking found and matched, update booking status
+    // If booking found and matched, auto-approve and send email
     if (booking && bookingId) {
+      // Auto-approve the booking since payment has been confirmed via webhook
+      // This eliminates the need for manual admin approval after payment confirmation
       await prisma.booking.update({
         where: { id: bookingId },
         data: {
-          status: 'PAYMENT_CONFIRMED',
+          status: 'APPROVED',
           paymentConfirmedAt: new Date(),
+          approvedAt: new Date(),
+          adminNotes: 'Tự động phê duyệt sau khi xác nhận thanh toán qua webhook',
           updatedAt: new Date()
         }
       });
+
+      // Send approval email to customer if email exists
+      if (booking.email) {
+        try {
+          const emailData = {
+            id: booking.id,
+            fullName: booking.fullName,
+            phone: booking.phone,
+            email: booking.email,
+            cccd: booking.cccd,
+            guests: booking.guests,
+            notes: booking.notes || undefined,
+            paymentMethod: booking.paymentMethod,
+            room: booking.bookingSlots[0]?.room?.name || 'Unknown',
+            location: booking.bookingSlots[0]?.room?.branch?.location || 'Unknown',
+            totalPrice: booking.totalPrice,
+            basePrice: booking.basePrice,
+            discountAmount: booking.discountAmount,
+            discountPercentage: booking.discountPercentage,
+          };
+
+          await sendBookingApproval(emailData);
+          console.log(`Approval email sent to ${booking.email} for booking ${bookingId}`);
+        } catch (emailError) {
+          console.error('Failed to send approval email:', emailError);
+          // Don't fail the webhook if email sending fails
+        }
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Webhook processed successfully',
+      message: booking && bookingId 
+        ? 'Webhook processed successfully - Booking auto-approved and email sent'
+        : 'Webhook processed successfully - No matching booking found',
       data: {
         webhookId: webhook.id,
         bookingMatched: bookingId !== null,
-        bookingId: bookingId
+        bookingId: bookingId,
+        autoApproved: booking && bookingId ? true : false
       }
     });
 
