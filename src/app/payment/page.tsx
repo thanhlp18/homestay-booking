@@ -120,47 +120,42 @@ export default function PaymentPage() {
     return `${minutes} phút ${remainingSeconds.toString().padStart(2, '0')} giây`;
   };
 
-  const handleConfirmTransfer = async () => {
+  const handleBackToHome = async () => {
     if (!bookingData) return;
     
     setIsSubmitting(true);
     setError(null);
     
     try {
-      // Update booking status to PAYMENT_CONFIRMED
+      // Update booking status to CANCELLED
       const response = await fetch(`/api/admin/bookings/${bookingData.bookingId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          status: 'PAYMENT_CONFIRMED'
+          status: 'CANCELLED'
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Có lỗi xảy ra khi xác nhận thanh toán');
+        throw new Error(result.message || 'Có lỗi xảy ra khi hủy đặt phòng');
       }
 
       // Clear booking data from localStorage
       localStorage.removeItem('bookingData');
       
       // Show success message and redirect
-      alert('Xác nhận thành công! Chúng tôi sẽ kiểm tra và phê duyệt đặt phòng của bạn trong thời gian sớm nhất.');
+      alert('Đã hủy đặt phòng thành công!');
       router.push('/');
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xác nhận thanh toán');
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi hủy đặt phòng');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleBackToHome = () => {
-    localStorage.removeItem('bookingData');
-    router.push('/');
   };
 
   if (!bookingData) {
@@ -287,7 +282,7 @@ export default function PaymentPage() {
               className={styles.cancelBtn}
               disabled={isSubmitting}
             >
-              ← Hủy đặt phòng
+              {isSubmitting ? 'Đang hủy...' : '← Hủy đặt phòng'}
             </button>
           </div>
         </div>
