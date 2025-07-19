@@ -126,6 +126,7 @@ model Booking {
   basePrice            Int           // Base price before discount
   discountAmount       Int           @default(0)
   discountPercentage   Float         @default(0)
+  guestSurcharge       Int           @default(0) // Additional charge for guests over 2
   status               BookingStatus @default(PENDING)
   frontIdImageUrl      String?
   backIdImageUrl       String?

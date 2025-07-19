@@ -21,6 +21,8 @@ interface BookingSubmissionData {
   }>;
   frontIdImageUrl?: string;
   backIdImageUrl?: string;
+  isFullDayBooking?: boolean;
+  fullDayPrice?: number;
 }
 
 // Validation function
@@ -56,28 +58,52 @@ function validateBookingData(data: Record<string, unknown>): BookingSubmissionDa
     }
   }
   
+  // Validate full day booking fields if provided
+  if (data.isFullDayBooking !== undefined && typeof data.isFullDayBooking !== 'boolean') {
+    throw new Error('Thông tin đặt cả ngày không hợp lệ');
+  }
+  
+  if (data.fullDayPrice !== undefined && (typeof data.fullDayPrice !== 'number' || data.fullDayPrice < 0)) {
+    throw new Error('Giá đặt cả ngày không hợp lệ');
+  }
+  
   return data as unknown as BookingSubmissionData;
 }
 
 // Calculate pricing with discounts
-function calculatePricing(selectedSlots: Array<{price: number}>) {
-  const basePrice = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
-  const slotCount = selectedSlots.length;
-  
+function calculatePricing(selectedSlots: Array<{price: number}>, isFullDayBooking?: boolean, fullDayPrice?: number, guests?: number) {
+  let basePrice: number;
   let discountPercentage = 0;
-  if (slotCount >= 3) {
-    discountPercentage = 0.1; // 10% discount for 3+ slots
-  } else if (slotCount === 2) {
-    discountPercentage = 0.05; // 5% discount for 2 slots
+  
+  if (isFullDayBooking && fullDayPrice) {
+    // For full day bookings, use the fixed full day price
+    basePrice = fullDayPrice;
+    // No discounts for full day bookings
+  } else {
+    // For time slot bookings, calculate from individual slot prices
+    basePrice = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
+    const slotCount = selectedSlots.length;
+    
+    if (slotCount >= 3) {
+      discountPercentage = 0.1; // 10% discount for 3+ slots
+    } else if (slotCount === 2) {
+      discountPercentage = 0.05; // 5% discount for 2 slots
+    }
   }
   
+  // Calculate guest surcharge (50k per guest over 2)
+  const guestSurcharge = guests && guests > 2 ? 50000 * (guests - 2) : 0;
+  
   const discountAmount = basePrice * discountPercentage;
-  const totalPrice = basePrice - discountAmount;
+  const subtotalAfterDiscount = basePrice - discountAmount;
+  const totalPrice = subtotalAfterDiscount + guestSurcharge;
   
   return {
     basePrice,
     discountAmount: Math.round(discountAmount),
     discountPercentage,
+    guestSurcharge,
+    subtotalAfterDiscount: Math.round(subtotalAfterDiscount),
     totalPrice: Math.round(totalPrice)
   };
 }
@@ -90,7 +116,7 @@ export async function POST(request: NextRequest) {
     const validatedData = validateBookingData(body);
     
     // Calculate pricing
-    const pricing = calculatePricing(validatedData.selectedSlots);
+    const pricing = calculatePricing(validatedData.selectedSlots, validatedData.isFullDayBooking, validatedData.fullDayPrice, validatedData.guests);
     
     // Start database transaction
     const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -107,6 +133,7 @@ export async function POST(request: NextRequest) {
           basePrice: pricing.basePrice,
           discountAmount: pricing.discountAmount,
           discountPercentage: pricing.discountPercentage,
+          guestSurcharge: pricing.guestSurcharge,
           totalPrice: pricing.totalPrice,
           status: 'PENDING',
           frontIdImageUrl: validatedData.frontIdImageUrl,
@@ -159,6 +186,9 @@ export async function POST(request: NextRequest) {
       basePrice: result.booking.basePrice,
       discountAmount: result.booking.discountAmount,
       discountPercentage: result.booking.discountPercentage,
+      guestSurcharge: result.booking.guestSurcharge,
+      isFullDayBooking: validatedData.isFullDayBooking || false,
+      bookingType: validatedData.isFullDayBooking ? 'Cả ngày' : 'Theo khung giờ',
     };
     
     // Send confirmation email to customer (if email provided)
@@ -178,7 +208,10 @@ export async function POST(request: NextRequest) {
         totalPrice: result.booking.totalPrice,
         discountAmount: result.booking.discountAmount,
         discountPercentage: result.booking.discountPercentage,
+        guestSurcharge: result.booking.guestSurcharge,
         status: result.booking.status,
+        isFullDayBooking: validatedData.isFullDayBooking || false,
+        bookingType: validatedData.isFullDayBooking ? 'Cả ngày' : 'Theo khung giờ',
       },
     });
     

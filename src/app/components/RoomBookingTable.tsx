@@ -44,6 +44,7 @@ interface RoomBookingTableProps {
   initialBookings?: Record<string, Record<string, Record<string, Record<string, BookingStatus>>>>;
   initialSelectedSlots?: SelectedSlot[];
   submitOnSelect?: boolean;
+  isFullDayBooking?: boolean;
 }
 
 // SVG Icon Components
@@ -72,7 +73,8 @@ export default function RoomBookingTable({
   onBookingSubmit,
   initialBookings = {},
   initialSelectedSlots = [],
-  submitOnSelect = false
+  submitOnSelect = false,
+  isFullDayBooking = false
 }: RoomBookingTableProps) {
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>(initialSelectedSlots);
   const [bookings] = useState(initialBookings);
@@ -135,6 +137,9 @@ export default function RoomBookingTable({
 
   // Handle cell click
   const handleCellClick = (dateKey: string, branchId: string, roomId: string, timeSlot: TimeSlot) => {
+    // Prevent manual selection when in full day booking mode
+    if (isFullDayBooking) return;
+
     const bookingStatus = getBookingStatus(dateKey, branchId, roomId, timeSlot.id);
     
     // Only allow selection of available slots
@@ -336,7 +341,7 @@ export default function RoomBookingTable({
       </div>
       
       {/* Price Summary */}
-      {selectedSlots.length > 0 && (
+      {!isFullDayBooking && selectedSlots.length > 0 && (
         <div className={styles.priceSection}>
           <div className={styles.priceDetails}>
             <div className={styles.priceRow}>

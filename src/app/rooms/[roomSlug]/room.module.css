@@ -348,6 +348,11 @@
   padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
+  margin-bottom: 1.5rem;
+}
+
+.formSection:last-child {
+  margin-bottom: 0;
 }
 
 .formSectionTitle {
@@ -366,6 +371,10 @@
   margin-bottom: 1rem;
 }
 
+.formRow:last-child {
+  margin-bottom: 0;
+}
+
 .formGroup {
   display: flex;
   flex-direction: column;
@@ -376,6 +385,7 @@
   font-weight: 500;
   color: #333;
   font-size: 0.9rem;
+  margin-bottom: 0.3rem;
 }
 
 .input,
@@ -385,6 +395,7 @@
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
+  width: 100%;
 }
 
 .input:focus,
@@ -1336,4 +1347,202 @@
 
 .guestDescription .descriptionText:last-child {
   margin-bottom: 0;
+} 
+
+.fullDayPrice {
+  padding: 0.8rem;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #ff6b6b;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Responsive design for full day booking */
+@media (max-width: 768px) {
+  .fullDayPrice {
+    padding: 0.6rem;
+    font-size: 1rem;
+  }
+} 
+
+.bookingTypeSection {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.bookingTypeSection .label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.bookingTypeSection .select {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.bookingTypeNotice {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 6px;
+}
+
+.bookingTypeNotice .noticeText {
+  margin: 0.3rem 0;
+  color: #1565c0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.bookingTypeNotice .noticeText:first-child {
+  margin-top: 0;
+}
+
+.bookingTypeNotice .noticeText:last-child {
+  margin-bottom: 0;
+}
+
+.bookingTypeNotice strong {
+  color: #0d47a1;
+}
+
+.fullDaySection {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.fullDaySection .formRow {
+  margin-bottom: 1rem;
+}
+
+.fullDaySection .formRow:last-child {
+  margin-bottom: 0;
+}
+
+.fullDaySection .formGroup {
+  margin-bottom: 0;
+}
+
+.tableDescription {
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.timeSlotSection {
+  margin-bottom: 2rem;
+}
+
+.timeSlotSection h3 {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Responsive design for booking type section */
+@media (max-width: 768px) {
+  .bookingTypeSection {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .bookingTypeSection .select {
+    margin-bottom: 0.8rem;
+  }
+  
+  .bookingTypeNotice {
+    padding: 0.8rem;
+    margin-top: 0.8rem;
+  }
+  
+  .bookingTypeNotice .noticeText {
+    font-size: 0.85rem;
+  }
+  
+  .fullDaySection {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .tableDescription {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+} 
+
+.validationError {
+  margin-top: 0.5rem;
+  padding: 0.8rem;
+  background: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  color: #c62828;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.fullDayConfirmation {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  background: #e8f5e8;
+  border: 1px solid #4caf50;
+  border-radius: 6px;
+  color: #2e7d32;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Responsive design for validation and confirmation */
+@media (max-width: 768px) {
+  .validationError {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .fullDayConfirmation {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+} 
+
+/* Responsive design for form sections */
+@media (max-width: 768px) {
+  .formSection {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .formSectionTitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .formRow {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .input,
+  .select {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .selectedSlotsDisplay {
+    padding: 0.7rem;
+    font-size: 0.85rem;
+  }
 } 
