@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Header from "./components/Header";
 import HomeCard from "./components/HomeCard";
 import DemoNotice from "./components/DemoNotice";
 import RoomBookingTable from "./components/RoomBookingTable";
 import LoadingSpinner from "./components/LoadingSpinner";
+import Footer from "./components/Footer";
 import styles from "./page.module.css";
-import Image from "next/image";
 import { FaMapMarkerAlt } from 'react-icons/fa';
 
 interface Room {
@@ -504,87 +503,7 @@ console.log(branchInformationFitter)
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className={styles.footer}>
-        <div className={styles.footerContent}>
-          <div className={styles.footerSection}>
-            <div className={styles.footerLogo}>
-              <span className={styles.logoIcon}>💚</span>
-              <span className={styles.logoText}>TidyToto</span>
-            </div>
-            <p className={styles.footerText}>Hotline: 0939000000</p>
-          </div>
-
-          <div className={styles.footerSection}>
-            <h4>Chính sách</h4>
-            <ul>
-              <li>
-                <Link href="/policies/privacy">
-                  Chính sách bảo mật thông tin
-                </Link>
-              </li>
-              <li>
-                <Link href="/policies/promotion">Chính sách khuyến mãi</Link>
-              </li>
-              <li>
-                <Link href="/policies/guarantee">Chính sách bảo đảm</Link>
-              </li>
-              <li>
-                <Link href="/guides/usage">Hướng dẫn sử dụng</Link>
-              </li>
-              <li>
-                <Link href="/guides/handover">Hướng dẫn bàn giao</Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className={styles.footerSection}>
-            <h4>Hỗ trợ thanh toán</h4>
-            <div className={styles.paymentMethods}>
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/visa.png"}
-                alt={"Visa"}
-              />
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/master.png"}
-                alt={"Master card"}
-              />
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/atm.png"}
-                alt={"ATM"}
-              />
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/momo.png"}
-                alt={"MOMO"}
-              />{" "}
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/vnpay.png"}
-                alt={"VNPay"}
-              />
-              <Image
-                height={31.2}
-                width={50}
-                src={"/images/payment/vietqr.png"}
-                alt={"Viet QR"}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.footerBottom}>
-          <p>© Copyright TidyToto 2024</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
