@@ -43,6 +43,7 @@
 /* Booking Table Container */
 .bookingTableContainer {
   width: 100%;
+  max-width: 100%;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -50,29 +51,20 @@
   margin: 2rem 0;
   position: relative;
 }
-/* 
-.bookingTableContainer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 20px;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
-  pointer-events: none;
-  z-index: 1;
-} */
 
 .tableWrapper {
+  width: 100%;
   overflow-x: auto;
   overflow-y: auto;
   max-height: 600px;
   scrollbar-width: thin;
   scrollbar-color: #ff6b6b #f1f3f4;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tableWrapper::-webkit-scrollbar {
   height: 8px;
+  width: 8px;
 }
 
 .tableWrapper::-webkit-scrollbar-track {
@@ -89,32 +81,15 @@
   background: #ff5252;
 }
 
-.tableWrapper::-webkit-scrollbar-vertical {
-  width: 8px;
-}
-
-.tableWrapper::-webkit-scrollbar-track-vertical {
-  background: #f1f3f4;
-  border-radius: 4px;
-}
-
-.tableWrapper::-webkit-scrollbar-thumb-vertical {
-  background: #ff6b6b;
-  border-radius: 4px;
-}
-
-.tableWrapper::-webkit-scrollbar-thumb-vertical:hover {
-  background: #ff5252;
-}
-
 /* Table Structure */
 .bookingTable {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 1000px;
   font-size: 0.9rem;
   table-layout: fixed;
   white-space: nowrap;
+  box-sizing: border-box;
 }
 
 /* Header Styles */
@@ -147,12 +122,13 @@
   color: #333;
   font-weight: bold;
   text-align: center;
-  padding: 1rem;
+  padding: 1.25rem;
   border-right: 2px solid #e5e7eb;
   position: sticky;
   left: 0;
   z-index: 25;
   min-width: 120px;
+  width: 120px;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -180,8 +156,8 @@
   font-weight: 500;
   color: #666;
   border-right: 1px solid #d1d5db;
-  min-width: 100px;
-  width: 100px;
+  min-width: 80px;
+  width: 80px;
 }
 
 /* Body Styles */
@@ -201,6 +177,8 @@
   left: 0;
   z-index: 5;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  min-width: 120px;
+  width: 120px;
 }
 
 .dateInfo {
@@ -235,8 +213,8 @@
   position: relative;
   min-height: 60px;
   vertical-align: middle;
-  min-width: 100px;
-  width: 100px;
+  min-width: 80px;
+  width: 80px;
 }
 
 /* Cell Status Styles */
@@ -253,17 +231,9 @@
   transform: scale(1.02);
 }
 
-/* .available::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #ff566b;
-} */
+.available:active {
+  transform: scale(0.98);
+}
 
 .booked {
   background: #ff566b;
@@ -273,18 +243,6 @@
   position: relative;
 }
 
-/* .booked::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #ff566b;
-} */
-
 .selected {
   border: 2px solid #ff566b;
   background: rgba(255, 86, 107, 0.1);
@@ -292,17 +250,9 @@
   position: relative;
 }
 
-/* .selected::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #ebafb0;
-} */
+.selected:active {
+  transform: scale(0.98);
+}
 
 .promotion {
   background: linear-gradient(135deg, #10b981, #34d399);
@@ -390,32 +340,7 @@
   transform: translateY(0);
 }
 
-
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .bookingTable {
-    font-size: 0.8rem;
-  }
-  
-  .timeHeader {
-    min-width: 80px;
-    width: 80px;
-    font-size: 0.7rem;
-  }
-  
-  .cell {
-    padding: 0.5rem 0.25rem;
-    font-size: 0.7rem;
-    min-width: 80px;
-    width: 80px;
-  }
-  
-  .dateHeader {
-    min-width: 100px;
-  }
-}
-
+/* Responsive Design - Simplified and more practical */
 @media (max-width: 768px) {
   .legend {
     gap: 1rem;
@@ -426,9 +351,63 @@
     font-size: 0.8rem;
   }
   
+  .bookingTable {
+    font-size: 0.8rem;
+    min-width: 900px;
+  }
+  
+  .dateHeader {
+    min-width: 100px;
+    width: 100px;
+    padding: 1rem 0.5rem;
+  }
+  
+  .dateCell {
+    min-width: 100px;
+    width: 100px;
+  }
+  
+  .dateInfo {
+    padding: 0.8rem 0.3rem;
+  }
+  
+  .dayName {
+    font-size: 0.8rem;
+  }
+  
+  .dateString {
+    font-size: 0.7rem;
+  }
+  
+  .timeHeader {
+    min-width: 70px;
+    width: 70px;
+    font-size: 0.7rem;
+    padding: 0.4rem;
+  }
+  
+  .cell {
+    min-width: 70px;
+    width: 70px;
+    padding: 0.6rem 0.3rem;
+    min-height: 50px;
+    font-size: 0.7rem;
+  }
+  
+  .branchHeader {
+    font-size: 1rem;
+    padding: 0.8rem 0.3rem;
+  }
+  
+  .roomHeader {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.3rem;
+  }
+  
   .priceSection {
     flex-direction: column;
     align-items: stretch;
+    padding: 1rem;
   }
   
   .priceDetails {
@@ -439,35 +418,6 @@
   .submitButton {
     width: 100%;
     min-width: auto;
-  }
-  
-  .bookingTable {
-    font-size: 0.75rem;
-  }
-  
-  .timeHeader {
-    min-width: 60px;
-    width: 60px;
-    padding: 0.25rem;
-  }
-  
-  .cell {
-    padding: 0.4rem 0.2rem;
-    min-height: 50px;
-    min-width: 60px;
-    width: 60px;
-  }
-  
-  .dateInfo {
-    padding: 0.75rem;
-  }
-  
-  .dayName {
-    font-size: 0.8rem;
-  }
-  
-  .dateString {
-    font-size: 0.7rem;
   }
 }
 
@@ -482,15 +432,96 @@
   }
   
   .bookingTableContainer {
-    margin: 1rem -1rem;
-    border-radius: 0;
+    margin: 1rem 0;
+    border-radius: 8px;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
   
   .tableWrapper {
-    margin: 0 -0.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .bookingTable {
+    font-size: 0.75rem;
+    min-width: 800px;
+  }
+  
+  .dateHeader {
+    min-width: 90px;
+    width: 90px;
+    padding: 0.8rem 0.3rem;
+  }
+  
+  .dateCell {
+    min-width: 90px;
+    width: 90px;
+  }
+  
+  .dateInfo {
+    padding: 0.6rem 0.2rem;
+  }
+  
+  .dayName {
+    font-size: 0.7rem;
+  }
+  
+  .dateString {
+    font-size: 0.6rem;
+  }
+  
+  .timeHeader {
+    min-width: 60px;
+    width: 60px;
+    font-size: 0.65rem;
+    padding: 0.3rem;
+  }
+  
+  .cell {
+    min-width: 60px;
+    width: 60px;
+    padding: 0.5rem 0.2rem;
+    min-height: 45px;
+    font-size: 0.65rem;
+    touch-action: manipulation;
+  }
+  
+  .branchHeader {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.2rem;
+  }
+  
+  .roomHeader {
+    font-size: 0.7rem;
+    padding: 0.5rem 0.2rem;
   }
   
   .priceSection {
     padding: 1rem;
+  }
+  
+  .cell:hover {
+    transform: none;
+  }
+  
+  .cell:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Additional mobile fixes for very small screens */
+@media (max-width: 360px) {
+  .bookingTableContainer {
+    margin: 0.5rem 0;
+    max-width: calc(100vw - 1rem);
+  }
+  
+  .tableWrapper {
+    padding-right: 0.5rem;
+  }
+  
+  .bookingTable {
+    min-width: 700px;
   }
 } 

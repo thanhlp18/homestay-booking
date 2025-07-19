@@ -331,6 +331,8 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .bookingSectionTitle {
@@ -370,6 +372,16 @@
   }
   
   .bookingContainer {
-    padding: 1.5rem;
+    padding: 1.5rem 1rem;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .bookingContainer {
+    padding: 1rem 0.5rem;
+    max-width: 100vw;
+    margin: 0;
   }
 } 

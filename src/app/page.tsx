@@ -488,18 +488,20 @@ console.log(branchInformationFitter)
 
       {/* Interactive Room Booking Table */}
       <section className={styles.calendarSection}>
-        <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
-        <p className={styles.sectionSubtitle}>
-          Tất cả các phòng với khung giờ có sẵn
-        </p>
+        <div className={styles.calendarContainer}>
+          <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
+          <p className={styles.sectionSubtitle}>
+            Tất cả các phòng với khung giờ có sẵn
+          </p>
 
-        <RoomBookingTable
-          branches={bookingTableBranches}
-          daysCount={30}
-          onBookingSubmit={handleBookingSubmit}
-          initialBookings={initialBookings}
-          submitOnSelect={false}
-        />
+          <RoomBookingTable
+            branches={bookingTableBranches}
+            daysCount={30}
+            onBookingSubmit={handleBookingSubmit}
+            initialBookings={initialBookings}
+            submitOnSelect={false}
+          />
+        </div>
       </section>
 
       {/* Footer */}
