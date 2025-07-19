@@ -6,18 +6,35 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  console.log('=== Admin Token Verification ===');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
+  // Log all cookies
+  const allCookies = request.cookies.getAll();
+  console.log('All cookies:', allCookies);
+  
+  const token = request.cookies.get('adminToken')?.value;
+  console.log('Admin token found:', !!token);
+  console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+  
+  if (!token) {
+    console.log('No admin token found in cookies');
     return null;
   }
 
-  const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
       role: string;
     };
+
+    console.log('Token decoded successfully:', { 
+      id: decoded.id, 
+      email: decoded.email, 
+      role: decoded.role 
+    });
 
     const admin = await prisma.user.findFirst({
       where: { 
@@ -27,22 +44,33 @@ async function verifyAdminToken(request: NextRequest) {
       },
     });
 
+    console.log('Admin found in database:', !!admin);
+    if (admin) {
+      console.log('Admin details:', { id: admin.id, name: admin.name, email: admin.email });
+    }
+    
     return admin;
-  } catch {
+  } catch (error) {
+    console.error('Token verification failed:', error);
     return null;
   }
 }
 
 // Create new room
 export async function POST(request: NextRequest) {
+  console.log('=== POST /api/admin/rooms ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const body = await request.json();
     const {
@@ -62,7 +90,6 @@ export async function POST(request: NextRequest) {
       checkIn,
       checkOut,
       branchId,
-      images,
       isActive = true,
     } = body;
 
@@ -94,17 +121,14 @@ export async function POST(request: NextRequest) {
       .replace(/-+/g, '-')
       .trim();
 
-    // Check if slug already exists in the same branch
-    const existingRoom = await prisma.room.findFirst({
-      where: { 
-        slug,
-        branchId
-      },
+    // Check if slug already exists
+    const existingRoom = await prisma.room.findUnique({
+      where: { slug },
     });
 
     if (existingRoom) {
       return NextResponse.json(
-        { success: false, message: 'Tên phòng đã tồn tại trong chi nhánh này' },
+        { success: false, message: 'Tên phòng đã tồn tại' },
         { status: 400 }
       );
     }
@@ -124,26 +148,16 @@ export async function POST(request: NextRequest) {
         location,
         area,
         capacity: parseInt(capacity),
-        bedrooms: parseInt(bedrooms) || 0,
-        bathrooms: parseInt(bathrooms) || 0,
+        bedrooms: parseInt(bedrooms) || 1,
+        bathrooms: parseInt(bathrooms) || 1,
         checkIn: checkIn || '14:00',
         checkOut: checkOut || '12:00',
         branchId,
-        images: images || [],
         isActive,
-        rating: 0,
-        reviewCount: 0,
-      },
-      include: {
-        branch: {
-          select: {
-            id: true,
-            name: true,
-            location: true,
-          },
-        },
       },
     });
+
+    console.log('Room created successfully:', room.id);
 
     return NextResponse.json({
       success: true,
@@ -162,14 +176,19 @@ export async function POST(request: NextRequest) {
 
 // Get all rooms with branch info
 export async function GET(request: NextRequest) {
+  console.log('=== GET /api/admin/rooms ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const rooms = await prisma.room.findMany({
       include: {
@@ -190,6 +209,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
+
+    console.log('Rooms fetched successfully:', rooms.length);
 
     return NextResponse.json({
       success: true,

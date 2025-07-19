@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Form, Input, Button, message, Typography } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
@@ -11,7 +11,21 @@ interface AdminAuthProviderProps {
   children: React.ReactNode;
 }
 
+interface AdminAuthContextType {
+  isAuthenticated: boolean;
+  logout: () => Promise<void>;
+  checkAuthStatus: () => Promise<void>;
+}
 
+const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
+
+export const useAdminAuth = () => {
+  const context = useContext(AdminAuthContext);
+  if (!context) {
+    throw new Error('useAdminAuth must be used within AdminAuthProvider');
+  }
+  return context;
+};
 
 export default function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -25,7 +39,7 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
   const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include', // Include cookies
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -35,6 +49,26 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
       }
     } catch {
       setIsAuthenticated(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const response = await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(false);
+        message.success('Đăng xuất thành công');
+        router.push('/admin');
+      } else {
+        message.error('Đã xảy ra lỗi khi đăng xuất');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      message.error('Đã xảy ra lỗi khi đăng xuất');
     }
   };
 
@@ -70,7 +104,11 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
   }
 
   if (isAuthenticated) {
-    return <>{children}</>;
+    return (
+      <AdminAuthContext.Provider value={{ isAuthenticated, logout, checkAuthStatus }}>
+        {children}
+      </AdminAuthContext.Provider>
+    );
   }
 
   return (

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendBookingApproval, sendBookingRejection } from '@/lib/email';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface RouteParams {
   params: Promise<{
@@ -8,63 +10,152 @@ interface RouteParams {
   }>;
 }
 
-// PATCH endpoint for updating booking status (approve/reject/payment confirmation)
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+// Helper function to verify admin token
+async function verifyAdminToken(request: NextRequest) {
+  console.log('=== Admin Token Verification ===');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
+  // Log all cookies
+  const allCookies = request.cookies.getAll();
+  console.log('All cookies:', allCookies);
+  
+  const token = request.cookies.get('adminToken')?.value;
+  console.log('Admin token found:', !!token);
+  console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+  
+  if (!token) {
+    console.log('No admin token found in cookies');
+    return null;
+  }
+
   try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: string;
+      email: string;
+      role: string;
+    };
+
+    console.log('Token decoded successfully:', { 
+      id: decoded.id, 
+      email: decoded.email, 
+      role: decoded.role 
+    });
+
+    const admin = await prisma.user.findFirst({
+      where: { 
+        id: decoded.id,
+        email: decoded.email,
+        role: 'ADMIN'
+      },
+    });
+
+    console.log('Admin found in database:', !!admin);
+    if (admin) {
+      console.log('Admin details:', { id: admin.id, name: admin.name, email: admin.email });
+    }
+    
+    return admin;
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return null;
+  }
+}
+
+// Update booking status
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+  console.log('=== PATCH /api/admin/bookings/[id] ===');
+  
+  try {
+    const admin = await verifyAdminToken(request);
+    if (!admin) {
+      console.log('Unauthorized: No valid admin token');
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    console.log('Authorized admin:', admin.name);
+
     const { id } = await params;
     const body = await request.json();
-    const { action, reason, status } = body;
+    const { action, reason } = body;
 
-    // Handle direct status update (for payment confirmation)
-    if (status) {
-      if (!['PENDING', 'PAYMENT_CONFIRMED', 'APPROVED', 'REJECTED', 'CANCELLED'].includes(status)) {
+    // Check if booking exists
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        bookingSlots: {
+          include: {
+            room: {
+              include: {
+                branch: true,
+              },
+            },
+            timeSlot: true,
+          },
+        },
+      },
+    });
+
+    if (!booking) {
+      return NextResponse.json(
+        { success: false, message: 'Đặt phòng không tồn tại' },
+        { status: 404 }
+      );
+    }
+
+    let updateData: {
+      status: 'APPROVED' | 'REJECTED';
+      approvedAt?: Date;
+      rejectedAt?: Date;
+      adminNotes: string;
+    } = {
+      status: 'APPROVED' as const,
+      adminNotes: ''
+    };
+    let message = '';
+
+    if (action === 'approve') {
+      if (booking.status === 'APPROVED') {
         return NextResponse.json(
-          { success: false, message: 'Trạng thái không hợp lệ' },
+          { success: false, message: 'Đặt phòng đã được phê duyệt' },
           { status: 400 }
         );
       }
 
-      const booking = await prisma.booking.findUnique({
-        where: { id },
-      });
-
-      if (!booking) {
+      updateData = {
+        status: 'APPROVED',
+        approvedAt: new Date(),
+        adminNotes: reason || 'Được phê duyệt bởi admin',
+      };
+      message = 'Đã phê duyệt đặt phòng thành công';
+    } else if (action === 'reject') {
+      if (booking.status === 'REJECTED') {
         return NextResponse.json(
-          { success: false, message: 'Không tìm thấy đơn đặt phòng' },
-          { status: 404 }
+          { success: false, message: 'Đặt phòng đã bị từ chối' },
+          { status: 400 }
         );
       }
 
-      const updatedBooking = await prisma.booking.update({
-        where: { id },
-        data: {
-          status: status as 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED',
-          updatedAt: new Date(),
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: 'Cập nhật trạng thái thành công',
-        data: {
-          bookingId: updatedBooking.id,
-          status: updatedBooking.status,
-          updatedAt: updatedBooking.updatedAt,
-        },
-      });
-    }
-
-    // Handle action-based updates (approve/reject)
-    if (!action || !['approve', 'reject'].includes(action)) {
+      updateData = {
+        status: 'REJECTED',
+        rejectedAt: new Date(),
+        adminNotes: reason || 'Bị từ chối bởi admin',
+      };
+      message = 'Đã từ chối đặt phòng thành công';
+    } else {
       return NextResponse.json(
         { success: false, message: 'Hành động không hợp lệ' },
         { status: 400 }
       );
     }
 
-    // Find the booking
-    const booking = await prisma.booking.findUnique({
+    // Update booking
+    const updatedBooking = await prisma.booking.update({
       where: { id },
+      data: updateData,
       include: {
         bookingSlots: {
           include: {
@@ -79,88 +170,39 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    if (!booking) {
-      return NextResponse.json(
-        { success: false, message: 'Không tìm thấy đơn đặt phòng' },
-        { status: 404 }
-      );
-    }
-
-    // Check if booking is in a valid state for approval/rejection
-    if (!['PENDING', 'PAYMENT_CONFIRMED'].includes(booking.status)) {
-      return NextResponse.json(
-        { success: false, message: 'Đơn đặt phòng không thể được cập nhật' },
-        { status: 400 }
-      );
-    }
-
-    // Update booking status
-    const updatedBooking = await prisma.booking.update({
-      where: { id },
-      data: {
-        status: action === 'approve' ? 'APPROVED' : 'REJECTED',
-        approvedAt: action === 'approve' ? new Date() : null,
-        rejectedAt: action === 'reject' ? new Date() : null,
-        adminNotes: action === 'approve' 
-          ? 'Đã xác nhận thanh toán và phê duyệt đặt phòng'
-          : reason || 'Đặt phòng bị từ chối',
-      },
-    });
-
-    // Prepare email data
-    const emailData = {
-      id: booking.id,
-      fullName: booking.fullName,
-      phone: booking.phone,
-      email: booking.email || undefined,
-      cccd: booking.cccd,
-      guests: booking.guests,
-      notes: booking.notes || undefined,
-      paymentMethod: booking.paymentMethod,
-      room: booking.bookingSlots[0]?.room?.name || 'Unknown',
-      location: booking.bookingSlots[0]?.room?.branch?.location || 'Unknown',
-      totalPrice: booking.totalPrice,
-      basePrice: booking.basePrice,
-      discountAmount: booking.discountAmount,
-      discountPercentage: booking.discountPercentage,
-    };
-
-    // Send email notification to customer
-    if (booking.email) {
-      if (action === 'approve') {
-        await sendBookingApproval(emailData);
-      } else {
-        await sendBookingRejection(emailData, reason || 'Đặt phòng bị từ chối');
-      }
-    }
+    console.log('Booking updated successfully:', updatedBooking.id);
 
     return NextResponse.json({
       success: true,
-      message: action === 'approve' 
-        ? 'Đã phê duyệt đặt phòng thành công' 
-        : 'Đã từ chối đặt phòng thành công',
-      data: {
-        bookingId: updatedBooking.id,
-        status: updatedBooking.status,
-        updatedAt: updatedBooking.updatedAt,
-      },
+      message,
+      data: updatedBooking,
     });
 
   } catch (error) {
-    console.error('Admin booking action error:', error);
+    console.error('Update booking error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Đã xảy ra lỗi khi xử lý yêu cầu' 
-      },
+      { success: false, message: 'Đã xảy ra lỗi khi cập nhật đặt phòng' },
       { status: 500 }
     );
   }
 }
 
-// GET endpoint for getting booking details
+// Get single booking
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  console.log('=== GET /api/admin/bookings/[id] ===');
+  
   try {
+    const admin = await verifyAdminToken(request);
+    if (!admin) {
+      console.log('Unauthorized: No valid admin token');
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    console.log('Authorized admin:', admin.name);
+
     const { id } = await params;
 
     const booking = await prisma.booking.findUnique({
@@ -176,23 +218,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             timeSlot: true,
           },
         },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
       },
     });
 
     if (!booking) {
       return NextResponse.json(
-        { success: false, message: 'Không tìm thấy đơn đặt phòng' },
+        { success: false, message: 'Đặt phòng không tồn tại' },
         { status: 404 }
       );
     }
+
+    console.log('Booking fetched successfully:', booking.id);
 
     return NextResponse.json({
       success: true,
@@ -200,41 +236,40 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
   } catch (error) {
-    console.error('Error fetching booking details:', error);
+    console.error('Get booking error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Lỗi khi tải thông tin đặt phòng' 
-      },
+      { success: false, message: 'Đã xảy ra lỗi khi tải thông tin đặt phòng' },
       { status: 500 }
     );
   }
 }
 
-// DELETE endpoint for canceling booking
+// Cancel booking
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  console.log('=== DELETE /api/admin/bookings/[id] ===');
+  
   try {
+    const admin = await verifyAdminToken(request);
+    if (!admin) {
+      console.log('Unauthorized: No valid admin token');
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    console.log('Authorized admin:', admin.name);
+
     const { id } = await params;
 
-    // Find the booking
+    // Check if booking exists
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: {
-        bookingSlots: {
-          include: {
-            room: {
-              include: {
-                branch: true,
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!booking) {
       return NextResponse.json(
-        { success: false, message: 'Không tìm thấy đơn đặt phòng' },
+        { success: false, message: 'Đặt phòng không tồn tại' },
         { status: 404 }
       );
     }
@@ -244,27 +279,22 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data: {
         status: 'CANCELLED',
-        adminNotes: 'Đơn đặt phòng đã bị hủy bởi admin',
+        adminNotes: 'Đã hủy bởi admin',
       },
     });
+
+    console.log('Booking cancelled successfully:', updatedBooking.id);
 
     return NextResponse.json({
       success: true,
       message: 'Đã hủy đặt phòng thành công',
-      data: {
-        bookingId: updatedBooking.id,
-        status: updatedBooking.status,
-        updatedAt: updatedBooking.updatedAt,
-      },
+      data: updatedBooking,
     });
 
   } catch (error) {
-    console.error('Error canceling booking:', error);
+    console.error('Cancel booking error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: 'Lỗi khi hủy đặt phòng' 
-      },
+      { success: false, message: 'Đã xảy ra lỗi khi hủy đặt phòng' },
       { status: 500 }
     );
   }

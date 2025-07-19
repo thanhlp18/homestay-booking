@@ -1,65 +1,65 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout, Menu, Button, Avatar, Dropdown, theme } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, message, theme } from 'antd';
 import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   DashboardOutlined,
   BookOutlined,
   HomeOutlined,
+  SettingOutlined,
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import AdminAuthProvider from './components/AdminAuthProvider';
+import AdminAuthProvider, { useAdminAuth } from './components/AdminAuthProvider';
 
 const { Header, Sider, Content } = Layout;
+
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [adminUser, setAdminUser] = useState<{ id: string; name: string; email: string; role: string } | null>(null);
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const router = useRouter();
+  const { logout } = useAdminAuth();
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
   useEffect(() => {
-    // Get admin user info from server
     fetchAdminUser();
   }, []);
 
   const fetchAdminUser = async () => {
     try {
       const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include', // Include cookies
+        credentials: 'include',
       });
 
       if (response.ok) {
         const data = await response.json();
         setAdminUser(data.user);
       }
-    } catch {
-      // User not authenticated, will be handled by AdminAuthProvider
+    } catch (error) {
+      console.error('Error fetching admin user:', error);
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/admin/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch {
-      // Ignore errors during logout
-    }
-    router.push('/admin');
+    await logout();
   };
 
   const menuItems: MenuProps['items'] = [
@@ -108,80 +108,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       onClick: handleLogout,
     },
   ];
-
-  // Always render the layout, let AdminAuthProvider handle authentication
-  return (
-    <AdminAuthProvider>
-      <Layout style={{ minHeight: '100vh' }}>
-        <Sider trigger={null} collapsible collapsed={collapsed}>
-          <div style={{ 
-            height: 32, 
-            margin: 16, 
-            background: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: 6,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold'
-          }}>
-            {collapsed ? 'TT' : 'TidyToto Admin'}
-          </div>
-          <Menu
-            theme="dark"
-            mode="inline"
-            defaultSelectedKeys={['dashboard']}
-            items={menuItems}
-          />
-        </Sider>
-        <Layout>
-          <Header style={{ 
-            padding: 0, 
-            background: colorBgContainer,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingRight: 24
-          }}>
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: '16px',
-                width: 64,
-                height: 64,
-              }}
-            />
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: '8px 12px',
-                borderRadius: 6,
-                transition: 'background-color 0.3s'
-              }}>
-                <Avatar icon={<UserOutlined />} style={{ marginRight: 8 }} />
-                <span>{adminUser?.name || 'Admin'}</span>
-              </div>
-            </Dropdown>
-          </Header>
-          <Content
-            style={{
-              margin: '24px 16px',
-              padding: 24,
-              minHeight: 280,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-            }}
-          >
-            {children}
-          </Content>
-        </Layout>
-      </Layout>
-    </AdminAuthProvider>
-  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -252,5 +178,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </Content>
       </Layout>
     </Layout>
+  );
+}
+
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  return (
+    <AdminAuthProvider>
+      <AdminLayoutContent>
+        {children}
+      </AdminLayoutContent>
+    </AdminAuthProvider>
   );
 } 

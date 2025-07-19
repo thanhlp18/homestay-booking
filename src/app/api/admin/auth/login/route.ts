@@ -51,6 +51,8 @@ export async function POST(request: NextRequest) {
       { expiresIn: '24h' }
     );
 
+    console.log('Generated token for admin:', admin.email);
+
     // Update last login
     await prisma.user.update({
       where: { id: admin.id },
@@ -73,10 +75,12 @@ export async function POST(request: NextRequest) {
     response.cookies.set('adminToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
       maxAge: 24 * 60 * 60, // 24 hours
       path: '/',
     });
+
+    console.log('Cookie set successfully for admin:', admin.email);
 
     return response;
 

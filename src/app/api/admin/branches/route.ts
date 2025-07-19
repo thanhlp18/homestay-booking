@@ -6,8 +6,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
+  console.log('=== Admin Token Verification ===');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
+  // Log all cookies
+  const allCookies = request.cookies.getAll();
+  console.log('All cookies:', allCookies);
+  
   const token = request.cookies.get('adminToken')?.value;
+  console.log('Admin token found:', !!token);
+  console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+  
   if (!token) {
+    console.log('No admin token found in cookies');
     return null;
   }
 
@@ -18,6 +30,12 @@ async function verifyAdminToken(request: NextRequest) {
       role: string;
     };
 
+    console.log('Token decoded successfully:', { 
+      id: decoded.id, 
+      email: decoded.email, 
+      role: decoded.role 
+    });
+
     const admin = await prisma.user.findFirst({
       where: { 
         id: decoded.id,
@@ -26,22 +44,33 @@ async function verifyAdminToken(request: NextRequest) {
       },
     });
 
+    console.log('Admin found in database:', !!admin);
+    if (admin) {
+      console.log('Admin details:', { id: admin.id, name: admin.name, email: admin.email });
+    }
+    
     return admin;
-  } catch {
+  } catch (error) {
+    console.error('Token verification failed:', error);
     return null;
   }
 }
 
 // Create new branch
 export async function POST(request: NextRequest) {
+  console.log('=== POST /api/admin/branches ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const body = await request.json();
     const {
@@ -106,6 +135,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log('Branch created successfully:', branch.id);
+
     return NextResponse.json({
       success: true,
       message: 'Đã tạo chi nhánh thành công',
@@ -123,14 +154,19 @@ export async function POST(request: NextRequest) {
 
 // Get all branches with room count
 export async function GET(request: NextRequest) {
+  console.log('=== GET /api/admin/branches ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const branches = await prisma.branch.findMany({
       include: {
@@ -144,6 +180,8 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
+
+    console.log('Branches fetched successfully:', branches.length);
 
     return NextResponse.json({
       success: true,

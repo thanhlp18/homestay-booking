@@ -12,18 +12,35 @@ interface RouteParams {
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  console.log('=== Admin Token Verification ===');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
+  // Log all cookies
+  const allCookies = request.cookies.getAll();
+  console.log('All cookies:', allCookies);
+  
+  const token = request.cookies.get('adminToken')?.value;
+  console.log('Admin token found:', !!token);
+  console.log('Token value:', token ? `${token.substring(0, 20)}...` : 'null');
+  
+  if (!token) {
+    console.log('No admin token found in cookies');
     return null;
   }
 
-  const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;
       email: string;
       role: string;
     };
+
+    console.log('Token decoded successfully:', { 
+      id: decoded.id, 
+      email: decoded.email, 
+      role: decoded.role 
+    });
 
     const admin = await prisma.user.findFirst({
       where: { 
@@ -33,22 +50,33 @@ async function verifyAdminToken(request: NextRequest) {
       },
     });
 
+    console.log('Admin found in database:', !!admin);
+    if (admin) {
+      console.log('Admin details:', { id: admin.id, name: admin.name, email: admin.email });
+    }
+    
     return admin;
-  } catch {
+  } catch (error) {
+    console.error('Token verification failed:', error);
     return null;
   }
 }
 
 // Update branch
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  console.log('=== PUT /api/admin/branches/[id] ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const { id } = await params;
     const body = await request.json();
@@ -133,6 +161,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       },
     });
 
+    console.log('Branch updated successfully:', updatedBranch.id);
+
     return NextResponse.json({
       success: true,
       message: 'Đã cập nhật chi nhánh thành công',
@@ -150,14 +180,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 // Delete branch
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  console.log('=== DELETE /api/admin/branches/[id] ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
+
+    console.log('Authorized admin:', admin.name);
 
     const { id } = await params;
 
@@ -193,6 +228,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       where: { id },
     });
 
+    console.log('Branch deleted successfully:', id);
+
     return NextResponse.json({
       success: true,
       message: 'Đã xóa chi nhánh thành công',
@@ -207,27 +244,27 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// Get branch by ID
+// Get single branch
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  console.log('=== GET /api/admin/branches/[id] ===');
+  
   try {
     const admin = await verifyAdminToken(request);
     if (!admin) {
+      console.log('Unauthorized: No valid admin token');
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    console.log('Authorized admin:', admin.name);
+
     const { id } = await params;
 
     const branch = await prisma.branch.findUnique({
       where: { id },
       include: {
-        rooms: {
-          include: {
-            timeSlots: true,
-          },
-        },
         _count: {
           select: {
             rooms: true,
@@ -242,6 +279,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 404 }
       );
     }
+
+    console.log('Branch fetched successfully:', branch.id);
 
     return NextResponse.json({
       success: true,
