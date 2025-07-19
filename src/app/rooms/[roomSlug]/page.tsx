@@ -534,32 +534,9 @@ export default function RoomPage() {
                 />
               ))}
             </div>
-            <div className={styles.amenitiesContainer}>
-              <h3 className={styles.sectionTitle}>Tiện nghi</h3>
-
-              {room.amenities.length > 0 && (
-                <div className={styles.amenitiesList}>
-                  {room.amenities.map((amenity) => (
-                    <div className={styles.amenityRow} key={amenity}>
-                      <span className={styles.amenityIconBox}>
-                        <img
-                          src={
-                            AMENITY_ICON_MAP[amenity] ||
-                            "/tien_nghi/tien_nghi_khac.png"
-                          }
-                          alt={amenity}
-                          className={styles.amenityIconImg}
-                        />
-                      </span>
-                      <span className={styles.amenityText}>{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
 
-          {/* Room Details */}
+          {/* Room Details - First Row */}
           <div className={styles.roomDetails}>
             <div className={styles.roomInfo}>
               <h2 className={styles.roomName}>{room.name}</h2>
@@ -616,23 +593,52 @@ export default function RoomPage() {
                   </div>
                 )}
               </div>
-
-              <div className={styles.description}>
-                <h3 className={styles.sectionTitle}>Mô tả</h3>
-                <p className={styles.descriptionText}>{room.description}</p>
-              </div>
-              <div className={styles.features}>
-                <h3 className={styles.sectionTitle}>Đặc điểm nổi bật</h3>
-                <div className={styles.featureList}>
-                  {room.features.map((feature, index) => (
-                    <div key={index} className={styles.featureItem}>
-                      <span className={styles.featureIcon}>✓</span>
-                      <span className={styles.featureText}>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
+          </div>
+        </div>
+
+        {/* Second Row - Amenities, Description, Features */}
+        <div className={styles.roomInfoRow}>
+         
+
+          <div className={styles.description}>
+            <h3 className={styles.sectionTitle}>Mô tả</h3>
+            <p className={styles.descriptionText}>{room.description}</p>
+          </div>
+
+          <div className={styles.features}>
+            <h3 className={styles.sectionTitle}>Đặc điểm nổi bật</h3>
+            <div className={styles.featureList}>
+              {room.features.map((feature, index) => (
+                <div key={index} className={styles.featureItem}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span className={styles.featureText}>{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className={styles.sectionTitle}>Tiện nghi</h3>
+            {room.amenities.length > 0 && (
+              <div className={styles.amenitiesList}>
+                {room.amenities.map((amenity) => (
+                  <div className={styles.amenityRow} key={amenity}>
+                    <span className={styles.amenityIconBox}>
+                      <img
+                        src={
+                          AMENITY_ICON_MAP[amenity] ||
+                          "/tien_nghi/tien_nghi_khac.png"
+                        }
+                        alt={amenity}
+                        className={styles.amenityIconImg}
+                      />
+                    </span>
+                    <span className={styles.amenityText}>{amenity}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

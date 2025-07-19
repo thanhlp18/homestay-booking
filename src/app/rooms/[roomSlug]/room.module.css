@@ -1103,6 +1103,18 @@
   }
 } 
 
+/* New layout for second row */
+.roomInfoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
 .amenitiesContainer {
   background: white;
   padding: 2rem;
@@ -1181,38 +1193,123 @@
 .amenitiesList {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem 2.5rem;
-  margin: 2rem 0;
+  gap: 0.8rem;
 }
 
 .amenityRow {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-width: 0;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .amenityIconBox {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: white;
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
 .amenityIconImg {
-  max-width: 32px;
-  max-height: 32px;
-  display: block;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
-  filter: grayscale(0) brightness(1) sepia(1) hue-rotate(-10deg) saturate(5) !important;
 }
 
 .amenityText {
-  font-size: 1.18rem;
-  color: #333;
   font-weight: 500;
-  line-height: 1.2;
+  color: #333;
   word-break: break-word;
+} 
+
+/* Responsive design for amenities */
+@media (max-width: 1024px) {
+  .amenitiesList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .amenitiesList {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  
+  .amenityRow {
+    padding: 0.6rem;
+    gap: 0.6rem;
+  }
+  
+  .amenityIconBox {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .amenityIconImg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .amenityText {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .amenityRow {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .amenityIconBox {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .amenityIconImg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .amenityText {
+    font-size: 0.85rem;
+  }
+}
+
+/* Responsive design for the new layout */
+@media (max-width: 1024px) {
+  .roomInfoRow {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  .features {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .roomInfoRow {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .features {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .roomInfoRow {
+    padding: 1rem;
+  }
 } 
