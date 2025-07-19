@@ -18,6 +18,7 @@ import {
   Col,
   Statistic
 } from 'antd';
+import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   EyeOutlined, 
   CheckCircleOutlined, 
@@ -162,24 +163,19 @@ export default function BookingsPage() {
   const handleApproveBooking = async (bookingId: string) => {
     try {
       setActionLoading(bookingId);
-      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+      const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           action: 'approve',
         }),
       });
 
-      if (response.ok) {
-        message.success('Đã phê duyệt đặt phòng thành công');
-        await fetchBookings();
-      } else {
-        message.error('Không thể phê duyệt đặt phòng');
-      }
-    } catch {
-      message.error('Đã xảy ra lỗi khi phê duyệt đặt phòng');
+      await handleApiResponse(response);
+      message.success('Đã phê duyệt đặt phòng thành công');
+      await fetchBookings();
+    } catch (error) {
+      message.error('Không thể phê duyệt đặt phòng');
+      console.error('Error approving booking:', error);
     } finally {
       setActionLoading(null);
     }
@@ -191,25 +187,20 @@ export default function BookingsPage() {
 
     try {
       setActionLoading(bookingId);
-      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+      const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           action: 'reject',
           reason,
         }),
       });
 
-      if (response.ok) {
-        message.success('Đã từ chối đặt phòng thành công');
-        await fetchBookings();
-      } else {
-        message.error('Không thể từ chối đặt phòng');
-      }
-    } catch {
-      message.error('Đã xảy ra lỗi khi từ chối đặt phòng');
+      await handleApiResponse(response);
+      message.success('Đã từ chối đặt phòng thành công');
+      await fetchBookings();
+    } catch (error) {
+      message.error('Không thể từ chối đặt phòng');
+      console.error('Error rejecting booking:', error);
     } finally {
       setActionLoading(null);
     }
@@ -218,18 +209,16 @@ export default function BookingsPage() {
   const handleCancelBooking = async (bookingId: string) => {
     try {
       setActionLoading(bookingId);
-      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+      const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
         method: 'DELETE',
       });
 
-      if (response.ok) {
-        message.success('Đã hủy đặt phòng thành công');
-        await fetchBookings();
-      } else {
-        message.error('Không thể hủy đặt phòng');
-      }
-    } catch {
-      message.error('Đã xảy ra lỗi khi hủy đặt phòng');
+      await handleApiResponse(response);
+      message.success('Đã hủy đặt phòng thành công');
+      await fetchBookings();
+    } catch (error) {
+      message.error('Không thể hủy đặt phòng');
+      console.error('Error canceling booking:', error);
     } finally {
       setActionLoading(null);
     }

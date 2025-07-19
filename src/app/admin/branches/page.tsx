@@ -16,6 +16,7 @@ import {
   Tag,
   Typography
 } from 'antd';
+import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -76,11 +77,12 @@ export default function BranchesPage() {
   const fetchBranches = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/branches');
-      const data = await response.json();
+      const response = await adminApiCall('/api/admin/branches');
+      const data = await handleApiResponse(response);
       setBranches(data.data || []);
-    } catch {
+    } catch (error) {
       message.error('Không thể tải danh sách chi nhánh');
+      console.error('Error fetching branches:', error);
     } finally {
       setLoading(false);
     }
@@ -117,18 +119,16 @@ export default function BranchesPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/branches/${id}`, {
+      const response = await adminApiCall(`/api/admin/branches/${id}`, {
         method: 'DELETE',
       });
 
-      if (response.ok) {
-        message.success('Đã xóa chi nhánh thành công');
-        fetchBranches();
-      } else {
-        message.error('Không thể xóa chi nhánh');
-      }
-    } catch {
-      message.error('Đã xảy ra lỗi khi xóa chi nhánh');
+      await handleApiResponse(response);
+      message.success('Đã xóa chi nhánh thành công');
+      fetchBranches();
+    } catch (error) {
+      message.error('Không thể xóa chi nhánh');
+      console.error('Error deleting branch:', error);
     }
   };
 
@@ -146,28 +146,22 @@ export default function BranchesPage() {
       
       const method = editingBranch ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await adminApiCall(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        message.success(
-          editingBranch 
-            ? 'Đã cập nhật chi nhánh thành công'
-            : 'Đã tạo chi nhánh thành công'
-        );
-        setModalVisible(false);
-        fetchBranches();
-      } else {
-        const error = await response.json();
-        message.error(error.message || 'Đã xảy ra lỗi');
-      }
-    } catch {
+      await handleApiResponse(response);
+      message.success(
+        editingBranch 
+          ? 'Đã cập nhật chi nhánh thành công'
+          : 'Đã tạo chi nhánh thành công'
+      );
+      setModalVisible(false);
+      fetchBranches();
+    } catch (error) {
       message.error('Đã xảy ra lỗi khi lưu chi nhánh');
+      console.error('Error saving branch:', error);
     }
   };
 

@@ -18,6 +18,7 @@ import {
   Select,
   InputNumber
 } from 'antd';
+import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   PlusOutlined, 
   EditOutlined, 
@@ -105,16 +106,17 @@ export default function RoomsPage() {
       setLoading(true);
       
       // Fetch rooms
-      const roomsResponse = await fetch('/api/admin/rooms');
-      const roomsData = await roomsResponse.json();
+      const roomsResponse = await adminApiCall('/api/admin/rooms');
+      const roomsData = await handleApiResponse(roomsResponse);
       setRooms(roomsData.data || []);
 
       // Fetch branches
       const branchesResponse = await fetch('/api/branches');
       const branchesData = await branchesResponse.json();
       setBranches(branchesData.data || []);
-    } catch {
+    } catch (error) {
       message.error('Không thể tải dữ liệu');
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -153,18 +155,16 @@ export default function RoomsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(`/api/admin/rooms/${id}`, {
+      const response = await adminApiCall(`/api/admin/rooms/${id}`, {
         method: 'DELETE',
       });
 
-      if (response.ok) {
-        message.success('Đã xóa phòng thành công');
-        fetchData();
-      } else {
-        message.error('Không thể xóa phòng');
-      }
-    } catch {
-      message.error('Đã xảy ra lỗi khi xóa phòng');
+      await handleApiResponse(response);
+      message.success('Đã xóa phòng thành công');
+      fetchData();
+    } catch (error) {
+      message.error('Không thể xóa phòng');
+      console.error('Error deleting room:', error);
     }
   };
 
@@ -184,28 +184,22 @@ export default function RoomsPage() {
       
       const method = editingRoom ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await adminApiCall(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        message.success(
-          editingRoom 
-            ? 'Đã cập nhật phòng thành công'
-            : 'Đã tạo phòng thành công'
-        );
-        setModalVisible(false);
-        fetchData();
-      } else {
-        const error = await response.json();
-        message.error(error.message || 'Đã xảy ra lỗi');
-      }
-    } catch {
+      await handleApiResponse(response);
+      message.success(
+        editingRoom 
+          ? 'Đã cập nhật phòng thành công'
+          : 'Đã tạo phòng thành công'
+      );
+      setModalVisible(false);
+      fetchData();
+    } catch (error) {
       message.error('Đã xảy ra lỗi khi lưu phòng');
+      console.error('Error saving room:', error);
     }
   };
 

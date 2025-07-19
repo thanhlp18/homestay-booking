@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Button, Space, Typography, Spin } from 'antd';
+import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   BookOutlined, 
   HomeOutlined, 
@@ -128,19 +129,15 @@ export default function AdminDashboard() {
   const handleApproveBooking = async (bookingId: string) => {
     try {
       setActionLoading(bookingId);
-      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+      const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           action: 'approve',
         }),
       });
 
-      if (response.ok) {
-        await fetchData();
-      }
+      await handleApiResponse(response);
+      await fetchData();
     } catch (error) {
       console.error('Error approving booking:', error);
     } finally {
