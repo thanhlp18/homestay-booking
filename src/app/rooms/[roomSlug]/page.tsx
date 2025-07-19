@@ -557,7 +557,7 @@ export default function RoomPage() {
             bookingId: result.data.bookingId,
             isFullDayBooking: isFullDayBooking,
           };
-          localStorage.setItem("bookingData", JSON.stringify(bookingData));
+          document.cookie = `bookingData=${JSON.stringify(bookingData)}; path=/; max-age=3600; SameSite=Strict`;
           router.push("/payment");
         } else {
           alert(

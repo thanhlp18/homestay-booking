@@ -57,10 +57,10 @@ export async function POST(request: NextRequest) {
       data: { updatedAt: new Date() },
     });
 
-    return NextResponse.json({
+    // Create response with user data
+    const response = NextResponse.json({
       success: true,
       message: 'Đăng nhập thành công',
-      token,
       user: {
         id: admin.id,
         name: admin.name,
@@ -68,6 +68,17 @@ export async function POST(request: NextRequest) {
         role: admin.role,
       },
     });
+
+    // Set secure HTTP-only cookie
+    response.cookies.set('adminToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60, // 24 hours
+      path: '/',
+    });
+
+    return response;
 
   } catch (error) {
     console.error('Admin login error:', error);

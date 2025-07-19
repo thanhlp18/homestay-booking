@@ -3,21 +3,13 @@ export async function adminApiCall(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = localStorage.getItem('adminToken');
-  
-  if (!token) {
-    throw new Error('No admin token found');
-  }
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    ...options.headers,
-  };
-
   return fetch(url, {
     ...options,
-    headers,
+    credentials: 'include', // Include cookies
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
   });
 }
 

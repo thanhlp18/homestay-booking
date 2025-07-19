@@ -6,12 +6,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Helper function to verify admin token
 async function verifyAdminToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = request.cookies.get('adminToken')?.value;
+  if (!token) {
     return null;
   }
 
-  const token = authHeader.substring(7);
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
       id: string;

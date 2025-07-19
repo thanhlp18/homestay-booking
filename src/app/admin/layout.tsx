@@ -15,7 +15,6 @@ import {
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import AdminAuthProvider from './components/AdminAuthProvider';
-import AdminLoadingSpinner from './components/AdminLoadingSpinner';
 
 const { Header, Sider, Content } = Layout;
 
@@ -25,7 +24,6 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState<{ id: string; name: string; email: string; role: string } | null>(null);
   const router = useRouter();
   const {
@@ -33,41 +31,35 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   } = theme.useToken();
 
   useEffect(() => {
-    checkAuthStatus();
+    // Get admin user info from server
+    fetchAdminUser();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const fetchAdminUser = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
-
       const response = await fetch('/api/admin/auth/verify', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Include cookies
       });
 
       if (response.ok) {
         const data = await response.json();
         setAdminUser(data.user);
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('adminToken');
-        setIsAuthenticated(false);
       }
     } catch {
-      localStorage.removeItem('adminToken');
-      setIsAuthenticated(false);
+      // User not authenticated, will be handled by AdminAuthProvider
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setIsAuthenticated(false);
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // Ignore errors during logout
+    }
+    router.push('/admin');
   };
 
   const menuItems: MenuProps['items'] = [
@@ -117,13 +109,79 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     },
   ];
 
-  if (isAuthenticated === null) {
-    return <AdminLoadingSpinner />;
-  }
-
-  if (!isAuthenticated) {
-    return <AdminAuthProvider>{children}</AdminAuthProvider>;
-  }
+  // Always render the layout, let AdminAuthProvider handle authentication
+  return (
+    <AdminAuthProvider>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider trigger={null} collapsible collapsed={collapsed}>
+          <div style={{ 
+            height: 32, 
+            margin: 16, 
+            background: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold'
+          }}>
+            {collapsed ? 'TT' : 'TidyToto Admin'}
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            defaultSelectedKeys={['dashboard']}
+            items={menuItems}
+          />
+        </Sider>
+        <Layout>
+          <Header style={{ 
+            padding: 0, 
+            background: colorBgContainer,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingRight: 24
+          }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                fontSize: '16px',
+                width: 64,
+                height: 64,
+              }}
+            />
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                padding: '8px 12px',
+                borderRadius: 6,
+                transition: 'background-color 0.3s'
+              }}>
+                <Avatar icon={<UserOutlined />} style={{ marginRight: 8 }} />
+                <span>{adminUser?.name || 'Admin'}</span>
+              </div>
+            </Dropdown>
+          </Header>
+          <Content
+            style={{
+              margin: '24px 16px',
+              padding: 24,
+              minHeight: 280,
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            {children}
+          </Content>
+        </Layout>
+      </Layout>
+    </AdminAuthProvider>
+  );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

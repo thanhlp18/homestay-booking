@@ -80,13 +80,31 @@ export default function PaymentPage() {
     }
   };
 
-  useEffect(() => {
-    const storedData = localStorage.getItem('bookingData');
-    if (storedData) {
-      setBookingData(JSON.parse(storedData));
-    } else {
-      router.push('/');
+  const getStoredBookingData = () => {
+    const cookies = document.cookie.split(';');
+    const bookingDataCookie = cookies.find(cookie => cookie.trim().startsWith('bookingData='));
+    
+    if (bookingDataCookie) {
+      try {
+        const bookingDataString = bookingDataCookie.split('=')[1];
+        return JSON.parse(decodeURIComponent(bookingDataString));
+      } catch (error) {
+        console.error('Error parsing booking data from cookie:', error);
+        return null;
+      }
     }
+    return null;
+  };
+
+  useEffect(() => {
+    const storedData = getStoredBookingData();
+    
+    if (!storedData) {
+      router.push('/');
+      return;
+    }
+
+    setBookingData(storedData);
   }, [router]);
 
   useEffect(() => {
@@ -154,7 +172,7 @@ export default function PaymentPage() {
       }
 
       // Clear booking data from localStorage
-      localStorage.removeItem('bookingData');
+      document.cookie = 'bookingData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
       
       // Show success message and redirect
       alert('Đã hủy đặt phòng thành công!');
@@ -335,7 +353,7 @@ export default function PaymentPage() {
               <div className={styles.successActions}>
                 <button 
                   onClick={() => {
-                    localStorage.removeItem('bookingData');
+                    document.cookie = 'bookingData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
                     router.push('/');
                   }}
                   className={styles.homeButton}

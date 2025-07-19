@@ -6,16 +6,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const token = request.cookies.get('adminToken')?.value;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return NextResponse.json(
         { success: false, message: 'Token không hợp lệ' },
         { status: 401 }
       );
     }
-
-    const token = authHeader.substring(7);
 
     // Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET) as {

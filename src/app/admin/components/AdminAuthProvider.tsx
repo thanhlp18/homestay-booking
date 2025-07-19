@@ -11,12 +11,7 @@ interface AdminAuthProviderProps {
   children: React.ReactNode;
 }
 
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 export default function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -29,26 +24,16 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
 
   const checkAuthStatus = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
-
       const response = await fetch('/api/admin/auth/verify', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Include cookies
       });
 
       if (response.ok) {
         setIsAuthenticated(true);
       } else {
-        localStorage.removeItem('adminToken');
         setIsAuthenticated(false);
       }
-    } catch (error) {
-      localStorage.removeItem('adminToken');
+    } catch {
       setIsAuthenticated(false);
     }
   };
@@ -67,14 +52,13 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('adminToken', data.token);
         message.success('Đăng nhập thành công!');
         setIsAuthenticated(true);
         router.push('/admin');
       } else {
         message.error(data.message || 'Đăng nhập thất bại');
       }
-    } catch (error) {
+    } catch {
       message.error('Đã xảy ra lỗi khi đăng nhập');
     } finally {
       setLoading(false);
