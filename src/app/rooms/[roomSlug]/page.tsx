@@ -427,8 +427,8 @@ export default function RoomPage() {
             selectedSlots: selectedSlots,
             bookingId: result.data.bookingId,
           };
-          localStorage.setItem('bookingData', JSON.stringify(bookingData));
-          router.push('/payment');
+          localStorage.setItem("bookingData", JSON.stringify(bookingData));
+          router.push("/payment");
         } else {
           alert(
             `Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString(
@@ -470,7 +470,11 @@ export default function RoomPage() {
   const calculateTotalPrice = () => {
     const baseTotal = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
     const slotCount = selectedSlots.length;
-
+    const priceGuest =
+      parseInt(formData.guests) > 2
+        ? 50000 * (parseInt(formData.guests) - 2)
+        : 0;
+    const totalPrice = baseTotal + priceGuest;
     let discount = 0;
     if (slotCount >= 3) {
       discount = 0.1; // 10% discount for 3+ slots
@@ -478,11 +482,12 @@ export default function RoomPage() {
       discount = 0.05; // 5% discount for 2 slots
     }
 
-    const finalTotal = baseTotal * (1 - discount);
-    return { baseTotal, discount, finalTotal, slotCount };
+    const finalTotal = totalPrice * (1 - discount);
+    return { baseTotal, discount, finalTotal, slotCount, priceGuest };
   };
 
-  const { baseTotal, discount, finalTotal, slotCount } = calculateTotalPrice();
+  const { baseTotal, discount, finalTotal, slotCount, priceGuest } =
+    calculateTotalPrice();
 
   return (
     <div className={styles.page}>
@@ -512,9 +517,9 @@ export default function RoomPage() {
                 className={styles.roomImage}
                 style={{
                   backgroundImage: `url(${room.images[selectedImageIndex]})`,
-                  backgroundPosition: 'center',
-                  backgroundSize: 'cover',
-                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
                 }}
               />
             </div>
@@ -599,8 +604,6 @@ export default function RoomPage() {
 
         {/* Second Row - Amenities, Description, Features */}
         <div className={styles.roomInfoRow}>
-         
-
           <div className={styles.description}>
             <h3 className={styles.sectionTitle}>Mô tả</h3>
             <p className={styles.descriptionText}>{room.description}</p>
@@ -832,8 +835,18 @@ export default function RoomPage() {
                       <option value="2">2 khách</option>
                       <option value="3">3 khách</option>
                       <option value="4">4 khách</option>
-                      <option value="5">5+ khách</option>
                     </select>
+                    {formData.guests && parseInt(formData.guests) > 2 && (
+                      <div className={styles.guestDescription}>
+                        <p className={styles.descriptionText}>
+                          • Nếu &gt; 2 khách, Home xin phép phụ thu 50k/khách ạ!
+                        </p>
+                        <p className={styles.descriptionText}>
+                          • Home chỉ nhận tối đa 2 khách nếu khách book có khung
+                          giờ qua đêm.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className={styles.formRow}>
@@ -860,6 +873,12 @@ export default function RoomPage() {
                     <span>Số khung giờ:</span>
                     <span>{slotCount}</span>
                   </div>
+                  {parseInt(formData.guests) > 2 && (
+                    <div className={styles.priceRow}>
+                      <span>Số tiền khách vượt quá 2 khách:</span>
+                      <span>{priceGuest.toLocaleString("vi-VN")} đ</span>
+                    </div>
+                  )}
                   <div className={styles.priceRow}>
                     <span>Tổng tiền gốc:</span>
                     <span>{baseTotal.toLocaleString("vi-VN")} đ</span>

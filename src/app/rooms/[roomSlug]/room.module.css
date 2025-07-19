@@ -1313,3 +1313,27 @@
     padding: 1rem;
   }
 } 
+
+.guestDescription {
+  margin-top: 0.5rem;
+  padding: 0.8rem;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.guestDescription .descriptionText {
+  margin: 0.3rem 0;
+  color: #856404;
+  line-height: 1.4;
+  font-size: 0.85rem;
+}
+
+.guestDescription .descriptionText:first-child {
+  margin-top: 0;
+}
+
+.guestDescription .descriptionText:last-child {
+  margin-bottom: 0;
+} 

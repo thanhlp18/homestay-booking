@@ -343,8 +343,8 @@ export default function PaymentPage() {
         
         <div className={styles.footerBottom}>
           <p className={styles.footerText}>
-            Hộ kinh doanh LOCAL HOME / Địa chỉ: Số B1 07, chung cư Cadif - HH1, Hưng Phú, Q. Cái Răng, TP. Cần Thơ / Mã số hộ kinh doanh: 
-            8340126748 - 002 do Phòng Tài Chính - Kế Hoạch Quận Cái Răng cấp lần đầu ngày 13/11/2024. Điện thoại: 0901416888. Chủ trách nhiệm 
+            Hộ kinh doanh TidyToto / Địa chỉ: Hưng Phú, Q. Cái Răng, TP. Cần Thơ / Mã số hộ kinh doanh: 
+            00000000000 - 002 do Phòng Tài Chính - Kế Hoạch Quận Cái Răng cấp lần đầu ngày 13/11/2024. Điện thoại: 090000000. Chủ trách nhiệm 
             nội dung: Lê Phước Thành
           </p>
         </div>
