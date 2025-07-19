@@ -1,4 +1,5 @@
 // Test script to simulate webhook calls
+// When webhook matches a booking, it will automatically approve the booking and send approval email
 // Usage: node scripts/test-webhook.js <bookingId> <amount>
 
 const bookingId = process.argv[2];
@@ -43,6 +44,9 @@ async function testWebhook() {
       console.log('✅ Webhook processed successfully');
       if (result.data.bookingMatched) {
         console.log('✅ Booking matched and payment confirmed');
+        if (result.data.autoApproved) {
+          console.log('✅ Booking automatically approved and approval email sent');
+        }
       } else {
         console.log('⚠️  Booking not matched');
       }

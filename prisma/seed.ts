@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -273,17 +274,19 @@ async function main() {
     }
   }
 
-  // Create a default admin user
+  // Create a default admin user with hashed password
+  const hashedPassword = await bcrypt.hash("admin123", 10);
   const adminUser = await prisma.user.create({
     data: {
       email: "admin@localhome.vn",
       name: "Admin",
       phone: "0932620930",
+      password: hashedPassword,
       role: "ADMIN",
     },
   });
 
-  console.log(`👤 Created admin user: ${adminUser.email}`);
+  console.log(`👤 Created admin user: ${adminUser.email} with password: admin123`);
 
   console.log("🎉 Database seeding completed successfully!");
 }
