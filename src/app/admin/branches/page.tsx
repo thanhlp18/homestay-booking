@@ -10,7 +10,6 @@ import {
   Form, 
   Input, 
   Switch, 
-  Upload, 
   message, 
   Popconfirm,
   Tag,
@@ -21,18 +20,18 @@ import {
   Avatar
 } from 'antd';
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
+import S3ImageUpload from '../components/S3ImageUpload';
+import { ImageGallery } from '../components/ImageDisplay';
 import { 
   PlusOutlined, 
   EditOutlined, 
-  DeleteOutlined, 
-  UploadOutlined,
+  DeleteOutlined,
   HomeOutlined,
   EnvironmentOutlined,
   PhoneOutlined,
   MailOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { UploadFile } from 'antd/es/upload/interface';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -80,8 +79,8 @@ export default function BranchesPage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     fetchBranches();
@@ -117,7 +116,7 @@ export default function BranchesPage() {
     setEditingBranch(null);
     setModalVisible(true);
     form.resetFields();
-    setFileList([]);
+    setImageUrls([]);
   };
 
   const handleEdit = (branch: Branch) => {
@@ -128,14 +127,8 @@ export default function BranchesPage() {
       amenities: branch.amenities.join(', '),
     });
     
-    // Set file list for existing images
-    const files: UploadFile[] = branch.images.map((url, index) => ({
-      uid: `-${index}`,
-      name: `image-${index}`,
-      status: 'done',
-      url,
-    }));
-    setFileList(files);
+    // Set existing images
+    setImageUrls(branch.images || []);
   };
 
   const handleDelete = async (id: string) => {
@@ -158,7 +151,7 @@ export default function BranchesPage() {
       const formData = {
         ...values,
         amenities: values.amenities.split(',').map(item => item.trim()).filter(Boolean),
-        images: fileList.map(file => file.url || file.response?.url).filter(Boolean),
+                images: imageUrls,
       };
 
       const url = editingBranch 
@@ -326,10 +319,24 @@ export default function BranchesPage() {
           <MailOutlined style={{ marginRight: 8, color: '#faad14', flexShrink: 0 }} />
           <Text style={{ fontSize: '14px', wordBreak: 'break-all' }}>{branch.email}</Text>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <HomeOutlined style={{ marginRight: 8, color: '#722ed1', flexShrink: 0 }} />
           <Text style={{ fontSize: '14px', fontWeight: 'bold' }}>{branch._count?.rooms || 0} phòng</Text>
         </div>
+        
+        {/* Display images if available */}
+        {branch.images && branch.images.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <Text style={{ fontSize: '12px', color: '#666', marginBottom: 8, display: 'block' }}>
+              Hình ảnh ({branch.images.length})
+            </Text>
+            <ImageGallery 
+              images={branch.images}
+              size="small"
+              maxDisplay={3}
+            />
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
@@ -552,19 +559,12 @@ export default function BranchesPage() {
           </Form.Item>
 
           <Form.Item label="Hình ảnh">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={() => false}
-            >
-              {fileList.length >= 8 ? null : (
-                <div>
-                  <UploadOutlined />
-                  <div style={{ marginTop: 8 }}>Tải lên</div>
-                </div>
-              )}
-            </Upload>
+            <S3ImageUpload
+              value={imageUrls}
+              onChange={setImageUrls}
+              maxCount={8}
+              folder="branches"
+            />
           </Form.Item>
 
           <Form.Item>

@@ -10,7 +10,6 @@ import {
   Form, 
   Input, 
   Switch, 
-  Upload, 
   message, 
   Popconfirm,
   Tag,
@@ -20,18 +19,18 @@ import {
   Avatar
 } from 'antd';
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
+import S3ImageUpload from '../components/S3ImageUpload';
+import { ImageGallery } from '../components/ImageDisplay';
 import { 
   PlusOutlined, 
   EditOutlined, 
-  DeleteOutlined, 
-  UploadOutlined,
+  DeleteOutlined,
   HomeOutlined,
   EnvironmentOutlined,
   UserOutlined,
   DollarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { UploadFile } from 'antd/es/upload/interface';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -104,8 +103,8 @@ export default function RoomsPage() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const fetchData = async () => {
     try {
@@ -148,7 +147,7 @@ export default function RoomsPage() {
     setEditingRoom(null);
     setModalVisible(true);
     form.resetFields();
-    setFileList([]);
+    setImageUrls([]);
   };
 
   const handleEdit = (room: Room) => {
@@ -161,14 +160,8 @@ export default function RoomsPage() {
       policies: room.policies.join(', '),
     });
     
-    // Set file list for existing images
-    const files: UploadFile[] = room.images.map((url, index) => ({
-      uid: `-${index}`,
-      name: `image-${index}`,
-      status: 'done',
-      url,
-    }));
-    setFileList(files);
+    // Set existing images
+    setImageUrls(room.images || []);
   };
 
   const handleDelete = async (id: string) => {
@@ -193,7 +186,7 @@ export default function RoomsPage() {
         amenities: values.amenities.split(',').map(item => item.trim()).filter(Boolean),
         features: values.features.split(',').map(item => item.trim()).filter(Boolean),
         policies: values.policies.split(',').map(item => item.trim()).filter(Boolean),
-        images: fileList.map(file => file.url || file.response?.url).filter(Boolean),
+                images: imageUrls,
       };
 
       const url = editingRoom 
@@ -293,10 +286,24 @@ export default function RoomsPage() {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           <EnvironmentOutlined style={{ marginRight: 8, color: '#722ed1', flexShrink: 0 }} />
           <Text style={{ fontSize: '14px' }}>{room.area}</Text>
         </div>
+        
+        {/* Display images if available */}
+        {room.images && room.images.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <Text style={{ fontSize: '12px', color: '#666', marginBottom: 8, display: 'block' }}>
+              Hình ảnh ({room.images.length})
+            </Text>
+            <ImageGallery 
+              images={room.images}
+              size="small"
+              maxDisplay={3}
+            />
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
@@ -628,19 +635,12 @@ export default function RoomsPage() {
           </Form.Item>
 
           <Form.Item label="Hình ảnh">
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={() => false}
-            >
-              {fileList.length >= 8 ? null : (
-                <div>
-                  <UploadOutlined />
-                  <div style={{ marginTop: 8 }}>Tải lên</div>
-                </div>
-              )}
-            </Upload>
+            <S3ImageUpload
+              value={imageUrls}
+              onChange={setImageUrls}
+              maxCount={8}
+              folder="rooms"
+            />
           </Form.Item>
 
           <Form.Item>

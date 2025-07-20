@@ -97,6 +97,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       checkIn,
       checkOut,
       branchId,
+      images,
       isActive,
     } = body;
 
@@ -168,6 +169,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         amenities: amenities || [],
         features: features || [],
         policies: policies || [],
+        images: images || [],
         basePrice: parseFloat(basePrice),
         discountPrice: discountPrice ? parseFloat(discountPrice) : null,
         originalPrice: originalPrice ? parseFloat(originalPrice) : null,

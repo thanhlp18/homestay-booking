@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       checkIn,
       checkOut,
       branchId,
+      images,
       isActive = true,
     } = body;
 
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
         amenities: amenities || [],
         features: features || [],
         policies: policies || [],
+        images: images || [],
         basePrice: parseFloat(basePrice),
         discountPrice: discountPrice ? parseFloat(discountPrice) : null,
         originalPrice: originalPrice ? parseFloat(originalPrice) : null,
