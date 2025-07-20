@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Layout, Menu, Button, Avatar, Dropdown, message, theme } from 'antd';
+import { useRouter, usePathname } from 'next/navigation';
+import { Layout, Menu, Button, Avatar, Dropdown, theme, Drawer, Badge } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -12,6 +12,8 @@ import {
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
+  MenuOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import AdminAuthProvider, { useAdminAuth } from './components/AdminAuthProvider';
@@ -31,8 +33,11 @@ interface AdminLayoutProps {
 
 function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { logout } = useAdminAuth();
 
   const {
@@ -41,7 +46,24 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     fetchAdminUser();
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const checkMobile = () => {
+    const isMobileDevice = window.innerWidth <= 768;
+    setIsMobile(isMobileDevice);
+    if (isMobileDevice) {
+      setCollapsed(true);
+      setMobileDrawerVisible(false); // Close drawer on resize
+    }
+  };
 
   const fetchAdminUser = async () => {
     try {
@@ -62,36 +84,52 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
     await logout();
   };
 
+  const handleMenuClick = (path: string) => {
+    router.push(path);
+    if (isMobile) {
+      setMobileDrawerVisible(false);
+    }
+  };
+
+  const getSelectedKey = () => {
+    if (pathname === '/admin') return 'dashboard';
+    if (pathname.startsWith('/admin/bookings')) return 'bookings';
+    if (pathname.startsWith('/admin/branches')) return 'branches';
+    if (pathname.startsWith('/admin/rooms')) return 'rooms';
+    if (pathname.startsWith('/admin/settings')) return 'settings';
+    return 'dashboard';
+  };
+
   const menuItems: MenuProps['items'] = [
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
       label: 'Dashboard',
-      onClick: () => router.push('/admin'),
+      onClick: () => handleMenuClick('/admin'),
     },
     {
       key: 'bookings',
       icon: <BookOutlined />,
       label: 'Quản lý đặt phòng',
-      onClick: () => router.push('/admin/bookings'),
+      onClick: () => handleMenuClick('/admin/bookings'),
     },
     {
       key: 'branches',
       icon: <HomeOutlined />,
       label: 'Quản lý chi nhánh',
-      onClick: () => router.push('/admin/branches'),
+      onClick: () => handleMenuClick('/admin/branches'),
     },
     {
       key: 'rooms',
       icon: <HomeOutlined />,
       label: 'Quản lý phòng',
-      onClick: () => router.push('/admin/rooms'),
+      onClick: () => handleMenuClick('/admin/rooms'),
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
       label: 'Cài đặt',
-      onClick: () => router.push('/admin/settings'),
+      onClick: () => handleMenuClick('/admin/settings'),
     },
   ];
 
@@ -109,69 +147,192 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
     },
   ];
 
+  const renderSidebar = () => (
+    <>
+      <div style={{ 
+        height: isMobile ? 48 : 32, 
+        margin: isMobile ? 8 : 16, 
+        background: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 6,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: isMobile ? '14px' : '16px'
+      }}>
+        {collapsed && !isMobile ? 'TT' : 'TidyToto Admin'}
+      </div>
+      <Menu
+        theme="dark"
+        mode="inline"
+        selectedKeys={[getSelectedKey()]}
+        items={menuItems}
+        style={{ 
+          borderRight: 0,
+          fontSize: isMobile ? '14px' : '16px'
+        }}
+      />
+    </>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div style={{ 
-          height: 32, 
-          margin: 16, 
-          background: 'rgba(255, 255, 255, 0.2)',
-          borderRadius: 6,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sider 
+          trigger={null} 
+          collapsible 
+          collapsed={collapsed}
+          width={256}
+          collapsedWidth={80}
+          style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 1000,
+          }}
+        >
+          {renderSidebar()}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ 
+              width: 24, 
+              height: 24, 
+              background: 'white', 
+              borderRadius: 4, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              fontSize: '12px',
+              fontWeight: 'bold',
+              color: '#001529'
+            }}>
+              TT
+            </div>
+            TidyToto Admin
+          </div>
+        }
+        placement="left"
+        onClose={() => setMobileDrawerVisible(false)}
+        open={mobileDrawerVisible}
+        width={280}
+        bodyStyle={{ padding: 0, background: '#001529' }}
+        headerStyle={{ 
+          background: '#001529', 
           color: 'white',
-          fontWeight: 'bold'
-        }}>
-          {collapsed ? 'TT' : 'TidyToto Admin'}
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={['dashboard']}
-          items={menuItems}
-        />
-      </Sider>
-      <Layout>
+          borderBottom: '1px solid #303030',
+          height: 56
+        }}
+        maskClosable={true}
+        keyboard={true}
+      >
+        {renderSidebar()}
+      </Drawer>
+
+      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 256) }}>
         <Header style={{ 
-          padding: 0, 
+          padding: isMobile ? '0 8px' : '0 24px', 
           background: colorBgContainer,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingRight: 24
+          position: 'sticky',
+          top: 0,
+          zIndex: 999,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          height: isMobile ? 56 : 64,
+          borderBottom: '1px solid #f0f0f0',
         }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
-          />
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: 6,
-              transition: 'background-color 0.3s'
-            }}>
-              <Avatar icon={<UserOutlined />} style={{ marginRight: 8 }} />
-              <span>{adminUser?.name || 'Admin'}</span>
-            </div>
-          </Dropdown>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {isMobile ? (
+              <Button
+                type="text"
+                icon={<MenuOutlined />}
+                onClick={() => setMobileDrawerVisible(true)}
+                style={{
+                  fontSize: '18px',
+                  width: 40,
+                  height: 40,
+                  marginRight: 12,
+                }}
+              />
+            ) : (
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  fontSize: '16px',
+                  width: 64,
+                  height: 64,
+                }}
+              />
+            )}
+            
+            {isMobile && (
+              <div style={{ 
+                fontSize: '18px', 
+                fontWeight: 'bold',
+                color: '#1890ff'
+              }}>
+                TidyToto Admin
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {isMobile && (
+              <Badge count={0} size="small">
+                <Button
+                  type="text"
+                  icon={<BellOutlined />}
+                  style={{ width: 40, height: 40 }}
+                />
+              </Badge>
+            )}
+            
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                padding: isMobile ? '6px 8px' : '8px 12px',
+                borderRadius: 6,
+                transition: 'background-color 0.3s',
+                minWidth: isMobile ? 'auto' : 120,
+              }}>
+                <Avatar 
+                  icon={<UserOutlined />} 
+                  size={isMobile ? 32 : 32}
+                  style={{ marginRight: isMobile ? 0 : 8 }} 
+                />
+                {!isMobile && (
+                  <span style={{ fontSize: '14px' }}>
+                    {adminUser?.name || 'Admin'}
+                  </span>
+                )}
+              </div>
+            </Dropdown>
+          </div>
         </Header>
+        
         <Content
           style={{
-            margin: '24px 16px',
-            padding: 24,
+            margin: isMobile ? '8px' : '24px 16px',
+            padding: isMobile ? 16 : 24,
             minHeight: 280,
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
+            overflow: 'auto',
           }}
         >
           {children}

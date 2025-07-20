@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Button, Space, Typography, Spin } from 'antd';
+import { Card, Row, Col, Statistic, Table, Tag, Button, Space, Typography, Spin, Avatar } from 'antd';
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   BookOutlined, 
@@ -9,11 +9,15 @@ import {
   DollarOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface BookingRecord {
   id: string;
@@ -75,6 +79,23 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
 
   const fetchData = async () => {
     try {
@@ -121,10 +142,6 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleApproveBooking = async (bookingId: string) => {
     try {
@@ -240,7 +257,7 @@ export default function AdminDashboard() {
       title: 'Thao tác',
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <Space direction={isMobile ? 'vertical' : 'horizontal'} size="small">
           {(record.status === 'PENDING' || record.status === 'PAYMENT_CONFIRMED') && (
             <>
               <Button
@@ -248,6 +265,7 @@ export default function AdminDashboard() {
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleApproveBooking(record.id)}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Phê duyệt
               </Button>
@@ -256,6 +274,7 @@ export default function AdminDashboard() {
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleRejectBooking(record.id)}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Từ chối
               </Button>
@@ -265,6 +284,77 @@ export default function AdminDashboard() {
       ),
     },
   ];
+
+  const renderMobileBookingCard = (booking: BookingRecord) => (
+    <Card 
+      key={booking.id} 
+      style={{ marginBottom: 16 }}
+      bodyStyle={{ padding: 16 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+        <Avatar icon={<UserOutlined />} style={{ marginRight: 12 }} />
+        <div>
+          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{booking.fullName}</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>
+            <PhoneOutlined style={{ marginRight: 4 }} />
+            {booking.phone}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <HomeOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+          <Text strong>{booking.bookingSlots[0]?.room.name}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <EnvironmentOutlined style={{ marginRight: 8, color: '#52c41a' }} />
+          <Text>{booking.bookingSlots[0]?.room.branch.location}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <CalendarOutlined style={{ marginRight: 8, color: '#faad14' }} />
+          <Text>
+            {booking.bookingSlots.map(slot => {
+              const date = new Date(slot.bookingDate).toLocaleDateString('vi-VN');
+              return `${date} - ${slot.timeSlot.time}`;
+            }).join(', ')}
+          </Text>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div>
+          <Text strong style={{ fontSize: '16px', color: '#52c41a' }}>
+            {booking.totalPrice.toLocaleString('vi-VN')} đ
+          </Text>
+        </div>
+        {getStatusTag(booking.status)}
+      </div>
+
+      {(booking.status === 'PENDING' || booking.status === 'PAYMENT_CONFIRMED') && (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button
+            type="primary"
+            size="small"
+            loading={actionLoading === booking.id}
+            onClick={() => handleApproveBooking(booking.id)}
+            style={{ flex: 1 }}
+          >
+            Phê duyệt
+          </Button>
+          <Button
+            danger
+            size="small"
+            loading={actionLoading === booking.id}
+            onClick={() => handleRejectBooking(booking.id)}
+            style={{ flex: 1 }}
+          >
+            Từ chối
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -276,82 +366,98 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <Title level={2}>Dashboard</Title>
+      <Title level={isMobile ? 3 : 2} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        Dashboard
+      </Title>
       
       {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng đặt phòng"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng đặt phòng</span>}
               value={stats.totalBookings}
               prefix={<BookOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Chờ phê duyệt"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Chờ phê duyệt</span>}
               value={stats.pendingApproval}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#1890ff', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Đã phê duyệt"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đã phê duyệt</span>}
               value={stats.approvedBookings}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng doanh thu"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng doanh thu</span>}
               value={stats.totalRevenue}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
               formatter={(value) => `${value?.toLocaleString('vi-VN')} đ`}
             />
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng chi nhánh"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng chi nhánh</span>}
               value={stats.totalBranches}
               prefix={<HomeOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng phòng"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng phòng</span>}
               value={stats.totalRooms}
               prefix={<HomeOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Recent Bookings Table */}
-      <Card title="Đặt phòng gần đây" style={{ marginBottom: 24 }}>
-        <Table
-          columns={columns}
-          dataSource={bookings.slice(0, 10)}
-          rowKey="id"
-          pagination={false}
-          scroll={{ x: 800 }}
-        />
+      {/* Recent Bookings */}
+      <Card 
+        title={<span style={{ fontSize: isMobile ? '16px' : '18px' }}>Đặt phòng gần đây</span>}
+        style={{ marginBottom: 24 }}
+        bodyStyle={{ padding: isMobile ? 0 : 24 }}
+      >
+        {isMobile ? (
+          <div style={{ padding: isMobile ? 16 : 0 }}>
+            {bookings.slice(0, 10).map(renderMobileBookingCard)}
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={bookings.slice(0, 10)}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 800 }}
+            size="small"
+          />
+        )}
       </Card>
     </div>
   );

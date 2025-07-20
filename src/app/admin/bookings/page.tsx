@@ -16,8 +16,12 @@ import {
   Select,
   Row,
   Col,
-  Statistic
+  Statistic,
+  Avatar
 } from 'antd';
+import type { Dayjs } from 'dayjs';
+import type { RangePickerProps } from 'antd/es/date-picker';
+
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   EyeOutlined, 
@@ -25,12 +29,15 @@ import {
   CloseCircleOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  UserOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  HomeOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
-
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
@@ -99,10 +106,30 @@ export default function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<BookingRecord | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    status: string;
+    dateRange: any;
+  }>({
     status: '',
-    dateRange: null as unknown as [any, any] | null,
+    dateRange: null,
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    fetchBookings();
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [filters]);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
 
   const fetchBookings = async () => {
     try {
@@ -150,10 +177,6 @@ export default function BookingsPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchBookings();
-  }, [filters]);
 
   const handleViewDetails = (booking: BookingRecord) => {
     setSelectedBooking(booking);
@@ -315,12 +338,13 @@ export default function BookingsPage() {
       title: 'Thao tác',
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <Space direction={isMobile ? 'vertical' : 'horizontal'} size="small">
           <Button
             type="primary"
             icon={<EyeOutlined />}
             size="small"
             onClick={() => handleViewDetails(record)}
+            style={{ width: isMobile ? '100%' : 'auto' }}
           >
             Chi tiết
           </Button>
@@ -331,6 +355,7 @@ export default function BookingsPage() {
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleApproveBooking(record.id)}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Phê duyệt
               </Button>
@@ -339,6 +364,7 @@ export default function BookingsPage() {
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleRejectBooking(record.id)}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Từ chối
               </Button>
@@ -355,6 +381,7 @@ export default function BookingsPage() {
                 danger
                 size="small"
                 loading={actionLoading === record.id}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Hủy
               </Button>
@@ -365,81 +392,196 @@ export default function BookingsPage() {
     },
   ];
 
+  const renderMobileBookingCard = (booking: BookingRecord) => (
+    <Card 
+      key={booking.id} 
+      style={{ marginBottom: 16 }}
+      bodyStyle={{ padding: 16 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+        <Avatar icon={<UserOutlined />} style={{ marginRight: 12 }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{booking.fullName}</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>
+            <PhoneOutlined style={{ marginRight: 4 }} />
+            {booking.phone}
+          </div>
+          {booking.email && (
+            <div style={{ color: '#666', fontSize: '12px' }}>{booking.email}</div>
+          )}
+        </div>
+        {getStatusTag(booking.status)}
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <HomeOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+          <Text strong>{booking.bookingSlots[0]?.room.name}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <EnvironmentOutlined style={{ marginRight: 8, color: '#52c41a' }} />
+          <Text>{booking.bookingSlots[0]?.room.branch.name} - {booking.bookingSlots[0]?.room.branch.location}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <CalendarOutlined style={{ marginRight: 8, color: '#faad14' }} />
+          <Text>
+            {booking.bookingSlots.map(slot => {
+              const date = new Date(slot.bookingDate).toLocaleDateString('vi-VN');
+              return `${date} - ${slot.timeSlot.time}`;
+            }).join(', ')}
+          </Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <UserOutlined style={{ marginRight: 8, color: '#722ed1' }} />
+          <Text>{booking.guests} khách - {booking.paymentMethod === 'CASH' ? 'Tiền mặt' : 
+           booking.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ'}</Text>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div>
+          <Text strong style={{ fontSize: '16px', color: '#52c41a' }}>
+            {booking.totalPrice.toLocaleString('vi-VN')} đ
+          </Text>
+        </div>
+        <Text style={{ fontSize: '12px', color: '#666' }}>
+          {new Date(booking.createdAt).toLocaleDateString('vi-VN')}
+        </Text>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <Button
+          type="primary"
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewDetails(booking)}
+          style={{ flex: 1, minWidth: '80px' }}
+        >
+          Chi tiết
+        </Button>
+        
+        {(booking.status === 'PENDING' || booking.status === 'PAYMENT_CONFIRMED') && (
+          <>
+            <Button
+              type="primary"
+              size="small"
+              loading={actionLoading === booking.id}
+              onClick={() => handleApproveBooking(booking.id)}
+              style={{ flex: 1, minWidth: '80px' }}
+            >
+              Phê duyệt
+            </Button>
+            <Button
+              danger
+              size="small"
+              loading={actionLoading === booking.id}
+              onClick={() => handleRejectBooking(booking.id)}
+              style={{ flex: 1, minWidth: '80px' }}
+            >
+              Từ chối
+            </Button>
+          </>
+        )}
+        
+        {booking.status !== 'CANCELLED' && (
+          <Popconfirm
+            title="Bạn có chắc chắn muốn hủy đặt phòng này?"
+            onConfirm={() => handleCancelBooking(booking.id)}
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button
+              danger
+              size="small"
+              loading={actionLoading === booking.id}
+              style={{ flex: 1, minWidth: '80px' }}
+            >
+              Hủy
+            </Button>
+          </Popconfirm>
+        )}
+      </div>
+    </Card>
+  );
+
   return (
     <div>
-      <Title level={2}>Quản lý đặt phòng</Title>
+      <Title level={isMobile ? 3 : 2} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        Quản lý đặt phòng
+      </Title>
 
       {/* Statistics */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng đặt phòng"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng đặt phòng</span>}
               value={stats.total}
               prefix={<CalendarOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Chờ thanh toán"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Chờ thanh toán</span>}
               value={stats.pending}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              valueStyle={{ color: '#faad14', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Chờ phê duyệt"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Chờ phê duyệt</span>}
               value={stats.paymentConfirmed}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#1890ff', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Đã phê duyệt"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đã phê duyệt</span>}
               value={stats.approved}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Đã từ chối"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đã từ chối</span>}
               value={stats.rejected}
               prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ color: '#ff4d4f', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Đã hủy"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đã hủy</span>}
               value={stats.cancelled}
               prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              valueStyle={{ color: '#ff4d4f', fontSize: isMobile ? '20px' : '24px' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
             <Statistic
-              title="Tổng doanh thu"
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng doanh thu</span>}
               value={stats.totalRevenue}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
               formatter={(value) => `${value?.toLocaleString('vi-VN')} đ`}
             />
           </Card>
@@ -447,12 +589,12 @@ export default function BookingsPage() {
       </Row>
 
       {/* Filters */}
-      <Card style={{ marginBottom: 16 }}>
+      <Card style={{ marginBottom: 16 }} bodyStyle={{ padding: isMobile ? 12 : 24 }}>
         <Row gutter={16} align="middle">
-          <Col>
-            <span style={{ marginRight: 8 }}>Trạng thái:</span>
+          <Col xs={24} sm={12} md={8}>
+            <span style={{ marginRight: 8, fontSize: isMobile ? '14px' : '16px' }}>Trạng thái:</span>
             <Select
-              style={{ width: 150 }}
+              style={{ width: isMobile ? '100%' : 150, marginTop: isMobile ? 8 : 0 }}
               placeholder="Tất cả"
               allowClear
               value={filters.status}
@@ -465,9 +607,10 @@ export default function BookingsPage() {
               <Option value="CANCELLED">Đã hủy</Option>
             </Select>
           </Col>
-          <Col>
-            <span style={{ marginRight: 8 }}>Khoảng thời gian:</span>
+          <Col xs={24} sm={12} md={16}>
+            <span style={{ marginRight: 8, fontSize: isMobile ? '14px' : '16px' }}>Khoảng thời gian:</span>
             <RangePicker
+              style={{ width: isMobile ? '100%' : 'auto', marginTop: isMobile ? 8 : 0 }}
               value={filters.dateRange}
               onChange={(dates) => setFilters(prev => ({ ...prev, dateRange: dates }))}
             />
@@ -475,35 +618,62 @@ export default function BookingsPage() {
         </Row>
       </Card>
 
-      {/* Bookings Table */}
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={bookings}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} của ${total} đặt phòng`,
-          }}
-          scroll={{ x: 1200 }}
-        />
+      {/* Bookings Table/Cards */}
+      <Card bodyStyle={{ padding: isMobile ? 0 : 24 }}>
+        {isMobile ? (
+          <div style={{ padding: isMobile ? 16 : 0 }}>
+            {bookings.map(renderMobileBookingCard)}
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={bookings}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 20,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => 
+                `${range[0]}-${range[1]} của ${total} đặt phòng`,
+            }}
+            scroll={{ x: 1200 }}
+          />
+        )}
       </Card>
 
       {/* Booking Detail Modal */}
       <Modal
-        title="Chi tiết đặt phòng"
+        title={
+          <div style={{ 
+            fontSize: isMobile ? '16px' : '18px',
+            fontWeight: 600,
+            padding: isMobile ? '8px 0' : '0'
+          }}>
+            Chi tiết đặt phòng
+          </div>
+        }
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
-        width={800}
+        width={isMobile ? '100%' : 800}
+        style={isMobile ? { top: 0, paddingBottom: 0 } : {}}
+        bodyStyle={{ 
+          maxHeight: isMobile ? 'calc(100vh - 120px)' : '70vh', 
+          overflow: 'auto',
+          padding: isMobile ? '16px' : '24px'
+        }}
+        destroyOnClose={true}
+        maskClosable={!isMobile}
+        keyboard={true}
       >
         {selectedBooking && (
-          <Descriptions column={2} bordered>
-            <Descriptions.Item label="Mã đặt phòng" span={2}>
+          <Descriptions 
+            column={isMobile ? 1 : 2} 
+            bordered 
+            size={isMobile ? 'small' : 'default'}
+          >
+            <Descriptions.Item label="Mã đặt phòng" span={isMobile ? 1 : 2}>
               {selectedBooking.id}
             </Descriptions.Item>
             <Descriptions.Item label="Họ tên">
@@ -525,16 +695,16 @@ export default function BookingsPage() {
               {selectedBooking.paymentMethod === 'CASH' ? 'Tiền mặt' : 
                selectedBooking.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ'}
             </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái" span={2}>
+            <Descriptions.Item label="Trạng thái" span={isMobile ? 1 : 2}>
               {getStatusTag(selectedBooking.status)}
             </Descriptions.Item>
-            <Descriptions.Item label="Phòng" span={2}>
+            <Descriptions.Item label="Phòng" span={isMobile ? 1 : 2}>
               {selectedBooking.bookingSlots[0]?.room.name} - {selectedBooking.bookingSlots[0]?.room.branch.name}
             </Descriptions.Item>
-            <Descriptions.Item label="Chi nhánh" span={2}>
+            <Descriptions.Item label="Chi nhánh" span={isMobile ? 1 : 2}>
               {selectedBooking.bookingSlots[0]?.room.branch.location}
             </Descriptions.Item>
-            <Descriptions.Item label="Ngày đặt" span={2}>
+            <Descriptions.Item label="Ngày đặt" span={isMobile ? 1 : 2}>
               {selectedBooking.bookingSlots.map(slot => {
                 const date = new Date(slot.bookingDate).toLocaleDateString('vi-VN');
                 return `${date} - ${slot.timeSlot.time}`;
@@ -552,10 +722,10 @@ export default function BookingsPage() {
             <Descriptions.Item label="Tổng tiền">
               <strong>{selectedBooking.totalPrice.toLocaleString('vi-VN')} đ</strong>
             </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú" span={2}>
+            <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
               {selectedBooking.notes || 'Không có'}
             </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú admin" span={2}>
+            <Descriptions.Item label="Ghi chú admin" span={isMobile ? 1 : 2}>
               {selectedBooking.adminNotes || 'Không có'}
             </Descriptions.Item>
             <Descriptions.Item label="Ngày tạo">

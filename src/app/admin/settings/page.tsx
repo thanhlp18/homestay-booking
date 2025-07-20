@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Card, 
   Form, 
@@ -61,6 +61,22 @@ interface SettingsFormData {
 export default function SettingsPage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
 
   const handleSubmit = async (values: SettingsFormData) => {
     try {
@@ -82,7 +98,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <Title level={2}>
+      <Title level={isMobile ? 3 : 2}>
         <SettingOutlined style={{ marginRight: 8 }} />
         Cài đặt hệ thống
       </Title>

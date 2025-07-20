@@ -14,19 +14,27 @@ import {
   message, 
   Popconfirm,
   Tag,
-  Typography
+  Typography,
+  Row,
+  Col,
+  Statistic,
+  Avatar
 } from 'antd';
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   PlusOutlined, 
   EditOutlined, 
   DeleteOutlined, 
-  UploadOutlined
+  UploadOutlined,
+  HomeOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  MailOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload/interface';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 interface Branch {
@@ -73,6 +81,23 @@ export default function BranchesPage() {
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    fetchBranches();
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
 
   const fetchBranches = async () => {
     try {
@@ -87,10 +112,6 @@ export default function BranchesPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchBranches();
-  }, []);
 
   const handleCreate = () => {
     setEditingBranch(null);
@@ -213,12 +234,13 @@ export default function BranchesPage() {
       title: 'Thao tác',
       key: 'actions',
       render: (_, record) => (
-        <Space>
+        <Space direction={isMobile ? 'vertical' : 'horizontal'} size="small">
           <Button
             type="primary"
             icon={<EditOutlined />}
             size="small"
             onClick={() => handleEdit(record)}
+            style={{ width: isMobile ? '100%' : 'auto' }}
           >
             Sửa
           </Button>
@@ -232,6 +254,7 @@ export default function BranchesPage() {
               danger
               icon={<DeleteOutlined />}
               size="small"
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               Xóa
             </Button>
@@ -241,33 +264,202 @@ export default function BranchesPage() {
     },
   ];
 
+  const renderMobileBranchCard = (branch: Branch) => (
+    <Card 
+      key={branch.id} 
+      style={{ 
+        marginBottom: 16,
+        borderRadius: 12,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #f0f0f0'
+      }}
+      bodyStyle={{ padding: 16 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
+        <Avatar 
+          icon={<HomeOutlined />} 
+          size={48}
+          style={{ 
+            marginRight: 12, 
+            backgroundColor: branch.isActive ? '#52c41a' : '#ff4d4f',
+            flexShrink: 0
+          }} 
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ 
+            fontWeight: 'bold', 
+            fontSize: '16px', 
+            marginBottom: 4,
+            wordBreak: 'break-word'
+          }}>
+            {branch.name}
+          </div>
+          <div style={{ 
+            color: '#666', 
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: 4
+          }}>
+            <EnvironmentOutlined style={{ marginRight: 4, flexShrink: 0 }} />
+            <span style={{ wordBreak: 'break-word' }}>{branch.location}</span>
+          </div>
+          <Tag 
+            color={branch.isActive ? 'green' : 'red'}
+            style={{ margin: 0 }}
+          >
+            {branch.isActive ? 'Hoạt động' : 'Không hoạt động'}
+          </Tag>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16, background: '#fafafa', padding: 12, borderRadius: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 8 }}>
+          <EnvironmentOutlined style={{ marginRight: 8, color: '#1890ff', marginTop: 2, flexShrink: 0 }} />
+          <Text style={{ wordBreak: 'break-word', fontSize: '14px' }}>{branch.address}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <PhoneOutlined style={{ marginRight: 8, color: '#52c41a', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px' }}>{branch.phone}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <MailOutlined style={{ marginRight: 8, color: '#faad14', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px', wordBreak: 'break-all' }}>{branch.email}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <HomeOutlined style={{ marginRight: 8, color: '#722ed1', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px', fontWeight: 'bold' }}>{branch._count?.rooms || 0} phòng</Text>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button
+          type="primary"
+          size="middle"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(branch)}
+          style={{ 
+            flex: 1, 
+            height: 44,
+            fontSize: '14px',
+            fontWeight: 'bold',
+            borderRadius: 8
+          }}
+        >
+          Sửa
+        </Button>
+        <Popconfirm
+          title="Bạn có chắc chắn muốn xóa chi nhánh này?"
+          onConfirm={() => handleDelete(branch.id)}
+          okText="Có"
+          cancelText="Không"
+          placement="topRight"
+        >
+          <Button
+            danger
+            size="middle"
+            icon={<DeleteOutlined />}
+            style={{ 
+              flex: 1, 
+              height: 44,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              borderRadius: 8
+            }}
+          >
+            Xóa
+          </Button>
+        </Popconfirm>
+      </div>
+    </Card>
+  );
+
+  const stats = {
+    total: branches.length,
+    active: branches.filter(b => b.isActive).length,
+    inactive: branches.filter(b => !b.isActive).length,
+    totalRooms: branches.reduce((sum, b) => sum + (b._count?.rooms || 0), 0),
+  };
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={2}>Quản lý chi nhánh</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 24 }}>
+        <Title level={isMobile ? 3 : 2}>Quản lý chi nhánh</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleCreate}
+          size={isMobile ? 'small' : 'middle'}
         >
           Thêm chi nhánh
         </Button>
       </div>
 
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={branches}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} của ${total} chi nhánh`,
-          }}
-        />
+      {/* Statistics */}
+      <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+            <Statistic
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng chi nhánh</span>}
+              value={stats.total}
+              prefix={<HomeOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+            <Statistic
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đang hoạt động</span>}
+              value={stats.active}
+              prefix={<HomeOutlined />}
+              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+            <Statistic
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Không hoạt động</span>}
+              value={stats.inactive}
+              prefix={<HomeOutlined />}
+              valueStyle={{ color: '#ff4d4f', fontSize: isMobile ? '20px' : '24px' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+            <Statistic
+              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng phòng</span>}
+              value={stats.totalRooms}
+              prefix={<HomeOutlined />}
+              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Card bodyStyle={{ padding: isMobile ? 0 : 24 }}>
+        {isMobile ? (
+          <div style={{ padding: isMobile ? 16 : 0 }}>
+            {branches.map(renderMobileBranchCard)}
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={branches}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => 
+                `${range[0]}-${range[1]} của ${total} chi nhánh`,
+            }}
+            scroll={{ x: 800 }}
+          />
+        )}
       </Card>
 
       <Modal
@@ -275,14 +467,15 @@ export default function BranchesPage() {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={800}
+        width={isMobile ? '95%' : 800}
+        bodyStyle={{ maxHeight: '70vh', overflow: 'auto' }}
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
             <Form.Item
               name="name"
               label="Tên chi nhánh"

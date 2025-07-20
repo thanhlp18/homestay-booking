@@ -16,19 +16,24 @@ import {
   Tag,
   Typography,
   Select,
-  InputNumber
+  InputNumber,
+  Avatar
 } from 'antd';
 import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
 import { 
   PlusOutlined, 
   EditOutlined, 
   DeleteOutlined, 
-  UploadOutlined
+  UploadOutlined,
+  HomeOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload/interface';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -100,6 +105,7 @@ export default function RoomsPage() {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -124,7 +130,19 @@ export default function RoomsPage() {
 
   useEffect(() => {
     fetchData();
+    checkMobile();
+    
+    const handleResize = () => {
+      checkMobile();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth <= 768);
+  };
 
   const handleCreate = () => {
     setEditingRoom(null);
@@ -202,6 +220,126 @@ export default function RoomsPage() {
       console.error('Error saving room:', error);
     }
   };
+
+  const renderMobileRoomCard = (room: Room) => (
+    <Card 
+      key={room.id} 
+      style={{ 
+        marginBottom: 16,
+        borderRadius: 12,
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        border: '1px solid #f0f0f0'
+      }}
+      bodyStyle={{ padding: 16 }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 12 }}>
+        <Avatar 
+          icon={<HomeOutlined />} 
+          size={48}
+          style={{ 
+            marginRight: 12, 
+            backgroundColor: room.isActive ? '#52c41a' : '#ff4d4f',
+            flexShrink: 0
+          }} 
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ 
+            fontWeight: 'bold', 
+            fontSize: '16px', 
+            marginBottom: 4,
+            wordBreak: 'break-word'
+          }}>
+            {room.name}
+          </div>
+          <div style={{ 
+            color: '#666', 
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: 4
+          }}>
+            <EnvironmentOutlined style={{ marginRight: 4, flexShrink: 0 }} />
+            <span style={{ wordBreak: 'break-word' }}>{room.location}</span>
+          </div>
+          <Tag 
+            color={room.isActive ? 'green' : 'red'}
+            style={{ margin: 0 }}
+          >
+            {room.isActive ? 'Hoạt động' : 'Không hoạt động'}
+          </Tag>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16, background: '#fafafa', padding: 12, borderRadius: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <HomeOutlined style={{ marginRight: 8, color: '#1890ff', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px' }}>{room.branch.name} - {room.branch.location}</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <UserOutlined style={{ marginRight: 8, color: '#52c41a', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px' }}>{room.capacity} khách • {room.bedrooms} phòng ngủ • {room.bathrooms} phòng tắm</Text>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+          <DollarOutlined style={{ marginRight: 8, color: '#faad14', flexShrink: 0 }} />
+          <div>
+            <Text style={{ fontSize: '14px', fontWeight: 'bold', color: '#52c41a' }}>
+              {room.basePrice.toLocaleString('vi-VN')} đ
+            </Text>
+            {room.discountPrice && room.discountPrice < room.basePrice && (
+              <div style={{ fontSize: '12px', color: '#666' }}>
+                Giảm giá: {room.discountPrice.toLocaleString('vi-VN')} đ 
+                ({(((room.basePrice - room.discountPrice) / room.basePrice) * 100).toFixed(0)}% off)
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <EnvironmentOutlined style={{ marginRight: 8, color: '#722ed1', flexShrink: 0 }} />
+          <Text style={{ fontSize: '14px' }}>{room.area}</Text>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button
+          type="primary"
+          size="middle"
+          icon={<EditOutlined />}
+          onClick={() => handleEdit(room)}
+          style={{ 
+            flex: 1, 
+            height: 44,
+            fontSize: '14px',
+            fontWeight: 'bold',
+            borderRadius: 8
+          }}
+        >
+          Sửa
+        </Button>
+        <Popconfirm
+          title="Bạn có chắc chắn muốn xóa phòng này?"
+          onConfirm={() => handleDelete(room.id)}
+          okText="Có"
+          cancelText="Không"
+          placement="topRight"
+        >
+          <Button
+            danger
+            size="middle"
+            icon={<DeleteOutlined />}
+            style={{ 
+              flex: 1, 
+              height: 44,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              borderRadius: 8
+            }}
+          >
+            Xóa
+          </Button>
+        </Popconfirm>
+      </div>
+    </Card>
+  );
 
   const columns: ColumnsType<Room> = [
     {
@@ -302,31 +440,39 @@ export default function RoomsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Title level={2}>Quản lý phòng</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 24 }}>
+        <Title level={isMobile ? 3 : 2}>Quản lý phòng</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={handleCreate}
+          size={isMobile ? 'middle' : 'large'}
         >
-          Thêm phòng
+          {isMobile ? 'Thêm' : 'Thêm phòng'}
         </Button>
       </div>
 
-      <Card>
-        <Table
-          columns={columns}
-          dataSource={rooms}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} của ${total} phòng`,
-          }}
-        />
+      <Card bodyStyle={{ padding: isMobile ? 0 : 24 }}>
+        {isMobile ? (
+          <div style={{ padding: isMobile ? 16 : 0 }}>
+            {rooms.map(renderMobileRoomCard)}
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={rooms}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => 
+                `${range[0]}-${range[1]} của ${total} phòng`,
+            }}
+            scroll={{ x: 1000 }}
+          />
+        )}
       </Card>
 
       <Modal
@@ -334,7 +480,8 @@ export default function RoomsPage() {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={900}
+        width={isMobile ? '95%' : 900}
+        bodyStyle={{ maxHeight: isMobile ? '70vh' : 'auto', overflow: 'auto' }}
       >
         <Form
           form={form}
