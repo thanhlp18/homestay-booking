@@ -768,7 +768,7 @@
 }
 
 .bookingNotice {
-  background: #FFDFC3;
+  /* background: #FFDFC3; */
   border: 1px solid #FEA38E;
   border-radius: 8px;
   padding: 16px;
