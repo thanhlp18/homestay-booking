@@ -29,57 +29,93 @@ const transporter = nodemailer.createTransport({
 
 // Email templates
 export const emailTemplates = {
-  bookingConfirmation: (bookingData: BookingData) => ({
-    subject: `Xác nhận đặt phòng - ${bookingData.room} | TidyToto`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">💚 TidyToto</h1>
-          <p style="margin: 10px 0 0 0;">Xác nhận đặt phòng</p>
+  bookingConfirmation: (bookingData: BookingData) => {
+    const isTransferPayment = bookingData.paymentMethod === 'TRANSFER' || bookingData.paymentMethod === 'CARD';
+    const paymentMethodText = bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ';
+    
+    const paymentInstructions = isTransferPayment 
+      ? `
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
+          <h3 style="color: #1565c0; margin-top: 0;">💳 Hướng dẫn thanh toán</h3>
+          <p style="margin: 0; color: #1565c0; font-weight: bold;">Vui lòng hoàn tất quy trình thanh toán để xác nhận đặt phòng:</p>
+          <ul style="margin: 10px 0 0 20px; color: #1565c0;">
+            <li>Kiểm tra email thanh toán đã được gửi</li>
+            <li>Thực hiện chuyển khoản theo thông tin trong email</li>
+            <li>Chờ xác nhận thanh toán từ hệ thống</li>
+            <li>Chúng tôi sẽ liên hệ để xác nhận sau khi nhận được thanh toán</li>
+          </ul>
         </div>
-        
-        <div style="padding: 20px; background: #f9f9f9;">
-          <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
-          <p>Chúng tôi đã nhận được yêu cầu đặt phòng của bạn. Dưới đây là thông tin chi tiết:</p>
-          
-          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #667eea; margin-top: 0;">Thông tin đặt phòng</h3>
-            <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
-            <p><strong>Phòng:</strong> ${bookingData.room}</p>
-            <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
-            <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>
-            <p><strong>Phương thức thanh toán:</strong> ${bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ'}</p>
-            ${bookingData.notes ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>` : ''}
+      `
+      : `
+        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
+          <h3 style="color: #856404; margin-top: 0;">💰 Thanh toán tiền mặt</h3>
+          <p style="margin: 0; color: #856404;">Đặt phòng thành công! Vui lòng thanh toán tiền mặt khi đến homestay:</p>
+          <ul style="margin: 10px 0 0 20px; color: #856404;">
+            <li>Thanh toán toàn bộ số tiền: <strong>${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</strong></li>
+            <li>Chúng tôi sẽ liên hệ với bạn để xác nhận đặt phòng</li>
+            <li>Vui lòng chuẩn bị CCCD để làm thủ tục check-in</li>
+          </ul>
+        </div>
+      `;
+
+    const statusMessage = isTransferPayment
+      ? `<p style="margin: 0; color: #856404;">Đơn đặt phòng của bạn đang chờ thanh toán. Vui lòng hoàn tất quy trình thanh toán để xác nhận.</p>`
+      : `<p style="margin: 0; color: #856404;">Đơn đặt phòng của bạn đang được xử lý. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận.</p>`;
+
+    return {
+      subject: `Xác nhận đặt phòng - ${bookingData.room} | TidyToto`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">💚 TidyToto</h1>
+            <p style="margin: 10px 0 0 0;">Xác nhận đặt phòng</p>
           </div>
           
-          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #667eea; margin-top: 0;">Thông tin khách hàng</h3>
-            <p><strong>Họ tên:</strong> ${bookingData.fullName}</p>
-            <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
-            <p><strong>Email:</strong> ${bookingData.email}</p>
-            <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
+          <div style="padding: 20px; background: #f9f9f9;">
+            <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
+            <p>Chúng tôi đã nhận được yêu cầu đặt phòng của bạn. Dưới đây là thông tin chi tiết:</p>
+            
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">Thông tin đặt phòng</h3>
+              <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
+              <p><strong>Phòng:</strong> ${bookingData.room}</p>
+              <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
+              <p><strong>Số khách:</strong> ${bookingData.guests}</p>
+              <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>
+              <p><strong>Phương thức thanh toán:</strong> ${paymentMethodText}</p>
+              ${bookingData.notes ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>` : ''}
+            </div>
+            
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">Thông tin khách hàng</h3>
+              <p><strong>Họ tên:</strong> ${bookingData.fullName}</p>
+              <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
+              <p><strong>Email:</strong> ${bookingData.email}</p>
+              <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
+            </div>
+            
+            ${paymentInstructions}
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
+              <h3 style="color: #856404; margin-top: 0;">Trạng thái đặt phòng</h3>
+              ${statusMessage}
+            </div>
+            
+            <div style="margin: 20px 0;">
+              <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của TidyToto!</p>
+              <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua:</p>
+              <p>📞 Hotline: 0939000000</p>
+              <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
+            </div>
           </div>
           
-          <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
-            <h3 style="color: #856404; margin-top: 0;">Trạng thái đặt phòng</h3>
-            <p style="margin: 0; color: #856404;">Đơn đặt phòng của bạn đang được xử lý. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận.</p>
-          </div>
-          
-          <div style="margin: 20px 0;">
-            <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của TidyToto!</p>
-            <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua:</p>
-            <p>📞 Hotline: 0939000000</p>
-            <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
+          <div style="background: #333; color: white; padding: 20px; text-align: center;">
+            <p style="margin: 0;">&copy; 2024 TidyToto - Hệ thống đặt phòng homestay</p>
           </div>
         </div>
-        
-        <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 TidyToto - Hệ thống đặt phòng homestay</p>
-        </div>
-      </div>
-    `
-  }),
+      `
+    };
+  },
 
   adminNotification: (bookingData: BookingData) => ({
     subject: `🔔 Đặt phòng mới - ${bookingData.room} | ${bookingData.fullName}`,
