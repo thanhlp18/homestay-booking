@@ -4,13 +4,13 @@
 }
 
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 3rem 2rem;
 }
 
 .header {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 .backLink {
@@ -18,8 +18,9 @@
   color: #FEA38E;
   text-decoration: none;
   font-weight: 500;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   transition: color 0.3s ease;
+  font-size: 1.1rem;
 }
 
 .backLink:hover {
@@ -27,11 +28,11 @@
 }
 
 .pageTitle {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: bold;
   color: #FEA38E;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .pageTitle:hover {
@@ -46,13 +47,13 @@
 
 .content {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
+  border-radius: 16px;
+  padding: 3rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .section {
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 .section:last-child {
@@ -60,32 +61,32 @@
 }
 
 .sectionTitle {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: bold;
   color: #FEA38E;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   border-bottom: 2px solid #FEA38E;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
 }
 
 .step {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  margin-bottom: 2.5rem;
+  gap: 1.5rem;
 }
 
 .stepNumber {
   background: #FEA38E;
   color: white;
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
 }
 
@@ -95,8 +96,8 @@
 
 .stepContent h3 {
   color: #333;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+  margin-bottom: 0.75rem;
   font-weight: 600;
 }
 
@@ -104,6 +105,7 @@
   color: #555;
   line-height: 1.7;
   margin-bottom: 1rem;
+  font-size: 1.05rem;
 }
 
 .stepContent ul {
@@ -114,7 +116,8 @@
 }
 
 .stepContent li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
 }
 
 .stepButton {
@@ -211,21 +214,31 @@
   border-radius: 0 8px 8px 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .container {
-    padding: 1rem;
-  }
-  
-  .title {
-    font-size: 2rem;
+    padding: 2rem 1.5rem;
   }
   
   .content {
-    padding: 1.5rem;
+    padding: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
   }
   
-  .section h2 {
-    font-size: 1.3rem;
+  .pageTitle {
+    font-size: 2.5rem;
+  }
+  
+  .content {
+    padding: 2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.8rem;
   }
   
   .step {
@@ -240,5 +253,23 @@
   .paymentMethods,
   .importantNotes {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+  }
+  
+  .content {
+    padding: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
   }
 } 

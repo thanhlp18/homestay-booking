@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client';
 interface BookingSubmissionData {
   fullName: string;
   phone: string;
-  email?: string;
+  email: string;
   cccd: string;
   guests: number;
   notes?: string;
@@ -33,6 +33,10 @@ function validateBookingData(data: Record<string, unknown>): BookingSubmissionDa
   
   if (!data.phone || typeof data.phone !== 'string') {
     throw new Error('Số điện thoại là bắt buộc');
+  }
+  
+  if (!data.email || typeof data.email !== 'string') {
+    throw new Error('Email là bắt buộc');
   }
   
   if (!data.cccd || typeof data.cccd !== 'string') {
@@ -175,7 +179,7 @@ export async function POST(request: NextRequest) {
       id: result.booking.id,
       fullName: result.booking.fullName,
       phone: result.booking.phone,
-      email: result.booking.email || undefined,
+      email: result.booking.email!,
       cccd: result.booking.cccd,
       guests: result.booking.guests,
       notes: result.booking.notes || undefined,
@@ -191,10 +195,8 @@ export async function POST(request: NextRequest) {
       bookingType: validatedData.isFullDayBooking ? 'Cả ngày' : 'Theo khung giờ',
     };
     
-    // Send confirmation email to customer (if email provided)
-    if (validatedData.email) {
-      await sendBookingConfirmation(emailData);
-    }
+    // Send confirmation email to customer
+    await sendBookingConfirmation(emailData);
     
     // Send notification to admin
     await sendAdminNotification(emailData);
