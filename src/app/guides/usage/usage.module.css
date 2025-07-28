@@ -15,7 +15,7 @@
 
 .backLink {
   display: inline-block;
-  color: #ff6b6b;
+  color: #FEA38E;
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -23,14 +23,19 @@
 }
 
 .backLink:hover {
-  color: #ff5252;
+  color: #FBA2AB;
 }
 
-.title {
+.pageTitle {
   font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 0.5rem;
   font-weight: bold;
+  color: #FEA38E;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pageTitle:hover {
+  color: #FBA2AB;
 }
 
 .subtitle {
@@ -54,12 +59,12 @@
   margin-bottom: 0;
 }
 
-.section h2 {
-  color: #333;
-  font-size: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-  border-bottom: 2px solid #ff6b6b;
+.sectionTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #FEA38E;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #FEA38E;
   padding-bottom: 0.5rem;
 }
 
@@ -71,7 +76,7 @@
 }
 
 .stepNumber {
-  background: #ff6b6b;
+  background: #FEA38E;
   color: white;
   width: 40px;
   height: 40px;
@@ -110,6 +115,23 @@
 
 .stepContent li {
   margin-bottom: 0.5rem;
+}
+
+.stepButton {
+  background: #FEA38E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.stepButton:hover {
+  background: #FBA2AB;
 }
 
 .paymentMethods {
@@ -170,7 +192,7 @@
   background: #f8f9fa;
   padding: 1.5rem;
   border-radius: 8px;
-  border-left: 4px solid #ff6b6b;
+  border-left: 4px solid #FEA38E;
 }
 
 .contactInfo p {
@@ -179,6 +201,14 @@
 
 .contactInfo p:last-child {
   margin-bottom: 0;
+}
+
+.highlightBox {
+  background: #FFDFC3;
+  border-left: 4px solid #FEA38E;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0 8px 8px 0;
 }
 
 @media (max-width: 768px) {

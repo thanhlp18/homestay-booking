@@ -41,7 +41,7 @@
 
 .homeType {
   font-size: 0.75rem;
-  color: #ff6b6b;
+  color: #FEA38E;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -64,7 +64,7 @@
 }
 
 .viewButton {
-  color: #ff6b6b;
+  color: #FEA38E;
   text-decoration: none;
   font-weight: bold;
   font-size: 0.9rem;
@@ -74,7 +74,7 @@
 
 .viewButton:hover {
   text-decoration: underline;
-  color: #ff5252;
+  color: #FBA2AB;
 }
 
 /* Price section */
@@ -100,7 +100,7 @@
 .price {
   font-size: 1.1rem;
   font-weight: bold;
-  color: #ff6b6b;
+  color: #FEA38E;
 }
 
 .originalPrice {
@@ -110,7 +110,7 @@
 }
 
 .bookButton {
-  background: #ff6b6b;
+  background: #FEA38E;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -127,7 +127,7 @@
 }
 
 .bookButton:hover {
-  background: #ff5252;
+  background: #FBA2AB;
   transform: translateY(-1px);
 }
 

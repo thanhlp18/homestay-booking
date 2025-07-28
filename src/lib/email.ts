@@ -5,7 +5,7 @@ interface BookingData {
   id: string;
   fullName: string;
   phone: string;
-  email?: string;
+  email: string;
   cccd: string;
   guests: number;
   notes?: string;
@@ -57,7 +57,7 @@ export const emailTemplates = {
             <h3 style="color: #667eea; margin-top: 0;">Thông tin khách hàng</h3>
             <p><strong>Họ tên:</strong> ${bookingData.fullName}</p>
             <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
-            <p><strong>Email:</strong> ${bookingData.email || 'Không có'}</p>
+            <p><strong>Email:</strong> ${bookingData.email}</p>
             <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
           </div>
           
@@ -101,7 +101,7 @@ export const emailTemplates = {
             <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
             <p><strong>Khách hàng:</strong> ${bookingData.fullName}</p>
             <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
-            <p><strong>Email:</strong> ${bookingData.email || 'Không có'}</p>
+            <p><strong>Email:</strong> ${bookingData.email}</p>
             <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
             <p><strong>Số khách:</strong> ${bookingData.guests}</p>
             <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>

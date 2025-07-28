@@ -1,8 +1,9 @@
 /* Footer */
 .footer {
-  background: #ff6b6b;
+  background: #FEA38E;
   color: white;
-  padding: 3rem 0 1rem;
+  padding: 2rem 0;
+  margin-top: auto;
 }
 
 .footerContent {

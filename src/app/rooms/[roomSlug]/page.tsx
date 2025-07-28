@@ -523,7 +523,7 @@ export default function RoomPage() {
         body: JSON.stringify({
           fullName: formData.fullName,
           phone: formData.phone,
-          email: formData.email || undefined,
+          email: formData.email,
           cccd: formData.cccd,
           guests: parseInt(formData.guests),
           notes: formData.notes || undefined,
@@ -954,7 +954,7 @@ export default function RoomPage() {
                 </div>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Email</label>
+                    <label className={styles.label}>Email *</label>
                     <input
                       type="email"
                       name="email"
@@ -962,6 +962,7 @@ export default function RoomPage() {
                       placeholder="Nhập email"
                       value={formData.email}
                       onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className={styles.formGroup}>

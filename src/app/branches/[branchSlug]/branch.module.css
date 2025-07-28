@@ -3,11 +3,11 @@
   background-color: #f5f5f5;
 }
 
-.branchHeader {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+.hero {
+  background: linear-gradient(135deg, #FEA38E 0%, #F3B5A0 100%);
   color: white;
-  padding: 2rem 0;
-  margin-bottom: 2rem;
+  padding: 4rem 0;
+  text-align: center;
 }
 
 .headerContent {
@@ -184,7 +184,7 @@
 }
 
 .discountBadge {
-  background: #ff6b6b;
+  background: #fea38e;
   color: white;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
@@ -282,7 +282,7 @@
 .currentPrice {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #ff6b6b;
+  color: #fea38e;
 }
 
 .originalPrice {
@@ -306,9 +306,9 @@
 }
 
 .bookButton {
-  flex: 1;
-  background: #ff6b6b;
+  background: #FEA38E;
   color: white;
+  border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 8px;
   text-decoration: none;
@@ -318,7 +318,7 @@
 }
 
 .bookButton:hover {
-  background: #ee5a52;
+  background: #FBA2AB;
 }
 
 .bookingSection {
@@ -348,6 +348,30 @@
   color: #666;
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #FEA38E;
+  margin-bottom: 1rem;
+}
+
+.contactButton {
+  background: #FEA38E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.contactButton:hover {
+  background: #FBA2AB;
 }
 
 /* Responsive */
