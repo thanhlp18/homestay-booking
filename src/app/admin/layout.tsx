@@ -161,7 +161,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         fontWeight: 'bold',
         fontSize: isMobile ? '14px' : '16px'
       }}>
-        {collapsed && !isMobile ? 'TT' : 'TidyToto Admin'}
+        {collapsed && !isMobile ? 'TT' : 'O Ni Homestay Admin'}
       </div>
       <Menu
         theme="dark"
@@ -218,7 +218,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
             }}>
               TT
             </div>
-            TidyToto Admin
+            O Ni Homestay Admin
           </div>
         }
         placement="left"
@@ -284,7 +284,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 fontWeight: 'bold',
                 color: '#1890ff'
               }}>
-                TidyToto Admin
+                O Ni Homestay Admin
               </div>
             )}
           </div>

@@ -23,7 +23,7 @@ export default function UsageGuidePage() {
               <div className={styles.stepNumber}>1</div>
               <div className={styles.stepContent}>
                 <h3>Truy cập website</h3>
-                <p>Mở trình duyệt và truy cập <strong>tidytoto.vn</strong></p>
+                <p>Mở trình duyệt và truy cập <strong>O Ni Homestay.vn</strong></p>
               </div>
             </div>
             
@@ -157,7 +157,7 @@ export default function UsageGuidePage() {
             <p>Nếu gặp khó khăn trong quá trình đặt phòng, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
               <p><strong>Hotline:</strong> 0932000000</p>
-              <p><strong>Email:</strong> support@tidytoto.vn</p>
+              <p><strong>Email:</strong> support@O Ni Homestay.vn</p>
               <p><strong>Giờ làm việc:</strong> 8:00 - 22:00 (Thứ 2 - Chủ nhật)</p>
             </div>
           </section>

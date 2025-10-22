@@ -108,9 +108,9 @@ export default function SettingsPage() {
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
-          siteName: 'TidyToto Homestay',
+          siteName: 'O Ni Homestay Homestay',
           siteDescription: 'Hệ thống đặt phòng homestay hiện đại',
-          contactEmail: 'info@tidytoto.com',
+          contactEmail: 'info@O Ni Homestay.com',
           contactPhone: '0123456789',
           address: 'Hà Nội, Việt Nam',
           maxGuestsPerBooking: 10,

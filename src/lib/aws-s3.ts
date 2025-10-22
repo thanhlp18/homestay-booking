@@ -1,17 +1,21 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { v4 as uuidv4 } from "uuid";
 
 // AWS S3 Configuration
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.AWS_REGION || "us-east-1",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
   },
 });
 
-const S3_BUCKET = process.env.AWS_S3_BUCKET || '';
+const S3_BUCKET = process.env.AWS_S3_BUCKET || "";
 
 export interface UploadResult {
   success: boolean;
@@ -27,15 +31,17 @@ export async function uploadFileToS3(
   fileBuffer: Buffer,
   fileName: string,
   contentType: string,
-  folder: string = 'uploads'
+  folder: string = "uploads"
 ): Promise<UploadResult> {
   try {
     if (!S3_BUCKET) {
-      throw new Error('AWS S3 bucket not configured');
+            console.error("AWS S3 bucket not configured");
+
+      throw new Error("AWS S3 bucket not configured");
     }
 
     // Generate unique filename
-    const fileExtension = fileName.split('.').pop();
+    const fileExtension = fileName.split(".").pop();
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
     const key = `${folder}/${uniqueFileName}`;
 
@@ -50,7 +56,7 @@ export async function uploadFileToS3(
     await s3Client.send(uploadCommand);
 
     // Generate public URL
-    const url = `https://${S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
+    const url = `https://${S3_BUCKET}.s3.${process.env.AWS_REGION || "us-east-1"}.amazonaws.com/${key}`;
 
     return {
       success: true,
@@ -58,10 +64,10 @@ export async function uploadFileToS3(
       key,
     };
   } catch (error) {
-    console.error('Error uploading to S3:', error);
+    console.error("Error uploading to S3:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Upload failed',
+      error: error instanceof Error ? error.message : "Upload failed",
     };
   }
 }
@@ -83,7 +89,7 @@ export async function deleteFileFromS3(key: string): Promise<boolean> {
     await s3Client.send(deleteCommand);
     return true;
   } catch (error) {
-    console.error('Error deleting from S3:', error);
+    console.error("Error deleting from S3:", error);
     return false;
   }
 }
@@ -94,14 +100,14 @@ export async function deleteFileFromS3(key: string): Promise<boolean> {
 export async function generatePresignedUploadUrl(
   fileName: string,
   contentType: string,
-  folder: string = 'uploads'
+  folder: string = "uploads"
 ): Promise<{ url: string; key: string } | null> {
   try {
     if (!S3_BUCKET) {
-      throw new Error('AWS S3 bucket not configured');
+      throw new Error("AWS S3 bucket not configured");
     }
 
-    const fileExtension = fileName.split('.').pop();
+    const fileExtension = fileName.split(".").pop();
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
     const key = `${folder}/${uniqueFileName}`;
 
@@ -111,14 +117,16 @@ export async function generatePresignedUploadUrl(
       ContentType: contentType,
     });
 
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1 hour
+    const signedUrl = await getSignedUrl(s3Client, command, {
+      expiresIn: 3600,
+    }); // 1 hour
 
     return {
       url: signedUrl,
       key,
     };
   } catch (error) {
-    console.error('Error generating presigned URL:', error);
+    console.error("Error generating presigned URL:", error);
     return null;
   }
 }
@@ -129,8 +137,8 @@ export async function generatePresignedUploadUrl(
 export function extractS3KeyFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    return pathParts.slice(1).join('/'); // Remove the leading slash
+    const pathParts = urlObj.pathname.split("/");
+    return pathParts.slice(1).join("/"); // Remove the leading slash
   } catch {
     return null;
   }
@@ -140,14 +148,23 @@ export function extractS3KeyFromUrl(url: string): string | null {
  * Validate image file type
  */
 export function isValidImageType(contentType: string): boolean {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
   return allowedTypes.includes(contentType.toLowerCase());
 }
 
 /**
  * Validate file size (default: 5MB)
  */
-export function isValidFileSize(fileSize: number, maxSizeInMB: number = 5): boolean {
+export function isValidFileSize(
+  fileSize: number,
+  maxSizeInMB: number = 20
+): boolean {
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
   return fileSize <= maxSizeInBytes;
-} 
+}

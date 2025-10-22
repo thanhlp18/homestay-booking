@@ -129,7 +129,7 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-            TidyToto Admin
+            O Ni Homestay Admin
           </Title>
           <p style={{ color: '#666', margin: '8px 0 0 0' }}>
             Đăng nhập vào hệ thống quản lý
@@ -182,7 +182,7 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
 
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <p style={{ color: '#999', fontSize: '12px' }}>
-            Hệ thống quản lý TidyToto Homestay
+            Hệ thống quản lý O Ni Homestay Homestay
           </p>
         </div>
       </Card>

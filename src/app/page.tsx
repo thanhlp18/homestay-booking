@@ -385,7 +385,7 @@ console.log(branchInformationFitter)
 
   return (
     <div className={styles.page}>
-      <DemoNotice />
+      {/* <DemoNotice /> */}
       <Header />
 
       {/* Featured Homes Section */}

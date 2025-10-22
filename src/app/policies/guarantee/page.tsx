@@ -97,7 +97,7 @@ export default function GuaranteePolicyPage() {
             <p>Để khiếu nại hoặc yêu cầu hỗ trợ, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
               <p><strong>Hotline khiếu nại:</strong> 0932000000</p>
-              <p><strong>Email:</strong> support@tidytoto.vn</p>
+              <p><strong>Email:</strong> support@O Ni Homestay.vn</p>
               <p><strong>Thời gian phản hồi:</strong> Trong vòng 2 giờ</p>
               <p><strong>Giờ làm việc:</strong> 24/7</p>
             </div>

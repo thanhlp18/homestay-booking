@@ -190,10 +190,10 @@ export default function S3ImageUpload({
       return false;
     }
 
-    // Check file size (5MB)
-    const isLt5M = file.size / 1024 / 1024 < 5;
-    if (!isLt5M) {
-      message.error('Image must be smaller than 5MB!');
+    // Check file size (20MB)
+    const isLt20M = file.size / 1024 / 1024 < 20;
+    if (!isLt20M) {
+      message.error('Image must be smaller than 20MB!');
       return false;
     }
 

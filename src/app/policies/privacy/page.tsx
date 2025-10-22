@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
             <h2>6. Liên hệ</h2>
             <p>Nếu bạn có câu hỏi về chính sách bảo mật, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
-              <p><strong>Email:</strong> privacy@tidytoto.vn</p>
+              <p><strong>Email:</strong> privacy@O Ni Homestay.vn</p>
               <p><strong>Điện thoại:</strong> 0932000000</p>
               <p><strong>Địa chỉ:</strong> Số B1 07, chung cư Cadif - HH1, Hưng Phú, Q. Cái Răng, TP. Cần Thơ</p>
             </div>

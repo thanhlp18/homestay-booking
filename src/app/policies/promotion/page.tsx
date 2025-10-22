@@ -103,7 +103,7 @@ export default function PromotionPolicyPage() {
             <p>Để biết thêm thông tin về khuyến mãi, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
               <p><strong>Hotline:</strong> 0932000000</p>
-              <p><strong>Email:</strong> promotion@tidytoto.vn</p>
+              <p><strong>Email:</strong> promotion@O Ni Homestay.vn</p>
               <p><strong>Giờ làm việc:</strong> 8:00 - 22:00 (Thứ 2 - Chủ nhật)</p>
             </div>
           </section>
