@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size (10MB limit)
-    if (!isValidFileSize(file.size, 10)) {
+    if (!isValidFileSize(file.size, 20)) {
       return NextResponse.json(
         { 
           success: false, 
@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
       }
 
       // Validate file size
-      if (!isValidFileSize(file.size, 10)) {
+      if (!isValidFileSize(file.size, 20)) {
         errors.push(`${file.name}: File too large (max 10MB)`);
         continue;
       }

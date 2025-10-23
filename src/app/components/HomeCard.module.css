@@ -45,7 +45,7 @@
 
 .homeType {
   font-size: 0.75rem;
-  color: #bd8049;
+  color: #83311b;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -56,19 +56,19 @@
 .homeTitle {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #333;
+  color: #83311b;
   margin-bottom: 0.5rem;
 }
 
 .homeDescription {
-  color: #666;
+  color: #605f3a;
   line-height: 1.5;
   margin-bottom: 1rem;
   font-size: 0.9rem;
 }
 
 .viewButton {
-  color: #bd8049;
+  color: #83311b;
   text-decoration: none;
   font-weight: bold;
   font-size: 0.9rem;

@@ -19,17 +19,24 @@
 }
 
 /* Main content */
-.featuredSection,
-.destinationsSection {
+.featuredSection {
   max-width: 1200px;
   margin: 0 auto;
   padding: 3rem 2rem;
+  padding-bottom: 1rem;
+}
+
+.destinationsSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  padding-bottom: 0.5rem;
 }
 
 .calendarSection {
-  background: white;
+  background: transparent;
   margin-top: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .calendarContainer {
@@ -44,13 +51,13 @@
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #83311b;
   text-align: center;
 }
 
 .calendarSection .sectionSubtitle {
   font-size: 1rem;
-  color: #666;
+  color: #605f3a;
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -58,14 +65,18 @@
 .sectionTitle {
   font-size: 2rem;
   font-weight: bold;
-  color: #FEA38E;
+  color: #83311b;
   text-align: center;
   margin-bottom: 2rem;
 }
 
+.destinationsSection .sectionTitle {
+  margin-bottom: 0.5rem;
+}
+
 .sectionSubtitle {
   text-align: center;
-  color: #666;
+  color: #605f3a !important;
   margin-bottom: 2rem;
 }
 
@@ -86,6 +97,10 @@
 
 }
 
+.homeGrid div {
+  color: #605f3a !important;
+
+}
 
 @media (max-width: 1024px) {
   .homeGrid {
@@ -127,8 +142,8 @@
 }
 
 .tab:hover {
-  border-color: #FEA38E;
-  color: #FEA38E;
+  border-color: #605f3a;
+  color: #605f3a;
 }
 
 .tab.activeTab {
@@ -325,14 +340,15 @@
   text-decoration: none;
   font-weight: 400;
   font-size: 14px;
-  color: #6B7280;
+  color: #605f3a;
   transition: all 0.2s ease;
   cursor: pointer;
+  margin: auto 0;
   background: transparent;
 }
 
 .googleMapButton:hover {
-  color: #FEA38E;
+  color: #83311b;
 }
 
 .googleMapButtonIcon {
@@ -349,6 +365,7 @@
 
 .locationTitle {
   margin: 0;
+  color: #83311b;
 }
 
 .searchButton {

@@ -28,7 +28,7 @@ interface UploadResponse {
 export default function S3ImageUpload({
   value = [],
   onChange,
-  maxCount = 8,
+  maxCount = 10,
   folder = 'uploads',
   disabled = false,
 }: S3ImageUploadProps) {

@@ -13,7 +13,7 @@
 .headerContent {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 0rem;
+  padding: 2rem 2rem;
 
   background-color: #ffefd9;
 }
@@ -60,7 +60,7 @@
 
 .infoContainer {
   background: white;
-  max-width: 1200px;
+  max-width: 1140px;
   margin: 0 auto;
   padding: 2rem;
   display: grid;
@@ -143,7 +143,7 @@
 .roomContainer {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0rem;
+  padding: 2rem;
 }
 
 .roomSectionTitle {
@@ -342,7 +342,7 @@
 .bookingContainer {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0rem;
+  padding: 2rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }

@@ -638,7 +638,7 @@ export default function RoomsPage() {
             <S3ImageUpload
               value={imageUrls}
               onChange={setImageUrls}
-              maxCount={8}
+              maxCount={10}
               folder="rooms"
             />
           </Form.Item>

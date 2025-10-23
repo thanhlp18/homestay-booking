@@ -416,7 +416,7 @@ console.log(branchInformationFitter)
       {/* Destinations Section */}
       <section className={styles.destinationsSection}>
         <h2 className={styles.sectionTitle}>Điểm đến</h2>
-        <p className={styles.sectionSubtitle}>tại Tp.Cần Thơ</p>
+        <p className={styles.sectionSubtitle}>tại Thành phố Huế</p>
         <div className={styles.destinationTabs}>
           {uniqueDestinations.map((destination) => (
             <button
@@ -434,8 +434,8 @@ console.log(branchInformationFitter)
         <div className={styles.locationHeader}>
           <h3 className={styles.locationTitle}>
             {selectedDestination === "Tất cả"
-              ? "Tất cả các Home tại Tp.Cần Thơ"
-              : `Home - ${selectedDestination}, Ninh Kiều`}
+              ? "Tất cả các Home tại Thành phố Huế"
+              : `Home - ${selectedDestination}`}
           </h3>
           {branchInformationFitter && branchInformationFitter.googleMapUrl && (
             <a
