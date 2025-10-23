@@ -98,8 +98,11 @@ export default function RoomPage() {
   const [backIdPreview, setBackIdPreview] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
-  const [fullDaySelection, setFullDaySelection] = useState<FullDaySelection | null>(null);
-  const [fullDayValidationError, setFullDayValidationError] = useState<string | null>(null);
+  const [fullDaySelection, setFullDaySelection] =
+    useState<FullDaySelection | null>(null);
+  const [fullDayValidationError, setFullDayValidationError] = useState<
+    string | null
+  >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [room, setRoom] = useState<Room | null>(null);
   const [bookingTableBranches, setBookingTableBranches] = useState<
@@ -333,9 +336,15 @@ export default function RoomPage() {
   };
 
   // Check if a day has any booked slots
-  const checkDayAvailability = (date: string, branchId: string, roomId: string): boolean => {
+  const checkDayAvailability = (
+    date: string,
+    branchId: string,
+    roomId: string
+  ): boolean => {
     const dayBookings = initialBookings[date]?.[branchId]?.[roomId] || {};
-    return Object.values(dayBookings).every(booking => booking.status === 'available');
+    return Object.values(dayBookings).every(
+      (booking) => booking.status === "available"
+    );
   };
 
   // Handle full day selection
@@ -343,23 +352,25 @@ export default function RoomPage() {
     if (!room) return;
 
     const isAvailable = checkDayAvailability(date, room.branchId, room.id);
-    
+
     if (!isAvailable) {
-      setFullDayValidationError(`Ngày ${new Date(date).toLocaleDateString('vi-VN')} có một số khung giờ đã được đặt. Vui lòng chọn ngày khác hoặc đặt theo khung giờ.`);
+      setFullDayValidationError(
+        `Ngày ${new Date(date).toLocaleDateString("vi-VN")} có một số khung giờ đã được đặt. Vui lòng chọn ngày khác hoặc đặt theo khung giờ.`
+      );
       setFullDaySelection(null);
       return;
     }
 
     setFullDayValidationError(null);
-    
+
     // Use the room's base price for full day booking (different from time slot pricing)
     const fullDayPrice = room.basePrice;
-    
+
     setFullDaySelection({
       date,
       branchId: room.branchId,
       roomId: room.id,
-      price: fullDayPrice
+      price: fullDayPrice,
     });
   };
 
@@ -367,30 +378,30 @@ export default function RoomPage() {
   const handleBookingTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newBookingType = e.target.value;
     const currentBookingType = formData.bookingType;
-    
+
     // Check if there are existing selections that would be lost
     const hasExistingSelections = selectedSlots.length > 0 || fullDaySelection;
-    
+
     if (hasExistingSelections && newBookingType !== currentBookingType) {
-      const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${currentBookingType === 'timeSlots' ? 'Đặt theo khung giờ' : 'Đặt cả ngày'}" sang "${newBookingType === 'timeSlots' ? 'Đặt theo khung giờ' : 'Đặt cả ngày'}"? Tất cả lựa chọn hiện tại sẽ bị xóa.`;
-      
+      const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${currentBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"}" sang "${newBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"}"? Tất cả lựa chọn hiện tại sẽ bị xóa.`;
+
       if (!confirm(confirmMessage)) {
         // Reset the select value back to current booking type
         e.target.value = currentBookingType;
         return;
       }
     }
-    
-    setFormData(prev => ({
+
+    setFormData((prev) => ({
       ...prev,
-      bookingType: newBookingType
+      bookingType: newBookingType,
     }));
 
     // Clear all selections and reset booking state when switching booking types
     setSelectedSlots([]);
     setFullDaySelection(null);
     setFullDayValidationError(null);
-    
+
     // Reset any existing bookings to ensure clean state
     if (newBookingType === "timeSlots") {
       // Clear any full day related state
@@ -490,28 +501,31 @@ export default function RoomPage() {
 
   const handleConfirmBooking = async () => {
     if (isSubmitting) return; // Prevent multiple submissions
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Prepare the slots to submit
       let slotsToSubmit = selectedSlots;
       let isFullDayBooking = false;
-      
+
       // For full day bookings, create slots from available time slots
       if (formData.bookingType === "fullDay" && fullDaySelection && room) {
         isFullDayBooking = true;
-        const availableSlots = room.timeSlots.filter(timeSlot => {
-          const bookingStatus = initialBookings[fullDaySelection.date]?.[room.branchId]?.[room.id]?.[timeSlot.id];
-          return !bookingStatus || bookingStatus.status === 'available';
+        const availableSlots = room.timeSlots.filter((timeSlot) => {
+          const bookingStatus =
+            initialBookings[fullDaySelection.date]?.[room.branchId]?.[
+              room.id
+            ]?.[timeSlot.id];
+          return !bookingStatus || bookingStatus.status === "available";
         });
-        
-        slotsToSubmit = availableSlots.map(timeSlot => ({
+
+        slotsToSubmit = availableSlots.map((timeSlot) => ({
           date: fullDaySelection.date,
           branchId: room.branchId,
           roomId: room.id,
           timeSlotId: timeSlot.id,
-          price: timeSlot.price
+          price: timeSlot.price,
         }));
       }
 
@@ -589,7 +603,9 @@ export default function RoomPage() {
       return selectedSlots
         .map((slot) => {
           const date = new Date(slot.date).toLocaleDateString("vi-VN");
-          const branch = bookingTableBranches.find((b) => b.id === slot.branchId);
+          const branch = bookingTableBranches.find(
+            (b) => b.id === slot.branchId
+          );
           const roomData = branch?.rooms.find((r) => r.id === slot.roomId);
           const timeSlot = roomData?.timeSlots.find(
             (ts) => ts.id === slot.timeSlotId
@@ -599,16 +615,16 @@ export default function RoomPage() {
         })
         .join(", ");
     } else if (formData.bookingType === "fullDay" && fullDaySelection) {
-      return `${new Date(fullDaySelection.date).toLocaleDateString('vi-VN')} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
+      return `${new Date(fullDaySelection.date).toLocaleDateString("vi-VN")} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
     }
-    
+
     return "Chưa chọn khung giờ";
   };
 
   const calculateTotalPrice = () => {
     let baseTotal = 0;
     let slotCount = 0;
-    
+
     if (formData.bookingType === "timeSlots") {
       baseTotal = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
       slotCount = selectedSlots.length;
@@ -616,13 +632,13 @@ export default function RoomPage() {
       baseTotal = fullDaySelection.price;
       slotCount = 1; // Count as 1 booking for discount purposes
     }
-    
+
     // Guest surcharge calculation (50k per guest over 2)
     const priceGuest =
       parseInt(formData.guests) > 2
         ? 50000 * (parseInt(formData.guests) - 2)
         : 0;
-    
+
     // Calculate discount (only for time slots, not full day)
     let discount = 0;
     if (formData.bookingType === "timeSlots") {
@@ -635,19 +651,25 @@ export default function RoomPage() {
 
     const subtotalAfterDiscount = baseTotal * (1 - discount);
     const finalTotal = subtotalAfterDiscount + priceGuest;
-    
-    return { 
-      baseTotal, 
-      discount, 
-      finalTotal, 
-      slotCount, 
+
+    return {
+      baseTotal,
+      discount,
+      finalTotal,
+      slotCount,
       priceGuest,
-      subtotalAfterDiscount: Math.round(subtotalAfterDiscount)
+      subtotalAfterDiscount: Math.round(subtotalAfterDiscount),
     };
   };
 
-  const { baseTotal, discount, finalTotal, slotCount, priceGuest, subtotalAfterDiscount } =
-    calculateTotalPrice();
+  const {
+    baseTotal,
+    discount,
+    finalTotal,
+    slotCount,
+    priceGuest,
+    subtotalAfterDiscount,
+  } = calculateTotalPrice();
 
   // Compute selected slots for display in booking table
   const getDisplaySelectedSlots = () => {
@@ -655,17 +677,20 @@ export default function RoomPage() {
       return selectedSlots;
     } else if (formData.bookingType === "fullDay" && fullDaySelection && room) {
       // For full day mode, show all available slots for the selected date
-      const availableSlots = room.timeSlots.filter(timeSlot => {
-        const bookingStatus = initialBookings[fullDaySelection.date]?.[room.branchId]?.[room.id]?.[timeSlot.id];
-        return !bookingStatus || bookingStatus.status === 'available';
+      const availableSlots = room.timeSlots.filter((timeSlot) => {
+        const bookingStatus =
+          initialBookings[fullDaySelection.date]?.[room.branchId]?.[room.id]?.[
+            timeSlot.id
+          ];
+        return !bookingStatus || bookingStatus.status === "available";
       });
-      
-      return availableSlots.map(timeSlot => ({
+
+      return availableSlots.map((timeSlot) => ({
         date: fullDaySelection.date,
         branchId: room.branchId,
         roomId: room.id,
         timeSlotId: timeSlot.id,
-        price: timeSlot.price
+        price: timeSlot.price,
       }));
     }
     return [];
@@ -841,37 +866,43 @@ export default function RoomPage() {
             <p className={styles.tableDescription}>
               Chọn khung giờ phù hợp với bạn
             </p>
-            
+
             <div className={styles.bookingTypeSection}>
               <label className={styles.label}>Loại đặt phòng *</label>
-              <select
-                name="bookingType"
-                className={styles.select}
-                value={formData.bookingType}
-                onChange={handleBookingTypeChange}
-                required
-              >
-                <option value="timeSlots">Đặt theo khung giờ</option>
-                <option value="fullDay">Đặt cả ngày</option>
-              </select>
-              
+              <div className={styles.custom_select_wrapper}>
+                <select
+                  name="bookingType"
+                  className={styles.select}
+                  value={formData.bookingType}
+                  onChange={handleBookingTypeChange}
+                  required
+                >
+                  <option value="timeSlots">Đặt theo khung giờ</option>
+                  <option value="fullDay">Đặt cả ngày</option>
+                </select>
+              </div>
+
               <div className={styles.bookingTypeNotice}>
                 <p className={styles.noticeText}>
-                  <strong>Lưu ý:</strong> Bảng lịch bên dưới hiển thị tình trạng thời gian thực. 
-                  Một số khung giờ có thể đã được đặt bởi khách hàng khác.
+                  <strong>Lưu ý:</strong> Bảng lịch bên dưới hiển thị tình trạng
+                  thời gian thực. Một số khung giờ có thể đã được đặt bởi khách
+                  hàng khác.
                 </p>
                 <p className={styles.noticeText}>
-                  • <strong>Đặt theo khung giờ:</strong> Chọn các khung giờ cụ thể bạn muốn
+                  • <strong>Đặt theo khung giờ:</strong> Chọn các khung giờ cụ
+                  thể bạn muốn
                 </p>
                 <p className={styles.noticeText}>
-                  • <strong>Đặt cả ngày:</strong> Đặt toàn bộ ngày (ưu tiên cao hơn khung giờ)
+                  • <strong>Đặt cả ngày:</strong> Đặt toàn bộ ngày (ưu tiên cao
+                  hơn khung giờ)
                 </p>
                 <p className={styles.noticeText}>
-                  <strong>⚠️ Chú ý:</strong> Thay đổi loại đặt phòng sẽ xóa tất cả lựa chọn hiện tại.
+                  <strong>⚠️ Chú ý:</strong> Thay đổi loại đặt phòng sẽ xóa tất
+                  cả lựa chọn hiện tại.
                 </p>
               </div>
             </div>
-            
+
             {formData.bookingType === "fullDay" && (
               <div className={styles.fullDaySection}>
                 <div className={styles.formRow}>
@@ -881,7 +912,7 @@ export default function RoomPage() {
                       type="date"
                       name="bookingDate"
                       className={styles.input}
-                      min={new Date().toISOString().split('T')[0]}
+                      min={new Date().toISOString().split("T")[0]}
                       onChange={handleFullDayDateChange}
                       required
                     />
@@ -894,18 +925,26 @@ export default function RoomPage() {
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Giá cả ngày</label>
                     <div className={styles.fullDayPrice}>
-                      {fullDaySelection ? fullDaySelection.price.toLocaleString("vi-VN") : room.basePrice.toLocaleString("vi-VN")} đ/ngày
+                      {fullDaySelection
+                        ? fullDaySelection.price.toLocaleString("vi-VN")
+                        : room.basePrice.toLocaleString("vi-VN")}{" "}
+                      đ/ngày
                     </div>
                   </div>
                 </div>
                 {fullDaySelection && (
                   <div className={styles.fullDayConfirmation}>
-                    <p>✅ Đã chọn ngày: {new Date(fullDaySelection.date).toLocaleDateString('vi-VN')}</p>
+                    <p>
+                      ✅ Đã chọn ngày:{" "}
+                      {new Date(fullDaySelection.date).toLocaleDateString(
+                        "vi-VN"
+                      )}
+                    </p>
                   </div>
                 )}
               </div>
             )}
-            
+
             <RoomBookingTable
               key={`booking-table-${formData.bookingType}`}
               branches={bookingTableBranches}
@@ -916,8 +955,6 @@ export default function RoomPage() {
               submitOnSelect={formData.bookingType === "timeSlots"}
               isFullDayBooking={formData.bookingType === "fullDay"}
             />
-            
-           
           </div>
 
           <div className={styles.bookingForm}>
@@ -1108,13 +1145,19 @@ export default function RoomPage() {
                     <div className={styles.formGroup}>
                       <label className={styles.label}>Ngày đã chọn</label>
                       <div className={styles.selectedSlotsDisplay}>
-                        {new Date(fullDaySelection.date).toLocaleDateString('vi-VN')} - Cả ngày
+                        {new Date(fullDaySelection.date).toLocaleDateString(
+                          "vi-VN"
+                        )}{" "}
+                        - Cả ngày
                       </div>
                     </div>
                   )}
                 </div>
                 <div className={styles.formRow}>
-                  <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                  <div
+                    className={styles.formGroup}
+                    style={{ gridColumn: "1 / -1" }}
+                  >
                     <label className={styles.label}>Ghi chú</label>
                     <input
                       type="text"
@@ -1145,7 +1188,9 @@ export default function RoomPage() {
                       </div>
                       {discount > 0 && (
                         <div className={styles.priceRow}>
-                          <span>Giảm giá ({(discount * 100).toFixed(0)}%):</span>
+                          <span>
+                            Giảm giá ({(discount * 100).toFixed(0)}%):
+                          </span>
                           <span className={styles.discount}>
                             -{(baseTotal * discount).toLocaleString("vi-VN")} đ
                           </span>
@@ -1153,7 +1198,9 @@ export default function RoomPage() {
                       )}
                       <div className={styles.priceRow}>
                         <span>Tổng sau giảm giá:</span>
-                        <span>{subtotalAfterDiscount.toLocaleString("vi-VN")} đ</span>
+                        <span>
+                          {subtotalAfterDiscount.toLocaleString("vi-VN")} đ
+                        </span>
                       </div>
                     </>
                   ) : (
@@ -1165,7 +1212,11 @@ export default function RoomPage() {
                       {fullDaySelection && (
                         <div className={styles.priceRow}>
                           <span>Ngày đặt:</span>
-                          <span>{new Date(fullDaySelection.date).toLocaleDateString('vi-VN')}</span>
+                          <span>
+                            {new Date(fullDaySelection.date).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </span>
                         </div>
                       )}
                       <div className={styles.priceRow}>
@@ -1239,15 +1290,15 @@ export default function RoomPage() {
                 </div>
 
                 <div className={styles.formActions}>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className={styles.submitButton}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Đang xử lý..." : "Xác nhận đặt phòng"}
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className={styles.cancelButton}
                     disabled={isSubmitting}
                   >
@@ -1307,12 +1358,11 @@ export default function RoomPage() {
                 <div className={styles.detailRow}>
                   <span className={styles.detailLabel}>Khung giờ:</span>
                   <span className={styles.detailValue}>
-                    {formData.bookingType === "timeSlots" 
+                    {formData.bookingType === "timeSlots"
                       ? formatSelectedSlots()
-                      : fullDaySelection 
-                        ? `${new Date(fullDaySelection.date).toLocaleDateString('vi-VN')} - Cả ngày`
-                        : "Chưa chọn"
-                    }
+                      : fullDaySelection
+                        ? `${new Date(fullDaySelection.date).toLocaleDateString("vi-VN")} - Cả ngày`
+                        : "Chưa chọn"}
                   </span>
                 </div>
                 <div className={styles.detailRow}>
@@ -1331,8 +1381,8 @@ export default function RoomPage() {
               </div>
 
               <div className={styles.modalActions}>
-                <button 
-                  className={styles.editButton} 
+                <button
+                  className={styles.editButton}
                   onClick={handleEditInfo}
                   disabled={isSubmitting}
                 >

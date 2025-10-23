@@ -78,15 +78,21 @@
 /* Home Grid */
 .homeGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
+  justify-content: center;
+  align-items: stretch;
+
 }
+
+
 @media (max-width: 1024px) {
   .homeGrid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
 @media (max-width: 600px) {
   .homeGrid {
     grid-template-columns: 1fr;
@@ -277,23 +283,23 @@
   .homeGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .calendarHeader,
   .calendarRow {
     grid-template-columns: 1fr;
   }
-  
+
   .calendarCell {
     text-align: left;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
   }
-  
+
   .destinationTabs,
   .calendarTabs {
     justify-content: flex-start;
   }
-  
+
   .calendarContainer {
     padding: 1.5rem 1rem;
     max-width: 100%;
