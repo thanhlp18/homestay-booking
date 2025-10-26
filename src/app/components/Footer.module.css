@@ -60,7 +60,7 @@
 .footerLogo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.25rem;
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 1rem;
@@ -71,8 +71,8 @@
 }
 
 .logoImg {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   object-fit: fill;
   transform: scale(2.5);
 }

@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #ffefd9;
 }
 
 .container {
@@ -15,7 +15,7 @@
 
 .backLink {
   display: inline-block;
-  color: #FEA38E;
+  color: #605f3a;
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -24,15 +24,16 @@
 }
 
 .backLink:hover {
-  color: #FBA2AB;
+  color: #83311b !important;
+  text-decoration: underline;
 }
 
 .pageTitle {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #FEA38E;
-  text-align: center;
-  margin-bottom: 2.5rem;
+  color: #83311b !important;
+  /* text-align: center; */
+  /* margin-bottom: 2.5rem; */
 }
 
 .pageTitle:hover {
@@ -40,7 +41,7 @@
 }
 
 .lastUpdated {
-  color: #666;
+  color: #605f3a;
   font-size: 0.9rem;
   margin: 0;
 }
@@ -61,22 +62,22 @@
 }
 
 .sectionTitle {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #FEA38E;
+  color: #83311b;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #FEA38E;
+  border-bottom: 2px solid #83311b;
   padding-bottom: 0.75rem;
 }
 
 .section p {
-  color: #555;
+  color: #605f3a;
   line-height: 1.7;
   margin-bottom: 1rem;
 }
 
 .section ul {
-  color: #555;
+  color: #605f3a;
   line-height: 1.7;
   padding-left: 1.5rem;
 }
@@ -89,7 +90,7 @@
   background: #f8f9fa;
   padding: 1.5rem;
   border-radius: 8px;
-  border-left: 4px solid #FEA38E;
+  border-left: 4px solid #83311b;
 }
 
 .contactInfo p {
@@ -112,7 +113,7 @@
   .container {
     padding: 2rem 1.5rem;
   }
-  
+
   .content {
     padding: 2.5rem;
   }
@@ -122,15 +123,15 @@
   .container {
     padding: 1.5rem 1rem;
   }
-  
+
   .pageTitle {
     font-size: 2.5rem;
   }
-  
+
   .content {
     padding: 2rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.8rem;
   }
@@ -140,16 +141,16 @@
   .container {
     padding: 1rem;
   }
-  
+
   .pageTitle {
     font-size: 2rem;
   }
-  
+
   .content {
     padding: 1.5rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.5rem;
   }
-} 
+}

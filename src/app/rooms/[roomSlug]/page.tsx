@@ -1375,7 +1375,7 @@ export default function RoomPage() {
 
               <div className={styles.bookingNotice}>
                 <strong>
-                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG BẢO TRƯỚC 3 TIẾNG
+                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG <br/>BẢO TRƯỚC 3 TIẾNG
                   TRƯỚC GIỜ CHECK IN
                 </strong>
               </div>

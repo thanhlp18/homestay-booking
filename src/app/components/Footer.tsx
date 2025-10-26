@@ -9,7 +9,7 @@ export default function Footer() {
         <div className={styles.footerSection}>
           <div className={styles.footerLogo}>
             {/* <span className={styles.logoIcon}>💚</span> */}
-            <img src="transparent-bg.png" alt="" className={styles.logoImg} />
+            <img src="footer-logo.png" alt="" className={styles.logoImg} />
 
             <span className={styles.logoText}>O Ni Homestay</span>
           </div>

@@ -204,7 +204,7 @@
   align-items: center;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #605f3a 0%, #bd8049 100%);
+  background: #bd8049;
   border-radius: 12px;
   color: white;
 }
@@ -712,23 +712,23 @@
 
 .confirmationModal {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); */
 }
 
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #f56565, #e53e3e);
-  color: white;
-  border-radius: 12px 12px 0 0;
+  padding: 12px 24px;
+  border-bottom: 1px solid #ffefd9;
+  background: #ffefd9;
+  color: #83311b;
+  border-radius: 8px 8px 0 0;
 }
 
 .modalTitle {
@@ -741,7 +741,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: white;
+  color: #83311b;
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -762,7 +762,7 @@
 }
 
 .bookingLocation {
-  color: #FEA38E;
+  color: #83311b;
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
@@ -792,21 +792,21 @@
 
 .detailLabel {
   font-weight: 500;
-  color: #4a5568;
+  color: #83311b;
 }
 
 .detailValue {
-  font-weight: 600;
-  color: #1a202c;
+  font-weight: 500;
+  color: #605f3a;
 }
 
 .bookingNotice {
   /* background: #FFDFC3; */
-  border: 1px solid #FEA38E;
+  border: 1px solid #83311b;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 24px;
-  color: #FEA38E;
+  color: #83311b;
   font-size: 14px;
   text-align: center;
 }
@@ -821,11 +821,13 @@
   background: white;
   border: 2px solid #e2e8f0;
   color: #4a5568;
-  padding: 12px 24px;
+  padding: 1rem 2rem;
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
+  margin-top: 1rem;
   transition: all 0.2s;
+  height: fit-content;
 }
 
 .editButton:hover {
@@ -834,7 +836,7 @@
 }
 
 .confirmButton {
-  background: linear-gradient(135deg, #FEA38E, #FBA2AB);
+  background: #83311b;
   border: none;
   color: white;
   padding: 1rem 2rem;
@@ -845,12 +847,12 @@
   transition: all 0.3s;
   text-decoration: none;
   display: inline-block;
-  width: 100%;
+  width: 60%;
   margin-top: 1rem;
 }
 
 .confirmButton:hover {
-  background: linear-gradient(135deg, #FBA2AB, #F3B5A0);
+  background: #83311b;
   transform: translateY(-2px);
 }
 
@@ -880,7 +882,7 @@
 
 /* Submit button update */
 .submitButton {
-  background: linear-gradient(135deg, #FEA38E, #FBA2AB);
+  background: #83311b;
   border: none;
   color: white;
   padding: 16px 32px;
@@ -893,7 +895,7 @@
 }
 
 .submitButton:hover {
-  background: linear-gradient(135deg, #e53e3e, #c53030);
+  background: #83311b;
   transform: translateY(-1px);
 }
 
@@ -1457,7 +1459,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-weight: 600;
-  color: #FEA38E;
+  color: #605f3a;
   font-size: 1.1rem;
   text-align: center;
 }

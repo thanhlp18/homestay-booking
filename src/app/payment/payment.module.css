@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: #f8f9fa;
+  background: #ffefd9;
 }
 
 .container {
@@ -45,14 +45,14 @@
 }
 
 .successTitle {
-  color: #2d3748;
+  color: #83311b;
   font-size: 32px;
   font-weight: bold;
   margin: 20px 0;
 }
 
 .timeRemaining {
-  color: #FEA38E;
+  color: #605f3a;
   font-size: 18px;
   font-weight: 600;
 }
@@ -67,7 +67,7 @@
 }
 
 .paymentTitle {
-  color: #2d3748;
+  color: #83311b;
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 30px;
@@ -90,7 +90,7 @@
 .methodTitle {
   font-size: 18px;
   font-weight: 600;
-  color: #2d3748;
+  color: #83311b;
   margin-bottom: 20px;
 }
 
@@ -146,7 +146,7 @@
 
 .qrLabel {
   font-size: 12px;
-  color: #666;
+  color: #605f3a;
   font-weight: 500;
 }
 
@@ -160,13 +160,13 @@
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 12px;
-  color: #4a5568;
+  color: #605f3a;
   cursor: pointer;
 }
 
 .qrNote {
   font-size: 14px;
-  color: #666;
+  color: #605f3a;
   font-style: italic;
   text-align: center;
 }
@@ -201,7 +201,7 @@
 
 .bankName {
   font-weight: 600;
-  color: #2d3748;
+  color: #605f3a;
 }
 
 .bankDetails {
@@ -224,13 +224,13 @@
 
 .bankLabel {
   font-weight: 500;
-  color: #4a5568;
+  color: #83311b;
   flex: 1;
 }
 
 .bankValue {
   font-weight: 600;
-  color: #2d3748;
+  color: #605f3a;
   flex: 1;
   text-align: right;
 }
@@ -245,7 +245,7 @@
 .bankNote p {
   margin: 0;
   font-size: 14px;
-  color: #4a5568;
+  color: #605f3a;
   line-height: 1.5;
 }
 
@@ -259,7 +259,7 @@
 }
 
 .errorMessage {
-  color: #FEA38E;
+  color: #83311b;
   background-color: #FFDFC3;
   border: 1px solid #FEA38E;
   padding: 12px;
@@ -293,7 +293,7 @@
 
 .cancelBtn {
   background: transparent;
-  color: #4a5568;
+  color: #605f3a;
   border: 1px solid #e2e8f0;
   padding: 12px 24px;
   border-radius: 6px;
@@ -321,7 +321,7 @@
 }
 
 .promoBanner {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #fbe0a2;
   border-radius: 12px;
   padding: 20px;
   text-align: center;
@@ -335,7 +335,7 @@
 }
 
 .promoContent {
-  color: #1f2937;
+  color: #605f3a;
 }
 
 .promoTitle {
@@ -358,7 +358,7 @@
 .licenseInfo {
   text-align: center;
   font-size: 12px;
-  color: #666;
+  color: #605f3a;
 }
 
 /* Footer */
@@ -510,44 +510,44 @@
   .container {
     padding: 10px;
   }
-  
+
   .successSection {
     padding: 30px 15px;
   }
-  
+
   .successTitle {
     font-size: 24px;
   }
-  
+
   .paymentSection {
     padding: 20px;
   }
-  
+
   .paymentMethods {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .footerContent {
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  
+
   .footerCopyright {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .qrPlaceholder {
     width: 150px;
     height: 150px;
   }
-  
+
   .backButton {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .confirmTransferBtn,
   .cancelBtn {
     max-width: none;
@@ -656,19 +656,19 @@
   .nextSteps {
     padding: 15px;
   }
-  
+
   .successSectionTitle {
     font-size: 24px;
   }
-  
+
   .successMessage p {
     font-size: 14px;
   }
-  
+
   .homeButton {
     padding: 10px 24px;
     font-size: 14px;
     width: 100%;
     max-width: 250px;
   }
-} 
+}

@@ -376,7 +376,7 @@ console.log(branchInformationFitter)
       originalPrice: room.originalPrice
         ? `${room.originalPrice.toLocaleString("vi-VN")} đ/ngày`
         : undefined,
-      availability: "có thể nhận",
+      availability: "Đang trống",
       imageUrl: room.images?.[0], // Add optional chaining to prevent error
       imageGradient: getGradientForBranch(room.branchId), // Fallback gradient
       roomSlug: room.slug,

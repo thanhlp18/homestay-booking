@@ -12,13 +12,13 @@ export default function HandoverGuidePage() {
       <div className={styles.container}>
         <div className={styles.header}>
           <Link href="/policies" className={styles.backLink}>← Quay lại</Link>
-          <h1 className={styles.title}>Hướng dẫn bàn giao</h1>
+          <h1 className={styles.pageTitle}>Hướng dẫn bàn giao</h1>
           <p className={styles.subtitle}>Quy trình bàn giao phòng và nhận phòng</p>
         </div>
 
         <div className={styles.content}>
           <section className={styles.section}>
-            <h2>1. Quy trình check-in</h2>
+            <h2 className={styles.sectionTitle}>1. Quy trình check-in</h2>
             <div className={styles.process}>
               <div className={styles.processStep}>
                 <div className={styles.processIcon}>🕐</div>
@@ -47,7 +47,7 @@ export default function HandoverGuidePage() {
           </section>
 
           <section className={styles.section}>
-            <h2>2. Quy trình check-out</h2>
+            <h2 className={styles.sectionTitle}>2. Quy trình check-out</h2>
             <div className={styles.process}>
               <div className={styles.processStep}>
                 <div className={styles.processIcon}>🕐</div>
@@ -76,7 +76,7 @@ export default function HandoverGuidePage() {
           </section>
 
           <section className={styles.section}>
-            <h2>3. Quy định sử dụng phòng</h2>
+            <h2 className={styles.sectionTitle}>3. Quy định sử dụng phòng</h2>
             <div className={styles.rules}>
               <div className={styles.rule}>
                 <h3>✅ Được phép</h3>
@@ -102,7 +102,7 @@ export default function HandoverGuidePage() {
           </section>
 
           <section className={styles.section}>
-            <h2>4. Tiện nghi và dịch vụ</h2>
+            <h2 className={styles.sectionTitle}>4. Tiện nghi và dịch vụ</h2>
             <div className={styles.amenities}>
               <div className={styles.amenity}>
                 <h3>🛏️ Tiện nghi cơ bản</h3>
@@ -129,7 +129,7 @@ export default function HandoverGuidePage() {
           </section>
 
           <section className={styles.section}>
-            <h2>5. Lưu ý quan trọng</h2>
+            <h2 className={styles.sectionTitle}>5. Lưu ý quan trọng</h2>
             <div className={styles.importantNotes}>
               <div className={styles.note}>
                 <h3>⏰ Thời gian</h3>
@@ -154,8 +154,8 @@ export default function HandoverGuidePage() {
           </section>
 
           <section className={styles.section}>
-            <h2>6. Thông tin liên hệ</h2>
-            <p>Để được hỗ trợ về bàn giao phòng, vui lòng liên hệ:</p>
+            <h2 className={styles.sectionTitle}>6. Thông tin liên hệ</h2>
+            <p className={styles.contactTitle}>Để được hỗ trợ về bàn giao phòng, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
               <p><strong>Hotline:</strong> 0932000000</p>
               <p><strong>Email:</strong> handover@O Ni Homestay.vn</p>

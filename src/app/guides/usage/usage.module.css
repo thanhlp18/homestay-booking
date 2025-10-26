@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #ffefd9;
 }
 
 .container {
@@ -15,7 +15,7 @@
 
 .backLink {
   display: inline-block;
-  color: #FEA38E;
+  color: #605f3a;
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 1.5rem;
@@ -24,15 +24,16 @@
 }
 
 .backLink:hover {
-  color: #FBA2AB;
+  color: #83311b !important;
+  text-decoration: underline;
 }
 
 .pageTitle {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #FEA38E;
-  text-align: center;
-  margin-bottom: 2.5rem;
+  color: #83311b !important;
+  /* text-align: center; */
+  /* margin-bottom: 2.5rem; */
 }
 
 .pageTitle:hover {
@@ -40,7 +41,7 @@
 }
 
 .subtitle {
-  color: #666;
+  color: #605f3a;
   font-size: 1.1rem;
   margin: 0;
 }
@@ -61,11 +62,11 @@
 }
 
 .sectionTitle {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #FEA38E;
+  color: #83311b;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #FEA38E;
+  border-bottom: 2px solid #83311b;
   padding-bottom: 0.75rem;
 }
 
@@ -77,7 +78,7 @@
 }
 
 .stepNumber {
-  background: #FEA38E;
+  background: #83311b;
   color: white;
   width: 50px;
   height: 50px;
@@ -95,21 +96,21 @@
 }
 
 .stepContent h3 {
-  color: #333;
+  color: #83311b;
   font-size: 1.4rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
 }
 
 .stepContent p {
-  color: #555;
+  color: #605f3a;
   line-height: 1.7;
   margin-bottom: 1rem;
   font-size: 1.05rem;
 }
 
 .stepContent ul {
-  color: #555;
+  color: #605f3a;
   line-height: 1.7;
   padding-left: 1.5rem;
   margin: 0;
@@ -121,7 +122,7 @@
 }
 
 .stepButton {
-  background: #FEA38E;
+  background: #83311b;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -152,14 +153,14 @@
 }
 
 .paymentMethod h4 {
-  color: #333;
+  color: #83311b;
   font-size: 1rem;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .paymentMethod p {
-  color: #666;
+  color: #605f3a;
   font-size: 0.9rem;
   margin: 0;
 }
@@ -194,11 +195,15 @@
 .contactInfo {
   background: #f8f9fa;
   padding: 1.5rem;
+  color: #605f3a;
   border-radius: 8px;
-  border-left: 4px solid #FEA38E;
+  border-left: 4px solid #83311b;
 }
 
-.contactInfo p {
+.contactInfo p,
+.contactTitle {
+  color: #605f3a;
+  /* font-size: 0.9rem; */
   margin-bottom: 0.5rem;
 }
 
@@ -208,7 +213,7 @@
 
 .highlightBox {
   background: #FFDFC3;
-  border-left: 4px solid #FEA38E;
+  border-left: 4px solid #83311b;
   padding: 1rem;
   margin: 1rem 0;
   border-radius: 0 8px 8px 0;
@@ -218,7 +223,7 @@
   .container {
     padding: 2rem 1.5rem;
   }
-  
+
   .content {
     padding: 2.5rem;
   }
@@ -228,28 +233,28 @@
   .container {
     padding: 1.5rem 1rem;
   }
-  
+
   .pageTitle {
     font-size: 2.5rem;
   }
-  
+
   .content {
     padding: 2rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.8rem;
   }
-  
+
   .step {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .stepNumber {
     margin-bottom: 0.5rem;
   }
-  
+
   .paymentMethods,
   .importantNotes {
     grid-template-columns: 1fr;
@@ -260,16 +265,16 @@
   .container {
     padding: 1rem;
   }
-  
+
   .pageTitle {
     font-size: 2rem;
   }
-  
+
   .content {
     padding: 1.5rem;
   }
-  
+
   .sectionTitle {
     font-size: 1.5rem;
   }
-} 
+}

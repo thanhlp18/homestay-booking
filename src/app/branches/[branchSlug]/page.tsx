@@ -397,7 +397,7 @@ export default function BranchPage() {
                           </span>
                         )}
                       </div>
-                      <div className={styles.availability}>có thể nhận</div>
+                      <div className={styles.availability}>đang trống</div>
                     </div>
 
                     <div className={styles.roomActions}>

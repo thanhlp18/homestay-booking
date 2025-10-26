@@ -12,13 +12,13 @@ export default function PrivacyPolicyPage() {
       <div className={styles.container}>
         <div className={styles.header}>
           <Link href="/policies" className={styles.backLink}>← Quay lại</Link>
-          <h1 className={styles.title}>Chính sách bảo mật thông tin</h1>
+          <h1 className={styles.pageTitle}>Chính sách bảo mật thông tin</h1>
           <p className={styles.lastUpdated}>Cập nhật lần cuối: 15/01/2025</p>
         </div>
 
         <div className={styles.content}>
           <section className={styles.section}>
-            <h2>1. Thông tin chúng tôi thu thập</h2>
+            <h2 className={styles.sectionTitle}>1. Thông tin chúng tôi thu thập</h2>
             <p>Chúng tôi thu thập các thông tin sau đây khi bạn sử dụng dịch vụ:</p>
             <ul>
               <li>Thông tin cá nhân: Họ tên, số điện thoại, email, CCCD</li>
@@ -29,7 +29,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className={styles.section}>
-            <h2>2. Mục đích sử dụng thông tin</h2>
+            <h2 className={styles.sectionTitle}>2. Mục đích sử dụng thông tin</h2>
             <p>Thông tin được sử dụng để:</p>
             <ul>
               <li>Xử lý đặt phòng và thanh toán</li>
@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className={styles.section}>
-            <h2>3. Bảo mật thông tin</h2>
+            <h2 className={styles.sectionTitle}>3. Bảo mật thông tin</h2>
             <p>Chúng tôi cam kết bảo vệ thông tin của bạn bằng cách:</p>
             <ul>
               <li>Sử dụng mã hóa SSL/TLS cho dữ liệu truyền tải</li>
@@ -51,7 +51,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className={styles.section}>
-            <h2>4. Chia sẻ thông tin</h2>
+            <h2 className={styles.sectionTitle}>4. Chia sẻ thông tin</h2>
             <p>Chúng tôi không bán, trao đổi hoặc chuyển giao thông tin cá nhân của bạn cho bên thứ ba, trừ khi:</p>
             <ul>
               <li>Có sự đồng ý của bạn</li>
@@ -61,7 +61,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className={styles.section}>
-            <h2>5. Quyền của khách hàng</h2>
+            <h2 className={styles.sectionTitle}>5. Quyền của khách hàng</h2>
             <p>Bạn có quyền:</p>
             <ul>
               <li>Truy cập và xem thông tin cá nhân</li>
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section className={styles.section}>
-            <h2>6. Liên hệ</h2>
+            <h2 className={styles.sectionTitle}>6. Liên hệ</h2>
             <p>Nếu bạn có câu hỏi về chính sách bảo mật, vui lòng liên hệ:</p>
             <div className={styles.contactInfo}>
               <p><strong>Email:</strong> privacy@O Ni Homestay.vn</p>
