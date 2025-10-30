@@ -185,7 +185,9 @@ export default function RoomBookingTable({
   };
 
   const dates = generateDates();
-
+  useEffect(() => {
+    setSelectedSlots(initialSelectedSlots);
+  }, [JSON.stringify(initialSelectedSlots)]);
   // Get booking status for a specific slot
   const getBookingStatus = (
     dateKey: string,
@@ -236,6 +238,8 @@ export default function RoomBookingTable({
 
   // RoomBookingTable.tsx
 
+  // RoomBookingTable.tsx
+
   const handleCellClick = (
     dateKey: string,
     branchId: string,
@@ -251,14 +255,27 @@ export default function RoomBookingTable({
       timeSlot.id
     );
 
-    if (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0) {
-      const isFullyBooked = bookingStatus.status === "booked";
-      if (isFullyBooked) {
-        alert("Gói này đã được đặt cho ngày này");
-        return;
-      }
+    // ✅ Block click if cell has any bookings
+    if (
+      bookingStatus.status === "booked" ||
+      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
+    ) {
+      // Show detailed message about conflicts
+      const conflictDetails = bookingStatus.bookedSlots
+        ?.map((slot) => {
+          const checkIn = new Date(slot.checkIn).toLocaleString("vi-VN");
+          const checkOut = new Date(slot.checkOut).toLocaleString("vi-VN");
+          return `\n- ${checkIn} → ${checkOut}`;
+        })
+        .join("");
+
+      alert(
+        `⚠️ Khung giờ này đã có booking:\n${conflictDetails}\n\nVui lòng chọn khung giờ khác.`
+      );
+      return;
     }
 
+    // Rest of logic...
     const matchingSlots = selectedSlots.filter(
       (slot) =>
         slot.date === dateKey &&
@@ -279,29 +296,22 @@ export default function RoomBookingTable({
       );
       setSelectedSlots(newSlots);
     } else {
-      // ✅ Check: isOvernight = true HOẶC duration >= 20h
       const isOvernightPackage =
         timeSlot.isOvernight === true ||
         (timeSlot.duration && timeSlot.duration >= 20);
 
       if (isOvernightPackage) {
-        console.log("✅ Overnight package - auto set 14:00");
-
-        // Tự động set check-in 14:00, không cần chọn
         const newSlot: SelectedSlot = {
           date: dateKey,
           branchId,
           roomId,
           timeSlotId: timeSlot.id,
           price: timeSlot.price,
-          checkInTime: "14:00", // ← Cố định 14:00
+          checkInTime: "14:00",
         };
 
         setSelectedSlots((prev) => [...prev, newSlot]);
       } else {
-        console.log("📋 Hourly package - show selector");
-
-        // Gói theo giờ ngắn - phải chọn giờ
         setPendingSlot({
           date: dateKey,
           branchId,
@@ -341,7 +351,6 @@ export default function RoomBookingTable({
     if (onBookingSubmit) {
       onBookingSubmit(selectedSlots);
     } else {
-      console.log("Selected slots:", selectedSlots);
       alert(
         `Đặt phòng thành công! Tổng tiền: ${finalTotal.toLocaleString(
           "vi-VN"
@@ -400,6 +409,8 @@ export default function RoomBookingTable({
   };
 
   // Get cell class based on status and selection
+  // RoomBookingTable.tsx
+
   const getCellClass = (
     dateKey: string,
     branchId: string,
@@ -407,8 +418,22 @@ export default function RoomBookingTable({
     timeSlotId: string
   ) => {
     const selected = isSelected(dateKey, branchId, roomId, timeSlotId);
+    const bookingStatus = getBookingStatus(
+      dateKey,
+      branchId,
+      roomId,
+      timeSlotId
+    );
 
     if (selected) return `${styles.cell} ${styles.selected}`;
+
+    // ✅ Add 'booked' class if has bookings
+    if (
+      bookingStatus.status === "booked" ||
+      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
+    ) {
+      return `${styles.cell} ${styles.booked}`;
+    }
 
     return `${styles.cell} ${styles.available}`;
   };
@@ -420,13 +445,46 @@ export default function RoomBookingTable({
     roomId: string,
     timeSlotId: string
   ) => {
-    const selected = isSelected(dateKey, branchId, roomId, timeSlotId);
     const iconSize = getIconSize();
 
-    if (selected) {
-      return <SelectedIcon size={iconSize} />;
-    }
+    // ✅ Count số lượng bookings đã chọn cho cell này
+    const selectedCount = selectedSlots.filter(
+      (slot) =>
+        slot.date === dateKey &&
+        slot.branchId === branchId &&
+        slot.roomId === roomId &&
+        slot.timeSlotId === timeSlotId
+    ).length;
 
+    // ✅ Nếu có ít nhất 1 selected → Show SelectedIcon
+    if (selectedCount > 0) {
+      return (
+        <div style={{ position: "relative" }}>
+          <SelectedIcon size={iconSize} />
+          {selectedCount > 1 && (
+            <span
+              style={{
+                position: "absolute",
+                top: -5,
+                right: -5,
+                background: "#bd8049",
+                color: "white",
+                borderRadius: "50%",
+                width: 16,
+                height: 16,
+                fontSize: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+              }}
+            >
+              {selectedCount}
+            </span>
+          )}
+        </div>
+      );
+    }
     const bookingStatus = getBookingStatus(
       dateKey,
       branchId,
@@ -434,10 +492,14 @@ export default function RoomBookingTable({
       timeSlotId
     );
 
-    if (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0) {
+    // Show BookedIcon if has bookings
+    if (
+      bookingStatus.status === "booked" ||
+      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
+    ) {
       return (
         <div style={{ position: "relative" }}>
-          <AvailableIcon size={iconSize} />
+          <BookedIcon size={iconSize} />
           <span
             style={{
               position: "absolute",
@@ -455,12 +517,11 @@ export default function RoomBookingTable({
               fontWeight: "bold",
             }}
           >
-            {bookingStatus.bookedSlots.length}
+            {bookingStatus.bookedSlots?.length || 1}
           </span>
         </div>
       );
     }
-
     return <AvailableIcon size={iconSize} />;
   };
 

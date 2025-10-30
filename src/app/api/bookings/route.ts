@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendBookingConfirmation, sendAdminNotification } from "@/lib/email";
 
-interface BookingSubmissionData {
+interface SingleBookingData {
   fullName: string;
   phone: string;
   email: string;
@@ -19,9 +19,12 @@ interface BookingSubmissionData {
   backIdImageUrl?: string;
 }
 
-function validateBookingData(
+// ✅ Support array of bookings
+type BookingSubmissionData = SingleBookingData | SingleBookingData[];
+
+function validateSingleBooking(
   data: Record<string, unknown>
-): BookingSubmissionData {
+): SingleBookingData {
   if (!data.fullName || typeof data.fullName !== "string") {
     throw new Error("Họ tên là bắt buộc");
   }
@@ -57,186 +60,208 @@ function validateBookingData(
     throw new Error("Vui lòng chọn thời gian nhận phòng hợp lệ");
   }
 
-  return data as unknown as BookingSubmissionData;
+  return data as unknown as SingleBookingData;
+}
+
+// ✅ Process single booking
+async function processSingleBooking(validatedData: SingleBookingData) {
+  // Lấy thông tin TimeSlot
+  const selectedTimeSlot = await prisma.timeSlot.findUnique({
+    where: { id: validatedData.timeSlotId },
+  });
+
+  if (!selectedTimeSlot) {
+    throw new Error("Gói dịch vụ không hợp lệ.");
+  }
+
+  const checkInDate = new Date(validatedData.checkInDateTime);
+  let checkOutDate: Date;
+
+  // Tính check-out time
+  if (selectedTimeSlot.isOvernight) {
+    checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkOutDate.getDate() + 1);
+    checkOutDate.setHours(12, 0, 0, 0);
+  } else {
+    if (!selectedTimeSlot.duration) {
+      throw new Error("Gói dịch vụ không có thông tin thời lượng.");
+    }
+    checkOutDate = new Date(
+      checkInDate.getTime() + selectedTimeSlot.duration * 60 * 60 * 1000
+    );
+  }
+
+  // ✅ Check conflicts
+  const conflictingBookings = await prisma.booking.findMany({
+    where: {
+      roomId: validatedData.roomId,
+      status: {
+        in: ["PENDING", "PAYMENT_CONFIRMED", "APPROVED"],
+      },
+      AND: [
+        {
+          checkInDateTime: {
+            lt: checkOutDate,
+          },
+        },
+        {
+          checkOutDateTime: {
+            gt: checkInDate,
+          },
+        },
+      ],
+    },
+    include: {
+      room: true,
+      timeSlot: true,
+    },
+  });
+
+  if (conflictingBookings.length > 0) {
+    const conflictDetails = conflictingBookings
+      .map((booking) => {
+        const checkIn = new Date(booking.checkInDateTime!).toLocaleString(
+          "vi-VN"
+        );
+        const checkOut = new Date(booking.checkOutDateTime!).toLocaleString(
+          "vi-VN"
+        );
+        return `\n- Booking ${booking.id.substring(
+          0,
+          8
+        )}: ${checkIn} → ${checkOut} (${booking.status})`;
+      })
+      .join("");
+
+    throw new Error(
+      `Khung thời gian đã bị đặt trùng:${conflictDetails}\n\nVui lòng chọn thời gian khác.`
+    );
+  }
+
+  // Calculate prices
+  let basePrice = selectedTimeSlot.price;
+  let weekendSurcharge = 0;
+
+  const dayOfWeek = checkInDate.getDay();
+  if (
+    (dayOfWeek === 6 || dayOfWeek === 0) &&
+    selectedTimeSlot.weekendSurcharge > 0
+  ) {
+    weekendSurcharge = selectedTimeSlot.weekendSurcharge;
+  }
+
+  const guestSurcharge =
+    validatedData.guests > 2 ? 50000 * (validatedData.guests - 2) : 0;
+  const totalPrice = basePrice + weekendSurcharge + guestSurcharge;
+
+  // Create booking
+  const booking = await prisma.booking.create({
+    data: {
+      fullName: validatedData.fullName,
+      phone: validatedData.phone,
+      email: validatedData.email,
+      cccd: validatedData.cccd,
+      guests: validatedData.guests,
+      notes: validatedData.notes,
+      paymentMethod: validatedData.paymentMethod,
+      basePrice: basePrice,
+      weekendSurchargeApplied: weekendSurcharge,
+      guestSurcharge: guestSurcharge,
+      totalPrice: totalPrice,
+      status: "PENDING",
+      checkInDateTime: checkInDate,
+      checkOutDateTime: checkOutDate,
+      roomId: validatedData.roomId,
+      timeSlotId: validatedData.timeSlotId,
+      frontIdImageUrl: validatedData.frontIdImageUrl,
+      backIdImageUrl: validatedData.backIdImageUrl,
+    },
+    include: {
+      room: {
+        include: {
+          branch: true,
+        },
+      },
+      timeSlot: true,
+    },
+  });
+
+  return booking;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = validateBookingData(body);
 
-    // 1. Lấy thông tin gói dịch vụ (TimeSlot) và phòng
-    const selectedTimeSlot = await prisma.timeSlot.findUnique({
-      where: { id: validatedData.timeSlotId },
-    });
+    // ✅ Check if array or single object
+    const isArray = Array.isArray(body);
+    const bookingRequests = isArray ? body : [body];
 
-    if (!selectedTimeSlot) {
-      throw new Error("Gói dịch vụ không hợp lệ.");
-    }
+    // Validate all bookings
+    const validatedBookings = bookingRequests.map((req) =>
+      validateSingleBooking(req)
+    );
 
-    if (!selectedTimeSlot.duration) {
-      throw new Error("Gói dịch vụ không có thông tin thời lượng.");
-    }
+    // ✅ Process all bookings in transaction
+    const createdBookings = await prisma.$transaction(async (tx) => {
+      const results = [];
 
-    const checkInDate = new Date(validatedData.checkInDateTime);
-    let checkOutDate: Date;
-
-    // Tính toán thời gian check-out (check-in + duration)
-    if (selectedTimeSlot.isOvernight) {
-      // ✅ Overnight: Check-out là 12:00 ngày hôm sau
-      checkOutDate = new Date(checkInDate);
-      checkOutDate.setDate(checkOutDate.getDate() + 1);
-      checkOutDate.setHours(12, 0, 0, 0); // 12:00 ngày hôm sau
-    } else {
-      // Gói theo giờ: Check-out = Check-in + duration
-      if (!selectedTimeSlot.duration) {
-        throw new Error("Gói dịch vụ không có thông tin thời lượng.");
+      for (const validatedData of validatedBookings) {
+        const booking = await processSingleBooking(validatedData);
+        results.push(booking);
       }
-      checkOutDate = new Date(
-        checkInDate.getTime() + selectedTimeSlot.duration * 60 * 60 * 1000
-      );
-    }
 
-    // ✅ 2. KIỂM TRA XUNG ĐỘT THỜI GIAN - QUAN TRỌNG
-    // Tìm tất cả booking đã được APPROVED hoặc đang PENDING/PAYMENT_CONFIRMED
-    const conflictingBookings = await prisma.booking.findMany({
-      where: {
-        roomId: validatedData.roomId,
-        status: {
-          in: ["PENDING", "PAYMENT_CONFIRMED", "APPROVED"],
-        },
-        AND: [
-          {
-            checkInDateTime: {
-              lt: checkOutDate,
-            },
-          },
-          {
-            checkOutDateTime: {
-              gt: checkInDate,
-            },
-          },
-        ],
-      },
-      include: {
-        room: true,
-        timeSlot: true,
-      },
+      return results;
     });
 
-    if (conflictingBookings.length > 0) {
-      const conflictDetails = conflictingBookings
-        .map((booking) => {
-          const checkIn = new Date(booking.checkInDateTime!).toLocaleString(
-            "vi-VN"
-          );
-          const checkOut = new Date(booking.checkOutDateTime!).toLocaleString(
-            "vi-VN"
-          );
-          return `\n- Booking ${booking.id.substring(
-            0,
-            8
-          )}: ${checkIn} → ${checkOut} (${booking.status})`;
-        })
-        .join("");
+    // ✅ Send emails for all bookings
+    for (const booking of createdBookings) {
+      const emailData = {
+        id: booking.id,
+        fullName: booking.fullName,
+        phone: booking.phone,
+        email: booking.email!,
+        cccd: booking.cccd,
+        guests: booking.guests,
+        notes: booking.notes || undefined,
+        paymentMethod: booking.paymentMethod,
+        room: booking.room.name,
+        location: booking.room.branch.location,
+        totalPrice: booking.totalPrice,
+        basePrice: booking.basePrice,
+        discountAmount: booking.discountAmount,
+        discountPercentage: booking.discountPercentage,
+        guestSurcharge: booking.guestSurcharge,
+        checkIn: booking.checkInDateTime,
+        checkOut: booking.checkOutDateTime,
+        package: booking.timeSlot.time,
+      };
 
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Rất tiếc, khung thời gian bạn chọn đã bị đặt trùng:${conflictDetails}\n\nVui lòng chọn thời gian khác.`,
-          conflictingBookings: conflictingBookings.map((b) => ({
-            id: b.id,
-            checkIn: b.checkInDateTime,
-            checkOut: b.checkOutDateTime,
-            status: b.status,
-          })),
-        },
-        { status: 409 }
-      );
+      await sendBookingConfirmation(emailData);
+      await sendAdminNotification(emailData);
     }
 
-    // Tính giá với weekend surcharge
-    let basePrice = selectedTimeSlot.price;
-    let weekendSurcharge = 0;
-
-    const dayOfWeek = checkInDate.getDay();
-    if (
-      (dayOfWeek === 6 || dayOfWeek === 0) &&
-      selectedTimeSlot.weekendSurcharge > 0
-    ) {
-      weekendSurcharge = selectedTimeSlot.weekendSurcharge;
-    }
-
-    const guestSurcharge =
-      validatedData.guests > 2 ? 50000 * (validatedData.guests - 2) : 0;
-    const totalPrice = basePrice + weekendSurcharge + guestSurcharge;
-
-    // Tạo booking
-    const booking = await prisma.booking.create({
-      data: {
-        fullName: validatedData.fullName,
-        phone: validatedData.phone,
-        email: validatedData.email,
-        cccd: validatedData.cccd,
-        guests: validatedData.guests,
-        notes: validatedData.notes,
-        paymentMethod: validatedData.paymentMethod,
-        basePrice: basePrice,
-        weekendSurchargeApplied: weekendSurcharge,
-        guestSurcharge: guestSurcharge,
-        totalPrice: totalPrice,
-        status: "PENDING",
-        checkInDateTime: checkInDate,
-        checkOutDateTime: checkOutDate,
-        roomId: validatedData.roomId,
-        timeSlotId: validatedData.timeSlotId,
-        frontIdImageUrl: validatedData.frontIdImageUrl,
-        backIdImageUrl: validatedData.backIdImageUrl,
-      },
-      include: {
-        room: {
-          include: {
-            branch: true,
-          },
-        },
-        timeSlot: true,
-      },
-    });
-
-    const emailData = {
-      id: booking.id,
-      fullName: booking.fullName,
-      phone: booking.phone,
-      email: booking.email!,
-      cccd: booking.cccd,
-      guests: booking.guests,
-      notes: booking.notes || undefined,
-      paymentMethod: booking.paymentMethod,
-      room: booking.room.name,
-      location: booking.room.branch.location,
-      totalPrice: booking.totalPrice,
-      basePrice: booking.basePrice,
-      discountAmount: booking.discountAmount,
-      discountPercentage: booking.discountPercentage,
-      guestSurcharge: booking.guestSurcharge,
-      checkIn: booking.checkInDateTime,
-      checkOut: booking.checkOutDateTime,
-      package: booking.timeSlot.time,
-    };
-
-    // 5. Gửi email xác nhận
-    await sendBookingConfirmation(emailData);
-    await sendAdminNotification(emailData);
+    // ✅ Calculate grand total
+    const grandTotal = createdBookings.reduce(
+      (sum, b) => sum + b.totalPrice,
+      0
+    );
 
     return NextResponse.json({
       success: true,
-      message: "Đặt phòng thành công!",
+      message: `Đặt phòng thành công! Đã tạo ${createdBookings.length} booking(s).`,
       data: {
-        bookingId: booking.id,
-        totalPrice: booking.totalPrice,
-        status: booking.status,
-        checkIn: booking.checkInDateTime,
-        checkOut: booking.checkOutDateTime,
+        bookings: createdBookings.map((b) => ({
+          bookingId: b.id,
+          totalPrice: b.totalPrice,
+          status: b.status,
+          checkIn: b.checkInDateTime,
+          checkOut: b.checkOutDateTime,
+          room: b.room.name,
+          package: b.timeSlot.time,
+        })),
+        grandTotal,
+        count: createdBookings.length,
       },
     });
   } catch (error) {
@@ -252,7 +277,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint đã được cập nhật
+// GET endpoint - Không đổi
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -278,8 +303,6 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    // Cập nhật logic lọc theo ngày
-    // Tìm các booking có khoảng thời gian giao với khoảng thời gian lọc
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);

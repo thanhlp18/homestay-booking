@@ -33,7 +33,6 @@ function generateTimeSlots(
   end: string,
   step: number = 15
 ): string[] {
-  console.log("🔍 Generating slots:", { start, end, step }); // Debug
 
   const slots: string[] = [];
   const [startHour, startMin] = start.split(":").map(Number);
@@ -42,13 +41,11 @@ function generateTimeSlots(
   let startMinutes = startHour * 60 + startMin;
   let endMinutes = endHour * 60 + endMin;
 
-  console.log("⏰ Minutes:", { startMinutes, endMinutes }); // Debug
 
   // ✅ Check if overnight (end time < start time)
   // VD: 14:00 (840min) -> 12:00 (720min) → Overnight!
   if (endMinutes <= startMinutes) {
     endMinutes += 24 * 60; // Add 24 hours (1440 minutes)
-    console.log("🌙 Overnight detected! New endMinutes:", endMinutes); // Debug
   }
 
   for (let minutes = startMinutes; minutes <= endMinutes; minutes += step) {
@@ -60,10 +57,6 @@ function generateTimeSlots(
       .padStart(2, "0")}`;
     slots.push(timeStr);
   }
-
-  console.log("✅ Generated slots count:", slots.length); // Debug
-  console.log("📋 First 5 slots:", slots.slice(0, 5)); // Debug
-  console.log("📋 Last 5 slots:", slots.slice(-5)); // Debug
 
   return slots;
 }
@@ -113,16 +106,21 @@ export default function TimeSlotSelector({
     fetchUnavailableTimes();
   }, [date, roomId, timeSlot.id]);
 
+  // TimeSlotSelector.tsx
+
   const fetchUnavailableTimes = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/bookings/unavailable-times?date=${date}&roomId=${roomId}&timeSlotId=${timeSlot.id}`
-      );
+      const url = `/api/bookings/unavailable-times?date=${date}&roomId=${roomId}&timeSlotId=${timeSlot.id}`;
+
+      const response = await fetch(url);
       const data = await response.json();
+
 
       if (data.success) {
         setUnavailableSlots(data.unavailableSlots || []);
+      } else {
+        console.error("❌ API returned error:", data.message);
       }
     } catch (err) {
       console.error("Error fetching unavailable times:", err);

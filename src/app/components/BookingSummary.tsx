@@ -6,6 +6,8 @@ import {
   Branch,
   isWeekend,
   isOvernightPackage,
+  checkTimeConflicts,
+  SelectedSlotWithTime,
 } from "./bookingUtils";
 
 interface BookingSummaryProps {
@@ -50,6 +52,15 @@ export default function BookingSummary({
   branches,
   onRemoveSlot,
 }: BookingSummaryProps) {
+  // ✅ Check conflicts giữa các slots đang chọn
+  const slotsWithTime = selectedSlots.filter(
+    (slot): slot is SelectedSlotWithTime =>
+      typeof slot.checkInTime === "string" && slot.checkInTime.length > 0
+  );
+
+  const conflicts =
+    slotsWithTime.length > 0 ? checkTimeConflicts(slotsWithTime, branches) : [];
+
   if (selectedSlots.length === 0) {
     return (
       <div className={styles.emptySummary}>
@@ -80,7 +91,6 @@ export default function BookingSummary({
       if (timeSlot) {
         totalBasePrice += timeSlot.price;
 
-        // Check if weekend
         if (isWeekend(slot.date) && timeSlot.weekendSurcharge) {
           totalWeekendSurcharge += timeSlot.weekendSurcharge;
         }
@@ -101,6 +111,33 @@ export default function BookingSummary({
       <h3 className={styles.summaryTitle}>
         Danh sách khung giờ đã chọn ({selectedSlots.length})
       </h3>
+
+      {/* ✅ Conflict Warning Section */}
+      {conflicts.length > 0 && (
+        <div className={styles.conflictWarning}>
+          <div className={styles.conflictHeader}>
+            <span className={styles.conflictIcon}>⚠️</span>
+            <h4 className={styles.conflictTitle}>
+              Phát hiện xung đột thời gian
+            </h4>
+          </div>
+          {conflicts.map((conflict, idx) => (
+            <div key={idx} className={styles.conflictGroup}>
+              <p className={styles.conflictDate}>
+                📅 Ngày: {new Date(conflict.date).toLocaleDateString("vi-VN")}
+              </p>
+              {conflict.conflicts.map((c, i) => (
+                <div key={i} className={styles.conflictDetail}>
+                  <p className={styles.conflictMessage}>{c.overlapMessage}</p>
+                  <p className={styles.conflictHint}>
+                    💡 Vui lòng xóa một trong hai slot hoặc điều chỉnh thời gian
+                  </p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {Object.entries(slotsByDate)
         .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
@@ -128,10 +165,21 @@ export default function BookingSummary({
 
                 if (!timeSlot) return null;
 
-                // ✅ Xử lý check-out time cho overnight
+                // ✅ Check if this slot is part of a conflict
+                const isConflicting = conflicts.some((conflict) =>
+                  conflict.conflicts.some(
+                    (c) =>
+                      (c.slot1.date === slot.date &&
+                        c.slot1.timeSlotId === slot.timeSlotId &&
+                        c.slot1.checkInTime === slot.checkInTime) ||
+                      (c.slot2.date === slot.date &&
+                        c.slot2.timeSlotId === slot.timeSlotId &&
+                        c.slot2.checkInTime === slot.checkInTime)
+                  )
+                );
+
                 let checkOut;
                 if (timeSlot.isOvernight) {
-                  // ✅ Overnight: Check-in 14:00 → Check-out 12:00 ngày hôm sau
                   const nextDay = new Date(date);
                   nextDay.setDate(nextDay.getDate() + 1);
 
@@ -141,7 +189,6 @@ export default function BookingSummary({
                     isNextDay: true,
                   };
                 } else {
-                  // Gói theo giờ: Tính theo duration
                   checkOut = slot.checkInTime
                     ? calculateCheckOutTime(
                         date,
@@ -151,7 +198,6 @@ export default function BookingSummary({
                     : null;
                 }
 
-                // Calculate price with weekend surcharge
                 const slotBasePrice = timeSlot.price;
                 const slotWeekendSurcharge =
                   isWeekendDay && timeSlot.weekendSurcharge
@@ -162,8 +208,14 @@ export default function BookingSummary({
                 return (
                   <div
                     key={`${slot.date}-${slot.timeSlotId}-${slot.checkInTime}-${index}`}
-                    className={styles.slotCard}
+                    className={`${styles.slotCard} ${
+                      isConflicting ? styles.conflictingSlot : ""
+                    }`}
                   >
+                    {isConflicting && (
+                      <div className={styles.conflictBadge}>⚠️ Xung đột</div>
+                    )}
+
                     <div className={styles.slotInfo}>
                       <div className={styles.slotHeader}>
                         <span className={styles.slotBranch}>
@@ -182,17 +234,15 @@ export default function BookingSummary({
                                 {timeSlot.duration}h
                               </span>
                             )}
-                            {/* ✅ Chỉ hiển thị badge overnight nếu là TRUE overnight */}
                             {(timeSlot.isOvernight ||
                               isOvernightPackage(timeSlot)) && (
                               <span className={styles.overnightBadge}>
-                                🌙 Qua đêm (không chọn giờ)
+                                🌙 Qua đêm
                               </span>
                             )}
                           </span>
                         </div>
 
-                        {/* ✅ Hiển thị check-in/out cho cả overnight và hourly */}
                         {slot.checkInTime && (
                           <>
                             <div className={styles.timeInfo}>

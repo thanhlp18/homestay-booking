@@ -717,6 +717,9 @@
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
   /* box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); */
 }
 
@@ -781,7 +784,7 @@
 .detailRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: start;
   padding: 12px 0;
   border-bottom: 1px solid #f1f5f9;
 }
@@ -796,8 +799,10 @@
 }
 
 .detailValue {
+  text-align: right;
   font-weight: 500;
   color: #605f3a;
+  max-width: 250px;
 }
 
 .bookingNotice {
@@ -1082,7 +1087,7 @@
 /* Time Slot Selection Section */
 .timeSlotSection {
   background: white;
-  padding: 1.5rem;
+  /* padding: 1.5rem; */
   border-radius: 8px;
   /* border: 1px solid #e0e0e0; */
   margin-bottom: 1.5rem;

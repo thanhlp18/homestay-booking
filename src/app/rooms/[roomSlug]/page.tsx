@@ -16,6 +16,9 @@ import {
   checkTimeConflicts,
   SelectedSlotWithTime,
 } from "@/app/components/bookingUtils";
+import CCCDUpload from "@/app/components/CCCDUpload";
+import CCCDImageUpload from "@/app/components/CCCDUpload";
+import { useToast } from "@/providers/ToastProvider";
 
 interface TimeSlot {
   id: string;
@@ -71,6 +74,8 @@ interface BookingFormData {
   notes: string;
   paymentMethod: string;
   bookingType: string;
+  frontIdImageUrl?: string;
+  backIdImageUrl?: string;
 }
 
 export interface SelectedSlot {
@@ -105,6 +110,8 @@ interface BookingStatus {
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
+  const toast = useToast();
+
   const searchParams = useSearchParams();
   const roomSlug = params.roomSlug as string;
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
@@ -143,6 +150,8 @@ export default function RoomPage() {
     notes: "",
     paymentMethod: "cash",
     bookingType: "timeSlots",
+    frontIdImageUrl: "",
+    backIdImageUrl: "",
   });
 
   // Load room data from API
@@ -329,9 +338,17 @@ export default function RoomPage() {
           bookingsData.data.forEach((booking: any) => {
             if (!booking.checkInDateTime || !booking.checkOutDateTime) return;
 
-            const checkIn = new Date(booking.checkInDateTime);
+            // ✅ Only process ACTIVE bookings (PENDING, PAYMENT_CONFIRMED, APPROVED)
+            // Exclude CANCELLED and REJECTED
+            if (
+              !["PENDING", "PAYMENT_CONFIRMED", "APPROVED"].includes(
+                booking.status
+              )
+            ) {
+              return;
+            }
 
-            // ✅ CHỈ mark ngày check-in, không mark các ngày khác
+            const checkIn = new Date(booking.checkInDateTime);
             const dateKey = checkIn.toISOString().split("T")[0];
             const branchId = booking.room.branch.id;
             const roomId = booking.room.id;
@@ -347,36 +364,27 @@ export default function RoomPage() {
               bookingsMap[dateKey][branchId][roomId] = {};
             }
 
-            if (booking.status === "APPROVED") {
-              // ✅ Nếu là overnight, mark là booked (khóa luôn)
-              if (booking.timeSlot.isOvernight) {
-                bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
-                  status: "booked",
-                  bookedSlots: [
-                    {
-                      checkIn: booking.checkInDateTime,
-                      checkOut: booking.checkOutDateTime,
-                      bookingId: booking.id,
-                    },
-                  ],
-                };
-              } else {
-                // Gói theo giờ: Lưu thông tin để check conflict
-                if (!bookingsMap[dateKey][branchId][roomId][timeSlotId]) {
-                  bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
-                    status: "available",
-                    bookedSlots: [],
-                  };
-                }
+            // ✅ Initialize if not exists
+            if (!bookingsMap[dateKey][branchId][roomId][timeSlotId]) {
+              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                status: "available",
+                bookedSlots: [],
+              };
+            }
 
-                bookingsMap[dateKey][branchId][roomId][
-                  timeSlotId
-                ].bookedSlots!.push({
-                  checkIn: booking.checkInDateTime,
-                  checkOut: booking.checkOutDateTime,
-                  bookingId: booking.id,
-                });
-              }
+            // ✅ Add to bookedSlots array
+            bookingsMap[dateKey][branchId][roomId][
+              timeSlotId
+            ].bookedSlots!.push({
+              checkIn: booking.checkInDateTime,
+              checkOut: booking.checkOutDateTime,
+              bookingId: booking.id,
+            });
+
+            // ✅ If overnight package, mark as fully booked
+            if (booking.timeSlot.isOvernight) {
+              bookingsMap[dateKey][branchId][roomId][timeSlotId].status =
+                "booked";
             }
           });
 
@@ -547,13 +555,21 @@ export default function RoomPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.bookingType === "timeSlots" && selectedSlots.length === 0) {
-      alert("Vui lòng chọn ít nhất một khung giờ từ bảng lịch đặt phòng!");
+    // Validate CCCD
+    if (!formData.frontIdImageUrl || !formData.backIdImageUrl) {
+      toast.warning(
+        "Thiếu ảnh CCCD",
+        "Vui lòng tải lên đầy đủ 2 mặt CCCD/CMND"
+      );
       return;
     }
 
-    if (formData.bookingType === "fullDay" && !fullDaySelection) {
-      alert("Vui lòng chọn ngày đặt phòng!");
+    // Validate slots
+    if (formData.bookingType === "timeSlots" && selectedSlots.length === 0) {
+      toast.warning(
+        "Chưa chọn khung giờ",
+        "Vui lòng chọn ít nhất một khung giờ từ bảng lịch"
+      );
       return;
     }
 
@@ -566,7 +582,7 @@ export default function RoomPage() {
     try {
       setIsSubmitting(true);
 
-      // For each selected slot with check-in time
+      // ✅ Create array of booking requests
       const bookingRequests = selectedSlots.map((slot) => ({
         fullName: formData.fullName,
         phone: formData.phone,
@@ -583,28 +599,43 @@ export default function RoomPage() {
         checkInDateTime: new Date(
           `${slot.date}T${slot.checkInTime}:00`
         ).toISOString(),
+        frontIdImageUrl: formData.frontIdImageUrl,
+        backIdImageUrl: formData.backIdImageUrl,
       }));
 
-      // Submit to API
+      // ✅ Send array to API
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingRequests[0]), // Submit first booking
+        body: JSON.stringify(bookingRequests), // ← Send array
       });
 
       const result = await response.json();
 
       if (result.success) {
-        // Handle success...
-        router.push("/payment");
+        toast.success(
+          "Đặt phòng thành công! 🎉",
+          `Đã tạo ${
+            result.data.count
+          } booking. Tổng: ${result.data.grandTotal.toLocaleString("vi-VN")}đ`
+        );
+
+        setTimeout(() => {
+          router.push(
+            `/payment?bookingIds=${result.data.bookings
+              .map((b: any) => b.bookingId)
+              .join(",")}`
+          );
+        }, 1500);
       } else {
-        alert(`Lỗi: ${result.message}`);
+        toast.error("Đặt phòng thất bại", result.message);
       }
-    } catch (error) {
-      console.error("Booking error:", error);
-      alert("Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.");
+    } catch (err) {
+      console.error("Booking error:", err);
+      toast.error("Lỗi hệ thống", "Có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
+      setShowConfirmation(false);
     }
   };
 
@@ -713,7 +744,6 @@ export default function RoomPage() {
     }
     return [];
   };
-  // room/[roomSlug]/page.tsx
 
   const handleRemoveSlot = (slotToRemove: SelectedSlot) => {
     setSelectedSlots((prev) => {
@@ -727,10 +757,11 @@ export default function RoomPage() {
             slot.checkInTime === slotToRemove.checkInTime
           )
       );
-
       return newSlots;
     });
+    toast.success("Đã xóa khỏi giỏ", "Khung giờ đã được xóa thành công");
   };
+
   const displaySelectedSlots = getDisplaySelectedSlots();
 
   return (
@@ -981,7 +1012,6 @@ export default function RoomPage() {
             )}
 
             <RoomBookingTable
-            
               key={`booking-table-${formData.bookingType}`}
               branches={bookingTableBranches}
               daysCount={30}
@@ -1059,93 +1089,34 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
+              <div className={styles.section}>
+                <h3 className={styles.sectionTitle}>
+                  📄 Ảnh CCCD/CMND (Bắt buộc)
+                </h3>
+                <p className={styles.sectionHint}>
+                  Vui lòng chụp rõ 2 mặt CCCD/CMND để xác thực thông tin
+                </p>
 
-              <div className={styles.formSection}>
-                <h3 className={styles.formSectionTitle}>Căn cước công dân</h3>
-                <div className={styles.formRow}>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Mặt trước *</label>
-                    <div
-                      className={`${styles.imageUpload} ${
-                        frontIdImage ? styles.uploaded : ""
-                      }`}
-                    >
-                      <input
-                        type="file"
-                        className={styles.fileInput}
-                        accept="image/*"
-                        required
-                        onChange={(e) => handleFileUpload(e, "front")}
-                        aria-label="Tải lên ảnh mặt trước CCCD"
-                      />
-                      {frontIdPreview ? (
-                        <div className={styles.imagePreview}>
-                          <img
-                            src={frontIdPreview}
-                            alt="CCCD mặt trước"
-                            className={styles.previewImage}
-                          />
-                          <div className={styles.previewOverlay}>
-                            <span className={styles.fileName}>
-                              {frontIdImage?.name}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.uploadPlaceholder}>
-                          <div className={styles.uploadIcon}>📷+</div>
-                          <span className={styles.uploadText}>Mặt trước</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>Mặt sau *</label>
-                    <div
-                      className={`${styles.imageUpload} ${
-                        backIdImage ? styles.uploaded : ""
-                      }`}
-                    >
-                      <input
-                        type="file"
-                        className={styles.fileInput}
-                        accept="image/*"
-                        required
-                        onChange={(e) => handleFileUpload(e, "back")}
-                        aria-label="Tải lên ảnh mặt sau CCCD"
-                      />
-                      {backIdPreview ? (
-                        <div className={styles.imagePreview}>
-                          <img
-                            src={backIdPreview}
-                            alt="CCCD mặt sau"
-                            className={styles.previewImage}
-                          />
-                          <div className={styles.previewOverlay}>
-                            <span className={styles.fileName}>
-                              {backIdImage?.name}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.uploadPlaceholder}>
-                          <div className={styles.uploadIcon}>📷+</div>
-                          <span className={styles.uploadText}>Mặt sau</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.idCardNotice}>
-                  <p className={styles.noticeText}>
-                    * Thông tin CCCD của bạn được lưu trữ và bảo mật riêng tư để
-                    khai báo lưu trú, sẽ được xóa bỏ sau khi bạn check-out. Bạn
-                    vui lòng chọn đúng ảnh CCCD của người Đặt phòng và chịu
-                    trách nhiệm với thông tin trên.
-                  </p>
+                <div className={styles.cccdGrid}>
+                  <CCCDImageUpload
+                    label="Mặt trước CCCD/CMND"
+                    value={formData.frontIdImageUrl}
+                    onChange={(url) =>
+                      setFormData((prev) => ({ ...prev, frontIdImageUrl: url }))
+                    }
+                    disabled={isSubmitting}
+                  />
+
+                  <CCCDImageUpload
+                    label="Mặt sau CCCD/CMND"
+                    value={formData.backIdImageUrl}
+                    onChange={(url) =>
+                      setFormData((prev) => ({ ...prev, backIdImageUrl: url }))
+                    }
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
-
               <div className={styles.formSection}>
                 <h3 className={styles.formSectionTitle}>Thông tin đặt phòng</h3>
                 <div className={styles.formRow}>
@@ -1420,8 +1391,8 @@ export default function RoomPage() {
 
               <div className={styles.bookingNotice}>
                 <strong>
-                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG <br />
-                  BẢO TRƯỚC 3 TIẾNG TRƯỚC GIỜ CHECK IN
+                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY
+                  <br /> VUI LÒNG BẢO TRƯỚC 3 TIẾNG TRƯỚC GIỜ CHECK IN
                 </strong>
               </div>
 

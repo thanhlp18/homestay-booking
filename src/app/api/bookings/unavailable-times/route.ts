@@ -17,32 +17,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    // ✅ Parse date in local timezone (Vietnam = GMT+7)
+    const startOfDay = new Date(date + "T00:00:00");
+    const endOfDay = new Date(date + "T23:59:59.999");
 
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+  
 
+    // ✅ Find bookings that OVERLAP with this date
+    // A booking overlaps if: checkIn < endOfDay AND checkOut > startOfDay
     const bookings = await prisma.booking.findMany({
       where: {
         roomId: roomId,
-        timeSlotId: timeSlotId,
+        // timeSlotId: timeSlotId,
         status: {
           in: ["PENDING", "PAYMENT_CONFIRMED", "APPROVED"],
         },
-        checkInDateTime: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
+        // ✅ Overlap logic: booking starts before end of day AND ends after start of day
+        AND: [
+          {
+            checkInDateTime: {
+              lt: endOfDay,
+            },
+          },
+          {
+            checkOutDateTime: {
+              gt: startOfDay,
+            },
+          },
+        ],
       },
       select: {
         id: true,
         checkInDateTime: true,
         checkOutDateTime: true,
       },
+      orderBy: {
+        checkInDateTime: "asc",
+      },
     });
 
-    // Return raw slot data for conflict checking
     const unavailableSlots = bookings.map((booking) => ({
       checkIn: booking.checkInDateTime!.toISOString(),
       checkOut: booking.checkOutDateTime!.toISOString(),
