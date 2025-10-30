@@ -8,11 +8,20 @@ import RoomBookingTable from "../../components/RoomBookingTable";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./room.module.css";
 import { AMENITY_ICON_MAP } from "@/app/components/HomeCard";
+import BookingSummary from "../../components/BookingSummary";
+import ConflictWarning, {
+  TimeConflict,
+} from "../../components/ConflictWarning";
+import {
+  checkTimeConflicts,
+  SelectedSlotWithTime,
+} from "@/app/components/bookingUtils";
 
 interface TimeSlot {
   id: string;
   time: string;
   price: number;
+  duration?: number | null;
 }
 
 interface Room {
@@ -64,12 +73,13 @@ interface BookingFormData {
   bookingType: string;
 }
 
-interface SelectedSlot {
+export interface SelectedSlot {
   date: string;
   branchId: string;
   roomId: string;
   timeSlotId: string;
   price: number;
+  checkInTime?: string; // ← Add this optional property
 }
 
 interface FullDaySelection {
@@ -79,10 +89,17 @@ interface FullDaySelection {
   price: number;
 }
 
+// Cập nhật interface trong room/[roomSlug]/page.tsx
+
 interface BookingStatus {
   status: "booked" | "available" | "selected" | "promotion" | "mystery";
   price?: number;
   originalPrice?: number;
+  bookedSlots?: Array<{
+    checkIn: string;
+    checkOut: string;
+    bookingId: string;
+  }>;
 }
 
 export default function RoomPage() {
@@ -90,14 +107,14 @@ export default function RoomPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomSlug = params.roomSlug as string;
-
+  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
+  const [timeConflicts, setTimeConflicts] = useState<TimeConflict[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [frontIdImage, setFrontIdImage] = useState<File | null>(null);
   const [backIdImage, setBackIdImage] = useState<File | null>(null);
   const [frontIdPreview, setFrontIdPreview] = useState<string | null>(null);
   const [backIdPreview, setBackIdPreview] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [fullDaySelection, setFullDaySelection] =
     useState<FullDaySelection | null>(null);
   const [fullDayValidationError, setFullDayValidationError] = useState<
@@ -266,8 +283,28 @@ export default function RoomPage() {
 
     fetchRoomData();
   }, [roomSlug, searchParams]);
+  useEffect(() => {
+    if (selectedSlots.length > 0 && bookingTableBranches.length > 0) {
+      // Filter only slots with checkInTime for conflict checking
+      const slotsWithTime = selectedSlots.filter(
+        (slot): slot is SelectedSlotWithTime =>
+          typeof slot.checkInTime === "string" && slot.checkInTime.length > 0
+      );
 
-  // Fetch existing bookings
+      if (slotsWithTime.length > 0) {
+        const conflicts = checkTimeConflicts(
+          slotsWithTime,
+          bookingTableBranches
+        );
+        setTimeConflicts(conflicts);
+      } else {
+        setTimeConflicts([]);
+      }
+    } else {
+      setTimeConflicts([]);
+    }
+  }, [selectedSlots, bookingTableBranches]);
+
   const fetchExistingBookings = async () => {
     try {
       const today = new Date();
@@ -289,43 +326,59 @@ export default function RoomPage() {
             Record<string, Record<string, Record<string, BookingStatus>>>
           > = {};
 
-          bookingsData.data.forEach(
-            (booking: {
-              bookingSlots?: Array<{
-                bookingDate: string;
-                room: { branch: { id: string }; id: string };
-                timeSlot: { id: string };
-                price: number;
-              }>;
-            }) => {
-              booking.bookingSlots?.forEach(
-                (slot: {
-                  bookingDate: string;
-                  room: { branch: { id: string }; id: string };
-                  timeSlot: { id: string };
-                  price: number;
-                }) => {
-                  const dateKey = new Date(slot.bookingDate)
-                    .toISOString()
-                    .split("T")[0];
-                  const branchId = slot.room.branch.id;
-                  const roomId = slot.room.id;
-                  const timeSlotId = slot.timeSlot.id;
+          bookingsData.data.forEach((booking: any) => {
+            if (!booking.checkInDateTime || !booking.checkOutDateTime) return;
 
-                  if (!bookingsMap[dateKey]) bookingsMap[dateKey] = {};
-                  if (!bookingsMap[dateKey][branchId])
-                    bookingsMap[dateKey][branchId] = {};
-                  if (!bookingsMap[dateKey][branchId][roomId])
-                    bookingsMap[dateKey][branchId][roomId] = {};
+            const checkIn = new Date(booking.checkInDateTime);
 
+            // ✅ CHỈ mark ngày check-in, không mark các ngày khác
+            const dateKey = checkIn.toISOString().split("T")[0];
+            const branchId = booking.room.branch.id;
+            const roomId = booking.room.id;
+            const timeSlotId = booking.timeSlot.id;
+
+            if (!bookingsMap[dateKey]) {
+              bookingsMap[dateKey] = {};
+            }
+            if (!bookingsMap[dateKey][branchId]) {
+              bookingsMap[dateKey][branchId] = {};
+            }
+            if (!bookingsMap[dateKey][branchId][roomId]) {
+              bookingsMap[dateKey][branchId][roomId] = {};
+            }
+
+            if (booking.status === "APPROVED") {
+              // ✅ Nếu là overnight, mark là booked (khóa luôn)
+              if (booking.timeSlot.isOvernight) {
+                bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                  status: "booked",
+                  bookedSlots: [
+                    {
+                      checkIn: booking.checkInDateTime,
+                      checkOut: booking.checkOutDateTime,
+                      bookingId: booking.id,
+                    },
+                  ],
+                };
+              } else {
+                // Gói theo giờ: Lưu thông tin để check conflict
+                if (!bookingsMap[dateKey][branchId][roomId][timeSlotId]) {
                   bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
-                    status: "booked",
-                    price: slot.price,
+                    status: "available",
+                    bookedSlots: [],
                   };
                 }
-              );
+
+                bookingsMap[dateKey][branchId][roomId][
+                  timeSlotId
+                ].bookedSlots!.push({
+                  checkIn: booking.checkInDateTime,
+                  checkOut: booking.checkOutDateTime,
+                  bookingId: booking.id,
+                });
+              }
             }
-          );
+          });
 
           setInitialBookings(bookingsMap);
         }
@@ -355,7 +408,9 @@ export default function RoomPage() {
 
     if (!isAvailable) {
       setFullDayValidationError(
-        `Ngày ${new Date(date).toLocaleDateString("vi-VN")} có một số khung giờ đã được đặt. Vui lòng chọn ngày khác hoặc đặt theo khung giờ.`
+        `Ngày ${new Date(date).toLocaleDateString(
+          "vi-VN"
+        )} có một số khung giờ đã được đặt. Vui lòng chọn ngày khác hoặc đặt theo khung giờ.`
       );
       setFullDaySelection(null);
       return;
@@ -383,7 +438,13 @@ export default function RoomPage() {
     const hasExistingSelections = selectedSlots.length > 0 || fullDaySelection;
 
     if (hasExistingSelections && newBookingType !== currentBookingType) {
-      const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${currentBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"}" sang "${newBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"}"? Tất cả lựa chọn hiện tại sẽ bị xóa.`;
+      const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${
+        currentBookingType === "timeSlots"
+          ? "Đặt theo khung giờ"
+          : "Đặt cả ngày"
+      }" sang "${
+        newBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"
+      }"? Tất cả lựa chọn hiện tại sẽ bị xóa.`;
 
       if (!confirm(confirmMessage)) {
         // Reset the select value back to current booking type
@@ -500,92 +561,47 @@ export default function RoomPage() {
   };
 
   const handleConfirmBooking = async () => {
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
 
-      // Prepare the slots to submit
-      let slotsToSubmit = selectedSlots;
-      let isFullDayBooking = false;
+      // For each selected slot with check-in time
+      const bookingRequests = selectedSlots.map((slot) => ({
+        fullName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        cccd: formData.cccd,
+        guests: parseInt(formData.guests),
+        notes: formData.notes || undefined,
+        paymentMethod: formData.paymentMethod.toUpperCase() as
+          | "CASH"
+          | "TRANSFER"
+          | "CARD",
+        roomId: slot.roomId,
+        timeSlotId: slot.timeSlotId,
+        checkInDateTime: new Date(
+          `${slot.date}T${slot.checkInTime}:00`
+        ).toISOString(),
+      }));
 
-      // For full day bookings, create slots from available time slots
-      if (formData.bookingType === "fullDay" && fullDaySelection && room) {
-        isFullDayBooking = true;
-        const availableSlots = room.timeSlots.filter((timeSlot) => {
-          const bookingStatus =
-            initialBookings[fullDaySelection.date]?.[room.branchId]?.[
-              room.id
-            ]?.[timeSlot.id];
-          return !bookingStatus || bookingStatus.status === "available";
-        });
-
-        slotsToSubmit = availableSlots.map((timeSlot) => ({
-          date: fullDaySelection.date,
-          branchId: room.branchId,
-          roomId: room.id,
-          timeSlotId: timeSlot.id,
-          price: timeSlot.price,
-        }));
-      }
-
+      // Submit to API
       const response = await fetch("/api/bookings", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          phone: formData.phone,
-          email: formData.email,
-          cccd: formData.cccd,
-          guests: parseInt(formData.guests),
-          notes: formData.notes || undefined,
-          paymentMethod: formData.paymentMethod.toUpperCase() as
-            | "CASH"
-            | "TRANSFER"
-            | "CARD",
-          selectedSlots: slotsToSubmit,
-          isFullDayBooking: isFullDayBooking,
-          fullDayPrice: isFullDayBooking ? fullDaySelection?.price : undefined,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingRequests[0]), // Submit first booking
       });
 
       const result = await response.json();
 
       if (result.success) {
-        if (formData.paymentMethod === "transfer") {
-          // Store booking data for payment page
-          const bookingData = {
-            fullName: formData.fullName,
-            phone: formData.phone,
-            email: formData.email,
-            cccd: formData.cccd,
-            guests: formData.guests,
-            notes: formData.notes,
-            paymentMethod: formData.paymentMethod,
-            room: room.name,
-            location: room.location,
-            price: result.data.totalPrice,
-            selectedSlots: slotsToSubmit,
-            bookingId: result.data.bookingId,
-            isFullDayBooking: isFullDayBooking,
-          };
-          document.cookie = `bookingData=${JSON.stringify(bookingData)}; path=/; max-age=3600; SameSite=Strict`;
-          router.push("/payment");
-        } else {
-          alert(
-            `Đặt phòng thành công! Tổng tiền: ${result.data.totalPrice.toLocaleString(
-              "vi-VN"
-            )}đ`
-          );
-          router.push("/");
-        }
+        // Handle success...
+        router.push("/payment");
       } else {
         alert(`Lỗi: ${result.message}`);
       }
     } catch (error) {
-      console.error("Booking submission error:", error);
+      console.error("Booking error:", error);
       alert("Có lỗi xảy ra khi đặt phòng. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
@@ -615,7 +631,9 @@ export default function RoomPage() {
         })
         .join(", ");
     } else if (formData.bookingType === "fullDay" && fullDaySelection) {
-      return `${new Date(fullDaySelection.date).toLocaleDateString("vi-VN")} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
+      return `${new Date(fullDaySelection.date).toLocaleDateString(
+        "vi-VN"
+      )} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
     }
 
     return "Chưa chọn khung giờ";
@@ -695,7 +713,24 @@ export default function RoomPage() {
     }
     return [];
   };
+  // room/[roomSlug]/page.tsx
 
+  const handleRemoveSlot = (slotToRemove: SelectedSlot) => {
+    setSelectedSlots((prev) => {
+      const newSlots = prev.filter(
+        (slot) =>
+          !(
+            slot.date === slotToRemove.date &&
+            slot.branchId === slotToRemove.branchId &&
+            slot.roomId === slotToRemove.roomId &&
+            slot.timeSlotId === slotToRemove.timeSlotId &&
+            slot.checkInTime === slotToRemove.checkInTime
+          )
+      );
+
+      return newSlots;
+    });
+  };
   const displaySelectedSlots = getDisplaySelectedSlots();
 
   return (
@@ -867,7 +902,7 @@ export default function RoomPage() {
               Chọn khung giờ phù hợp với bạn
             </p>
 
-            <div className={styles.bookingTypeSection}>
+            {/* <div className={styles.bookingTypeSection}>
               <label className={styles.label}>Loại đặt phòng *</label>
               <div className={styles.custom_select_wrapper}>
                 <select
@@ -901,7 +936,7 @@ export default function RoomPage() {
                   cả lựa chọn hiện tại.
                 </p>
               </div>
-            </div>
+            </div> */}
 
             {formData.bookingType === "fullDay" && (
               <div className={styles.fullDaySection}>
@@ -946,6 +981,7 @@ export default function RoomPage() {
             )}
 
             <RoomBookingTable
+            
               key={`booking-table-${formData.bookingType}`}
               branches={bookingTableBranches}
               daysCount={30}
@@ -955,6 +991,13 @@ export default function RoomPage() {
               submitOnSelect={formData.bookingType === "timeSlots"}
               isFullDayBooking={formData.bookingType === "fullDay"}
             />
+            {formData.bookingType === "timeSlots" && (
+              <BookingSummary
+                selectedSlots={selectedSlots} // ✅ Pass same state
+                branches={bookingTableBranches}
+                onRemoveSlot={handleRemoveSlot} // ✅ Pass remove handler
+              />
+            )}
           </div>
 
           <div className={styles.bookingForm}>
@@ -1361,8 +1404,10 @@ export default function RoomPage() {
                     {formData.bookingType === "timeSlots"
                       ? formatSelectedSlots()
                       : fullDaySelection
-                        ? `${new Date(fullDaySelection.date).toLocaleDateString("vi-VN")} - Cả ngày`
-                        : "Chưa chọn"}
+                      ? `${new Date(fullDaySelection.date).toLocaleDateString(
+                          "vi-VN"
+                        )} - Cả ngày`
+                      : "Chưa chọn"}
                   </span>
                 </div>
                 <div className={styles.detailRow}>
@@ -1375,8 +1420,8 @@ export default function RoomPage() {
 
               <div className={styles.bookingNotice}>
                 <strong>
-                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG <br/>BẢO TRƯỚC 3 TIẾNG
-                  TRƯỚC GIỜ CHECK IN
+                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY VUI LÒNG <br />
+                  BẢO TRƯỚC 3 TIẾNG TRƯỚC GIỜ CHECK IN
                 </strong>
               </div>
 

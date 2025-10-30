@@ -89,8 +89,11 @@ model Room {
   // Relations
   branchId      String
   branch        Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  
+  bookings      Booking[] // **MỚI**: Quan hệ ngược lại
+
   timeSlots     TimeSlot[]
-  bookingSlots  BookingSlot[]
+  //bookingSlots  BookingSlot[]
   
   @@map("rooms")
 }
@@ -100,6 +103,11 @@ model TimeSlot {
   id        String   @id @default(cuid())
   time      String   // e.g., "9:30–12:30"
   price     Int      // Price in VND
+
+  duration  Int?      // **MỚI**: Thời lượng của gói tính bằng giờ
+  isOvernight Boolean  @default(false) // **MỚI**: Đánh dấu nếu là gói qua đêm
+  weekendSurcharge Int  @default(0) // **MỚI**: Phụ phí cuối tuần
+
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -107,14 +115,19 @@ model TimeSlot {
   // Relations
   roomId       String
   room         Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  bookingSlots BookingSlot[]
-  
+  //bookingSlots BookingSlot[]
+  bookings     Booking[] // Quan hệ ngược lại
+
   @@map("time_slots")
 }
 
 // Booking model
 model Booking {
   id                   String        @id @default(cuid())
+
+  checkInDateTime      DateTime?      // **MỚI**: Thời gian check-in cụ thể
+  checkOutDateTime     DateTime?      // **MỚI**: Thời gian check-out cụ thể
+
   fullName             String
   phone                String
   email                String?
@@ -126,6 +139,8 @@ model Booking {
   basePrice            Int           // Base price before discount
   discountAmount       Int           @default(0)
   discountPercentage   Float         @default(0)
+  weekendSurchargeApplied Int @default(0) // **MỚI**: Ghi lại phụ phí cuối tuần đã áp dụng
+
   guestSurcharge       Int           @default(0) // Additional charge for guests over 2
   status               BookingStatus @default(PENDING)
   frontIdImageUrl      String?
@@ -140,9 +155,13 @@ model Booking {
   // Relations
   userId               String?
   user                 User?           @relation(fields: [userId], references: [id])
-  bookingSlots         BookingSlot[]
+  //bookingSlots         BookingSlot[]
   paymentWebhooks      PaymentWebhook[]
-  
+  roomId               String       // **MỚI**
+  room                 Room          @relation(fields: [roomId], references: [id])
+
+  timeSlotId           String       // **MỚI**: ID của gói TimeSlot đã chọn
+  timeSlot             TimeSlot      @relation(fields: [timeSlotId], references: [id])
   @@map("bookings")
 }
 
@@ -161,25 +180,7 @@ enum BookingStatus {
 }
 
 // BookingSlot model (Many-to-many relationship between Booking and TimeSlot)
-model BookingSlot {
-  id          String   @id @default(cuid())
-  bookingDate DateTime // The date for this booking slot
-  price       Int      // Price for this specific slot
-  createdAt   DateTime @default(now())
-  
-  // Relations
-  bookingId   String
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
-  roomId      String
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  
-  timeSlotId  String
-  timeSlot    TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
-  
-  @@unique([bookingId, roomId, timeSlotId, bookingDate])
-  @@map("booking_slots")
-}
+
 
 // Review model (for future implementation)
 model Review {

@@ -53,6 +53,8 @@ export async function GET() {
           id: slot.id,
           time: slot.time,
           price: slot.price,
+          duration: slot.duration,
+          weekendSurcharge:slot.weekendSurcharge
         })),
       })),
     }));

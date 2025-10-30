@@ -1,0 +1,285 @@
+/* BookingSummary.module.css */
+.summaryContainer {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.summaryTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 16px 0;
+}
+
+.emptySummary {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.dateGroup {
+    margin-bottom: 24px;
+}
+
+.dateGroup:last-child {
+    margin-bottom: 0;
+}
+
+.dateHeader {
+    font-size: 16px;
+    font-weight: 600;
+    color: #bd8049;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #bd8049;
+}
+
+.slotCard {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s;
+}
+
+.slotCard:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slotCard:last-child {
+    margin-bottom: 0;
+}
+
+.slotInfo {
+    flex: 1;
+}
+
+.slotHeader {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.slotBranch,
+.slotRoom {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.slotDetails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.timeInfo {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 600;
+}
+
+.priceValue {
+    font-size: 14px;
+    color: #bd8049;
+    font-weight: 700;
+}
+
+.removeButton {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.removeButton:hover {
+    background: #d32f2f;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summaryContainer {
+        padding: 16px;
+    }
+
+    .slotDetails {
+        grid-template-columns: 1fr;
+    }
+
+    .slotHeader {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+.durationBadge {
+    display: inline-block;
+    font-size: 12px;
+    color: #bd8049;
+    background: #fef7f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+/* BookingSummary.module.css - Thêm vào */
+
+.weekendBadge {
+    display: inline-block;
+    background: #ff9800;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 12px;
+}
+
+.durationBadge {
+    display: inline-block;
+    font-size: 12px;
+    color: #bd8049;
+    background: #fef7f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.overnightBadge {
+    display: inline-block;
+    font-size: 12px;
+    color: #1976d2;
+    background: #e3f2fd;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.nextDayBadge {
+    font-size: 11px;
+    color: #666;
+    font-weight: normal;
+}
+
+.priceBreakdown {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.surchargeValue {
+    font-size: 14px;
+    color: #ff9800;
+    font-weight: 700;
+}
+
+/* BookingSummary.module.css - Thêm vào */
+
+.totalSection {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+}
+
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 15px;
+}
+
+.grandTotal {
+    border-top: 2px solid #bd8049;
+    margin-top: 12px;
+    padding-top: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #bd8049;
+}
+
+.weekendBadge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 12px;
+    box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+}
+
+.overnightBadge {
+    display: inline-block;
+    font-size: 12px;
+    color: #1976d2;
+    background: #e3f2fd;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+    border: 1px solid #bbdefb;
+}
+
+.durationBadge {
+    display: inline-block;
+    font-size: 12px;
+    color: #bd8049;
+    background: #fef7f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.nextDayBadge {
+    font-size: 11px;
+    color: #666;
+    font-weight: normal;
+}
+
+.priceBreakdown {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.surchargeValue {
+    font-size: 14px;
+    color: #ff9800;
+    font-weight: 700;
+}

@@ -307,7 +307,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className={styles.page}>
-        <DemoNotice />
+        {/* <DemoNotice /> */}
         <Header />
         <LoadingSpinner text="Đang tải dữ liệu..." />
       </div>
@@ -317,7 +317,7 @@ export default function Home() {
   if (error) {
     return (
       <div className={styles.page}>
-        <DemoNotice />
+        {/* <DemoNotice /> */}
         <Header />
         <div className={styles.error}>
           <p>Lỗi: {error}</p>

@@ -949,8 +949,16 @@
     gap: 2rem;
   }
 
+  .mainImage {
+    min-width: 100%;
+    max-width: 100%;
+    height: fit-content !important;
+
+  }
+
   .roomImage {
-    height: 300px;
+    min-width: 100%;
+    max-width: 100%
   }
 
   .roomTitle {
