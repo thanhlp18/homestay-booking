@@ -13,6 +13,9 @@ import {
   Typography,
   Spin,
   Avatar,
+  Dropdown,
+  Modal,
+  message,
 } from "antd";
 import { adminApiCall, handleApiResponse } from "@/lib/adminApi";
 import {
@@ -26,6 +29,8 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
+  MoreOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 
@@ -93,6 +98,10 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookingRecord | null>(
+    null
+  );
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -159,6 +168,11 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleViewDetails = (booking: BookingRecord) => {
+    setSelectedBooking(booking);
+    setDetailModalVisible(true);
+  };
+
   const handleApproveBooking = async (bookingId: string) => {
     try {
       setActionLoading(bookingId);
@@ -170,8 +184,10 @@ export default function AdminDashboard() {
       });
 
       await handleApiResponse(response);
+      message.success("Đã phê duyệt đặt phòng thành công");
       await fetchData();
     } catch (error) {
+      message.error("Không thể phê duyệt đặt phòng");
       console.error("Error approving booking:", error);
     } finally {
       setActionLoading(null);
@@ -184,21 +200,19 @@ export default function AdminDashboard() {
 
     try {
       setActionLoading(bookingId);
-      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+      const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           action: "reject",
           reason,
         }),
       });
 
-      if (response.ok) {
-        await fetchData();
-      }
+      await handleApiResponse(response);
+      message.success("Đã từ chối đặt phòng thành công");
+      await fetchData();
     } catch (error) {
+      message.error("Không thể từ chối đặt phòng");
       console.error("Error rejecting booking:", error);
     } finally {
       setActionLoading(null);
@@ -326,34 +340,50 @@ export default function AdminDashboard() {
       title: "Thao tác",
       key: "actions",
       fixed: "right",
+      width: 80,
+      render: (_, record) => {
+        const menuItems = [];
 
-      render: (_, record) => (
-        <Space direction={isMobile ? "vertical" : "horizontal"} size="small">
-          {(record.status === "PENDING" ||
-            record.status === "PAYMENT_CONFIRMED") && (
-            <>
-              <Button
-                type="primary"
-                size="small"
-                loading={actionLoading === record.id}
-                onClick={() => handleApproveBooking(record.id)}
-                style={{ width: isMobile ? "100%" : "auto" }}
-              >
-                Phê duyệt
-              </Button>
-              <Button
-                danger
-                size="small"
-                loading={actionLoading === record.id}
-                onClick={() => handleRejectBooking(record.id)}
-                style={{ width: isMobile ? "100%" : "auto" }}
-              >
-                Từ chối
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
+        // Luôn có nút xem chi tiết
+        menuItems.push({
+          key: 'view',
+          icon: <EyeOutlined />,
+          label: 'Chi tiết',
+          onClick: () => handleViewDetails(record),
+        });
+
+        if (record.status === "PENDING" || record.status === "PAYMENT_CONFIRMED") {
+          menuItems.push(
+            {
+              key: 'approve',
+              icon: <CheckCircleOutlined />,
+              label: 'Phê duyệt',
+              onClick: () => handleApproveBooking(record.id),
+            },
+            {
+              key: 'reject',
+              icon: <CloseCircleOutlined />,
+              label: 'Từ chối',
+              onClick: () => handleRejectBooking(record.id),
+            }
+          );
+        }
+
+        return (
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              loading={actionLoading === record.id}
+              style={{ fontSize: '20px' }}
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -432,29 +462,47 @@ export default function AdminDashboard() {
           {getStatusTag(booking.status)}
         </div>
 
-        {(booking.status === "PENDING" ||
-          booking.status === "PAYMENT_CONFIRMED") && (
-          <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'view',
+                  icon: <EyeOutlined />,
+                  label: 'Chi tiết',
+                  onClick: () => handleViewDetails(booking),
+                },
+                ...(booking.status === "PENDING" || booking.status === "PAYMENT_CONFIRMED"
+                  ? [
+                      {
+                        key: 'approve',
+                        icon: <CheckCircleOutlined />,
+                        label: 'Phê duyệt',
+                        onClick: () => handleApproveBooking(booking.id),
+                      },
+                      {
+                        key: 'reject',
+                        icon: <CloseCircleOutlined />,
+                        label: 'Từ chối',
+                        onClick: () => handleRejectBooking(booking.id),
+                      },
+                    ]
+                  : []),
+              ],
+            }}
+            trigger={['click']}
+            placement="bottomRight"
+          >
             <Button
               type="primary"
-              size="small"
+              icon={<MoreOutlined />}
               loading={actionLoading === booking.id}
-              onClick={() => handleApproveBooking(booking.id)}
-              style={{ flex: 1 }}
+              size="large"
             >
-              Phê duyệt
+              Thao tác
             </Button>
-            <Button
-              danger
-              size="small"
-              loading={actionLoading === booking.id}
-              onClick={() => handleRejectBooking(booking.id)}
-              style={{ flex: 1 }}
-            >
-              Từ chối
-            </Button>
-          </div>
-        )}
+          </Dropdown>
+        </div>
       </Card>
     );
   };
@@ -778,6 +826,39 @@ export default function AdminDashboard() {
           />
         )}
       </Card>
+
+      {/* Detail Modal */}
+      <Modal
+        title="Chi tiết đặt phòng"
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+        width={isMobile ? "100%" : 800}
+        style={isMobile ? { top: 0, paddingBottom: 0 } : {}}
+      >
+        {selectedBooking && (
+          <div>
+            <p><strong>Mã đặt phòng:</strong> {selectedBooking.id}</p>
+            <p><strong>Khách hàng:</strong> {selectedBooking.fullName}</p>
+            <p><strong>Số điện thoại:</strong> {selectedBooking.phone}</p>
+            <p><strong>Email:</strong> {selectedBooking.email}</p>
+            <p><strong>CCCD:</strong> {selectedBooking.cccd}</p>
+            <p><strong>Số khách:</strong> {selectedBooking.guests} người</p>
+            <p><strong>Phòng:</strong> {selectedBooking.room?.name} - {selectedBooking.room?.branch?.name}</p>
+            <p><strong>Chi nhánh:</strong> {selectedBooking.room?.branch?.location}</p>
+            <p><strong>Gói thời gian:</strong> {selectedBooking.timeSlot?.time}</p>
+            <p><strong>Check-in:</strong> {new Date(selectedBooking.checkInDateTime).toLocaleString("vi-VN")}</p>
+            <p><strong>Check-out:</strong> {new Date(selectedBooking.checkOutDateTime).toLocaleString("vi-VN")}</p>
+            <p><strong>Giá cơ bản:</strong> {selectedBooking.basePrice?.toLocaleString("vi-VN")} đ</p>
+            <p><strong>Phụ thu khách:</strong> {selectedBooking.guestSurcharge?.toLocaleString("vi-VN")} đ</p>
+            <p><strong>Tổng tiền:</strong> {selectedBooking.totalPrice?.toLocaleString("vi-VN")} đ</p>
+            <p><strong>Phương thức thanh toán:</strong> {selectedBooking.paymentMethod === "CASH" ? "Tiền mặt" : selectedBooking.paymentMethod === "TRANSFER" ? "Chuyển khoản" : "Thẻ"}</p>
+            <p><strong>Trạng thái:</strong> {getStatusTag(selectedBooking.status)}</p>
+            {selectedBooking.notes && <p><strong>Ghi chú:</strong> {selectedBooking.notes}</p>}
+            {selectedBooking.adminNotes && <p><strong>Ghi chú admin:</strong> {selectedBooking.adminNotes}</p>}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -414,6 +414,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             headerBorderRadius: 10,
             headerColor: "#83311b",
             colorBgContainer: "#ffffff",
+            margin:0
           },
           Tag: {
             defaultBg: "#ffefd9",

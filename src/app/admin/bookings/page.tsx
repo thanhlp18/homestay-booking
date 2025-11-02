@@ -18,6 +18,8 @@ import {
   Col,
   Statistic,
   Avatar,
+  Dropdown,
+  Menu,
 } from "antd";
 import type { Dayjs } from "dayjs";
 import type { RangePickerProps } from "antd/es/date-picker";
@@ -34,6 +36,7 @@ import {
   PhoneOutlined,
   EnvironmentOutlined,
   HomeOutlined,
+  MoreOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 
@@ -48,6 +51,8 @@ interface BookingRecord {
   phone: string;
   email: string;
   cccd: string;
+  cccdFrontImage?: string;
+  cccdBackImage?: string;
   guests: number;
   notes: string;
   paymentMethod: string;
@@ -394,63 +399,67 @@ export default function BookingsPage() {
       title: "Thao tác",
       fixed: "right",
       key: "actions",
-      render: (_, record) => (
-        <Space
-          direction={isMobile ? "vertical" : "horizontal"}
-          size="small"
-          style={{ display: "flex", flexWrap: "wrap" }}
-        >
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            size="small"
-            onClick={() => handleViewDetails(record)}
-            style={{ width: isMobile ? "100%" : "auto" }}
+      width: 80,
+      render: (_, record) => {
+        const menuItems = [
+          {
+            key: 'view',
+            icon: <EyeOutlined />,
+            label: 'Chi tiết',
+            onClick: () => handleViewDetails(record),
+          },
+        ];
+
+        if (record.status === "PENDING" || record.status === "PAYMENT_CONFIRMED") {
+          menuItems.push(
+            {
+              key: 'approve',
+              icon: <CheckCircleOutlined />,
+              label: 'Phê duyệt',
+              onClick: () => handleApproveBooking(record.id),
+            },
+            {
+              key: 'reject',
+              icon: <CloseCircleOutlined />,
+              label: 'Từ chối',
+              onClick: () => handleRejectBooking(record.id),
+              // danger: true,
+            }
+          );
+        }
+
+        if (record.status !== "CANCELLED") {
+          menuItems.push({
+            key: 'cancel',
+            icon: <CloseCircleOutlined />,
+            label: 'Hủy',
+            onClick: () => {
+              Modal.confirm({
+                title: 'Bạn có chắc chắn muốn hủy đặt phòng này?',
+                okText: 'Có',
+                cancelText: 'Không',
+                onOk: () => handleCancelBooking(record.id),
+              });
+            },
+            // danger: true,
+          });
+        }
+
+        return (
+          <Dropdown
+            menu={{ items: menuItems }}
+            trigger={['click']}
+            placement="bottomRight"
           >
-            Chi tiết
-          </Button>
-          {(record.status === "PENDING" ||
-            record.status === "PAYMENT_CONFIRMED") && (
-            <>
-              <Button
-                type="primary"
-                size="small"
-                loading={actionLoading === record.id}
-                onClick={() => handleApproveBooking(record.id)}
-                style={{ width: isMobile ? "100%" : "auto" }}
-              >
-                Phê duyệt
-              </Button>
-              <Button
-                danger
-                size="small"
-                loading={actionLoading === record.id}
-                onClick={() => handleRejectBooking(record.id)}
-                style={{ width: isMobile ? "100%" : "auto" }}
-              >
-                Từ chối
-              </Button>
-            </>
-          )}
-          {record.status !== "CANCELLED" && (
-            <Popconfirm
-              title="Bạn có chắc chắn muốn hủy đặt phòng này?"
-              onConfirm={() => handleCancelBooking(record.id)}
-              okText="Có"
-              cancelText="Không"
-            >
-              <Button
-                danger
-                size="small"
-                loading={actionLoading === record.id}
-                style={{ width: isMobile ? "100%" : "auto" }}
-              >
-                Hủy
-              </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              loading={actionLoading === record.id}
+              style={{ fontSize: '20px' }}
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -550,58 +559,65 @@ export default function BookingsPage() {
           </Text>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-          <Button
-            type="primary"
-            size="large"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetails(booking)}
-            style={{ flex: "1 1 auto", minWidth: "140px" }}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'view',
+                  icon: <EyeOutlined />,
+                  label: 'Chi tiết',
+                  onClick: () => handleViewDetails(booking),
+                },
+                ...(booking.status === "PENDING" || booking.status === "PAYMENT_CONFIRMED"
+                  ? [
+                      {
+                        key: 'approve',
+                        icon: <CheckCircleOutlined />,
+                        label: 'Phê duyệt',
+                        onClick: () => handleApproveBooking(booking.id),
+                      },
+                      {
+                        key: 'reject',
+                        icon: <CloseCircleOutlined />,
+                        label: 'Từ chối',
+                        onClick: () => handleRejectBooking(booking.id),
+                        danger: true,
+                      },
+                    ]
+                  : []),
+                ...(booking.status !== "CANCELLED"
+                  ? [
+                      {
+                        key: 'cancel',
+                        icon: <CloseCircleOutlined />,
+                        label: 'Hủy',
+                        onClick: () => {
+                          Modal.confirm({
+                            title: 'Bạn có chắc chắn muốn hủy đặt phòng này?',
+                            okText: 'Có',
+                            cancelText: 'Không',
+                            onOk: () => handleCancelBooking(booking.id),
+                          });
+                        },
+                        danger: true,
+                      },
+                    ]
+                  : []),
+              ],
+            }}
+            trigger={['click']}
+            placement="bottomRight"
           >
-            Chi tiết
-          </Button>
-
-          {(booking.status === "PENDING" ||
-            booking.status === "PAYMENT_CONFIRMED") && (
-            <>
-              <Button
-                type="primary"
-                size="large"
-                loading={actionLoading === booking.id}
-                onClick={() => handleApproveBooking(booking.id)}
-                style={{ flex: "1 1 auto", minWidth: "140px" }}
-              >
-                Phê duyệt
-              </Button>
-              <Button
-                danger
-                size="large"
-                loading={actionLoading === booking.id}
-                onClick={() => handleRejectBooking(booking.id)}
-                style={{ flex: "1 1 auto", minWidth: "140px" }}
-              >
-                Từ chối
-              </Button>
-            </>
-          )}
-
-          {booking.status !== "CANCELLED" && (
-            <Popconfirm
-              title="Bạn có chắc chắn muốn hủy đặt phòng này?"
-              onConfirm={() => handleCancelBooking(booking.id)}
-              okText="Có"
-              cancelText="Không"
+            <Button
+              type="primary"
+              icon={<MoreOutlined />}
+              loading={actionLoading === booking.id}
+              size="large"
             >
-              <Button
-                danger
-                size="large"
-                loading={actionLoading === booking.id}
-                style={{ flex: "1 1 auto", minWidth: "140px" }}
-              >
-                Hủy
-              </Button>
-            </Popconfirm>
-          )}
+              Thao tác
+            </Button>
+          </Dropdown>
         </div>
       </Card>
     );
@@ -875,111 +891,193 @@ export default function BookingsPage() {
         open={detailModalVisible}
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
-        width={isMobile ? "100%" : 800}
+        width={isMobile ? "100%" : 900}
         style={isMobile ? { top: 0, paddingBottom: 0 } : {}}
         bodyStyle={{
           maxHeight: isMobile ? "calc(100vh - 120px)" : "70vh",
           overflow: "auto",
           padding: isMobile ? "16px" : "24px",
         }}
+        className="custom-scrollbar"
         destroyOnClose={true}
         maskClosable={!isMobile}
         keyboard={true}
       >
         {selectedBooking && (
-          <Descriptions
-            column={isMobile ? 1 : 2}
-            bordered
-            size={isMobile ? "small" : "default"}
-          >
-            <Descriptions.Item label="Mã đặt phòng" span={isMobile ? 1 : 2}>
-              {selectedBooking.id}
-            </Descriptions.Item>
-            <Descriptions.Item label="Họ tên">
-              {selectedBooking.fullName}
-            </Descriptions.Item>
-            <Descriptions.Item label="Số điện thoại">
-              {selectedBooking.phone}
-            </Descriptions.Item>
-            <Descriptions.Item label="Email">
-              {selectedBooking.email || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="CCCD">
-              {selectedBooking.cccd}
-            </Descriptions.Item>
-            <Descriptions.Item label="Số khách">
-              {selectedBooking.guests} người
-            </Descriptions.Item>
-            <Descriptions.Item label="Phương thức thanh toán">
-              {selectedBooking.paymentMethod === "CASH"
-                ? "Tiền mặt"
-                : selectedBooking.paymentMethod === "TRANSFER"
-                ? "Chuyển khoản"
-                : "Thẻ"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái" span={isMobile ? 1 : 2}>
-              {getStatusTag(selectedBooking.status)}
-            </Descriptions.Item>
-            <Descriptions.Item label="Phòng" span={isMobile ? 1 : 2}>
-              {selectedBooking.room?.name} -{" "}
-              {selectedBooking.room?.branch?.name}
-            </Descriptions.Item>
-            <Descriptions.Item label="Chi nhánh" span={isMobile ? 1 : 2}>
-              {selectedBooking.room?.branch?.location}
-            </Descriptions.Item>
-            <Descriptions.Item label="Gói thời gian" span={isMobile ? 1 : 2}>
-              {selectedBooking.timeSlot?.time}
-              {selectedBooking.timeSlot?.duration &&
-                ` (${selectedBooking.timeSlot.duration}h)`}
-            </Descriptions.Item>
-            <Descriptions.Item label="Check-in" span={isMobile ? 1 : 2}>
-              {new Date(selectedBooking.checkInDateTime).toLocaleString(
-                "vi-VN"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Check-out" span={isMobile ? 1 : 2}>
-              {new Date(selectedBooking.checkOutDateTime).toLocaleString(
-                "vi-VN"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Giá cơ bản">
-              {selectedBooking.basePrice.toLocaleString("vi-VN")} đ
-            </Descriptions.Item>
-            <Descriptions.Item label="Giảm giá">
-              {selectedBooking.discountAmount.toLocaleString("vi-VN")} đ (
-              {selectedBooking.discountPercentage * 100}%)
-            </Descriptions.Item>
-            <Descriptions.Item label="Phụ phí khách">
-              {selectedBooking.guestSurcharge.toLocaleString("vi-VN")} đ
-            </Descriptions.Item>
-            <Descriptions.Item label="Tổng tiền">
-              <strong>
-                {selectedBooking.totalPrice.toLocaleString("vi-VN")} đ
-              </strong>
-            </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
-              {selectedBooking.notes || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ghi chú admin" span={isMobile ? 1 : 2}>
-              {selectedBooking.adminNotes || "Không có"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {new Date(selectedBooking.createdAt).toLocaleString("vi-VN")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày cập nhật">
-              {new Date(selectedBooking.updatedAt).toLocaleString("vi-VN")}
-            </Descriptions.Item>
-            {selectedBooking.approvedAt && (
-              <Descriptions.Item label="Ngày phê duyệt">
-                {new Date(selectedBooking.approvedAt).toLocaleString("vi-VN")}
+          <div>
+            <Descriptions
+              column={isMobile ? 1 : 2}
+              bordered
+              size={isMobile ? "small" : "default"}
+            >
+              <Descriptions.Item label="Mã đặt phòng" span={isMobile ? 1 : 2}>
+                {selectedBooking.id}
               </Descriptions.Item>
-            )}
-            {selectedBooking.rejectedAt && (
-              <Descriptions.Item label="Ngày từ chối">
-                {new Date(selectedBooking.rejectedAt).toLocaleString("vi-VN")}
+              <Descriptions.Item label="Họ tên">
+                {selectedBooking.fullName}
               </Descriptions.Item>
+              <Descriptions.Item label="Số điện thoại">
+                {selectedBooking.phone}
+              </Descriptions.Item>
+              <Descriptions.Item label="Email">
+                {selectedBooking.email || "Không có"}
+              </Descriptions.Item>
+              <Descriptions.Item label="CCCD">
+                {selectedBooking.cccd}
+              </Descriptions.Item>
+              <Descriptions.Item label="Số khách">
+                {selectedBooking.guests} người
+              </Descriptions.Item>
+              <Descriptions.Item label="Phương thức thanh toán">
+                {selectedBooking.paymentMethod === "CASH"
+                  ? "Tiền mặt"
+                  : selectedBooking.paymentMethod === "TRANSFER"
+                  ? "Chuyển khoản"
+                  : "Thẻ"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái" span={isMobile ? 1 : 2}>
+                {getStatusTag(selectedBooking.status)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Phòng" span={isMobile ? 1 : 2}>
+                {selectedBooking.room?.name} -{" "}
+                {selectedBooking.room?.branch?.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chi nhánh" span={isMobile ? 1 : 2}>
+                {selectedBooking.room?.branch?.location}
+              </Descriptions.Item>
+              <Descriptions.Item label="Gói thời gian" span={isMobile ? 1 : 2}>
+                {selectedBooking.timeSlot?.time}
+                {selectedBooking.timeSlot?.duration &&
+                  ` (${selectedBooking.timeSlot.duration}h)`}
+              </Descriptions.Item>
+              <Descriptions.Item label="Check-in" span={isMobile ? 1 : 2}>
+                {new Date(selectedBooking.checkInDateTime).toLocaleString(
+                  "vi-VN"
+                )}
+              </Descriptions.Item>
+              <Descriptions.Item label="Check-out" span={isMobile ? 1 : 2}>
+                {new Date(selectedBooking.checkOutDateTime).toLocaleString(
+                  "vi-VN"
+                )}
+              </Descriptions.Item>
+              <Descriptions.Item label="Giá cơ bản">
+                {selectedBooking.basePrice.toLocaleString("vi-VN")} đ
+              </Descriptions.Item>
+              <Descriptions.Item label="Giảm giá">
+                {selectedBooking.discountAmount.toLocaleString("vi-VN")} đ (
+                {selectedBooking.discountPercentage * 100}%)
+              </Descriptions.Item>
+              <Descriptions.Item label="Phụ phí khách">
+                {selectedBooking.guestSurcharge.toLocaleString("vi-VN")} đ
+              </Descriptions.Item>
+              <Descriptions.Item label="Tổng tiền">
+                <strong>
+                  {selectedBooking.totalPrice.toLocaleString("vi-VN")} đ
+                </strong>
+              </Descriptions.Item>
+              <Descriptions.Item label="Ghi chú" span={isMobile ? 1 : 2}>
+                {selectedBooking.notes || "Không có"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ghi chú admin" span={isMobile ? 1 : 2}>
+                {selectedBooking.adminNotes || "Không có"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày tạo">
+                {new Date(selectedBooking.createdAt).toLocaleString("vi-VN")}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày cập nhật">
+                {new Date(selectedBooking.updatedAt).toLocaleString("vi-VN")}
+              </Descriptions.Item>
+              {selectedBooking.approvedAt && (
+                <Descriptions.Item label="Ngày phê duyệt">
+                  {new Date(selectedBooking.approvedAt).toLocaleString("vi-VN")}
+                </Descriptions.Item>
+              )}
+              {selectedBooking.rejectedAt && (
+                <Descriptions.Item label="Ngày từ chối">
+                  {new Date(selectedBooking.rejectedAt).toLocaleString("vi-VN")}
+                </Descriptions.Item>
+              )}
+            </Descriptions>
+
+            {/* Hiển thị ảnh CCCD */}
+            {(selectedBooking.cccdFrontImage || selectedBooking.cccdBackImage) && (
+              <div style={{ marginTop: 24 }}>
+                <Title level={5} style={{ color: "#83311b", marginBottom: 16 }}>
+                  Ảnh CCCD xác minh
+                </Title>
+                <Row gutter={[16, 16]}>
+                  {selectedBooking.cccdFrontImage && (
+                    <Col xs={24} sm={12}>
+                      <div
+                        style={{
+                          border: "2px solid #fbe0a2",
+                          borderRadius: 8,
+                          padding: 8,
+                          background: "#fefdf8",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            marginBottom: 8,
+                            color: "#83311b",
+                          }}
+                        >
+                          Mặt trước CCCD
+                        </div>
+                        <img
+                          src={selectedBooking.cccdFrontImage}
+                          alt="CCCD Mặt trước"
+                          style={{
+                            width: "100%",
+                            height: "auto",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                          }}
+                          onClick={() => window.open(selectedBooking.cccdFrontImage, "_blank")}
+                        />
+                      </div>
+                    </Col>
+                  )}
+                  {selectedBooking.cccdBackImage && (
+                    <Col xs={24} sm={12}>
+                      <div
+                        style={{
+                          border: "2px solid #fbe0a2",
+                          borderRadius: 8,
+                          padding: 8,
+                          background: "#fefdf8",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            marginBottom: 8,
+                            color: "#83311b",
+                          }}
+                        >
+                          Mặt sau CCCD
+                        </div>
+                        <img
+                          src={selectedBooking.cccdBackImage}
+                          alt="CCCD Mặt sau"
+                          style={{
+                            width: "100%",
+                            height: "auto",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                          }}
+                          onClick={() => window.open(selectedBooking.cccdBackImage, "_blank")}
+                        />
+                      </div>
+                    </Col>
+                  )}
+                </Row>
+              </div>
             )}
-          </Descriptions>
+          </div>
         )}
       </Modal>
     </div>
