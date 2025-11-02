@@ -332,6 +332,7 @@
   background: #83311b;
   transform: scale(1.02);
   transition: 0.1s all;
+  color: #ffefd9;
 }
 
 .bookingSection {

@@ -12,6 +12,7 @@ import {
   TimeConflict,
   TimeSlot,
 } from "./bookingUtils";
+import { useToast } from "@/hooks/useToast";
 
 // Types
 
@@ -101,6 +102,7 @@ export default function RoomBookingTable({
     useState<SelectedSlot[]>(initialSelectedSlots);
   const [bookings] = useState(initialBookings);
   const prevSlotsRef = useRef<string>("");
+  const toast = useToast(); // ✅ Add this hook
 
   const [isMobile, setIsMobile] = useState(false);
   const isInitialMount = useRef(true);
@@ -131,13 +133,11 @@ export default function RoomBookingTable({
       return;
     }
 
-    // Only call if submitOnSelect is true and slots actually changed
     if (submitOnSelect && onBookingSubmit) {
       onBookingSubmit(selectedSlots);
     }
   }, [selectedSlots]);
 
-  // Get responsive icon size
   const getIconSize = () => {
     if (typeof window === "undefined") return 24;
     if (window.innerWidth <= 360) return 14;
@@ -195,14 +195,35 @@ export default function RoomBookingTable({
     roomId: string,
     timeSlotId: string
   ): BookingStatus => {
-    return (
-      bookings[dateKey]?.[branchId]?.[roomId]?.[timeSlotId] || {
+    const bookingData = bookings[dateKey]?.[branchId]?.[roomId]?.[timeSlotId];
+    
+    // ✅ Nếu không có booking nào, trả về available
+    if (!bookingData) {
+      return { status: "available" };
+    }
+    
+    // ✅ UU TIÊN: Nếu bookingData đã có status "booked" (từ initialBookings), 
+    // trả về ngay (đây là overnight package đã được mark sẵn)
+    if (bookingData.status === "booked") {
+      return {
+        status: "booked",
+        bookedSlots: bookingData.bookedSlots || [],
+      };
+    }
+    
+    // ✅ Fallback: Check nếu có bookedSlots nhưng status không phải "booked"
+    // → Đây là gói giờ thông thường, vẫn available để đặt thêm
+    if (bookingData.bookedSlots && bookingData.bookedSlots.length > 0) {
+      return {
         status: "available",
-      }
-    );
+        bookedSlots: bookingData.bookedSlots,
+      };
+    }
+    
+    // ✅ Default: available
+    return { status: "available" };
   };
 
-  // Check if slot is selected
   const isSelected = (
     dateKey: string,
     branchId: string,
@@ -255,27 +276,27 @@ export default function RoomBookingTable({
       timeSlot.id
     );
 
-    // ✅ Block click if cell has any bookings
-    if (
-      bookingStatus.status === "booked" ||
-      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
-    ) {
-      // Show detailed message about conflicts
+    // ✅ CHỈ block nếu là overnight package và đã có booking
+    if (bookingStatus.status === "booked") {
       const conflictDetails = bookingStatus.bookedSlots
         ?.map((slot) => {
           const checkIn = new Date(slot.checkIn).toLocaleString("vi-VN");
           const checkOut = new Date(slot.checkOut).toLocaleString("vi-VN");
-          return `\n- ${checkIn} → ${checkOut}`;
+          return `${checkIn} → ${checkOut}`;
         })
-        .join("");
+        .join(", ");
 
-      alert(
-        `⚠️ Khung giờ này đã có booking:\n${conflictDetails}\n\nVui lòng chọn khung giờ khác.`
+      toast.warning(
+        "Gói overnight đã được đặt",
+        `Không thể đặt thêm. Booking hiện có:\n${conflictDetails}`
       );
       return;
     }
 
-    // Rest of logic...
+    // ✅ Với gói giờ thông thường, cho phép chọn để pick giờ cụ thể
+    // (Conflict check sẽ được xử lý trong TimeSlotSelector)
+    
+    // ... rest of logic
     const matchingSlots = selectedSlots.filter(
       (slot) =>
         slot.date === dateKey &&
@@ -295,6 +316,7 @@ export default function RoomBookingTable({
           )
       );
       setSelectedSlots(newSlots);
+      toast.info("Đã bỏ chọn", `Khung giờ ${timeSlot.time} đã được xóa`);
     } else {
       const isOvernightPackage =
         timeSlot.isOvernight === true ||
@@ -311,6 +333,7 @@ export default function RoomBookingTable({
         };
 
         setSelectedSlots((prev) => [...prev, newSlot]);
+        toast.success("Đã thêm vào giỏ", `${timeSlot.time} (Qua đêm)`);
       } else {
         setPendingSlot({
           date: dateKey,
@@ -344,17 +367,19 @@ export default function RoomBookingTable({
   // Handle booking submission
   const handleSubmit = () => {
     if (selectedSlots.length === 0) {
-      alert("Vui lòng chọn ít nhất một khung giờ!");
+      toast.warning(
+        "Chưa chọn khung giờ",
+        "Vui lòng chọn ít nhất một khung giờ để đặt phòng"
+      );
       return;
     }
 
     if (onBookingSubmit) {
       onBookingSubmit(selectedSlots);
     } else {
-      alert(
-        `Đặt phòng thành công! Tổng tiền: ${finalTotal.toLocaleString(
-          "vi-VN"
-        )}đ`
+      toast.success(
+        "Đặt phòng thành công!",
+        `Tổng tiền: ${finalTotal.toLocaleString("vi-VN")}đ`
       );
     }
   };
@@ -378,9 +403,9 @@ export default function RoomBookingTable({
       const result = await response.json();
 
       if (!result.available) {
-        alert(
-          result.message ||
-            "Khung giờ này đã bị đặt. Vui lòng chọn thời gian khác."
+        toast.error(
+          "Khung giờ không khả dụng",
+          result.message || "Vui lòng chọn thời gian khác"
         );
         return;
       }
@@ -397,9 +422,16 @@ export default function RoomBookingTable({
       setSelectedSlots((prev) => [...prev, newSlot]);
       setShowTimeSelector(false);
       setPendingSlot(null);
+      toast.success(
+        "Đã thêm vào giỏ",
+        `${pendingSlot.timeSlot.time} - Check-in: ${checkInTime}`
+      );
     } catch (error) {
       console.error("Error checking availability:", error);
-      alert("Không thể kiểm tra tính khả dụng. Vui lòng thử lại.");
+      toast.error(
+        "Lỗi hệ thống",
+        "Không thể kiểm tra tính khả dụng. Vui lòng thử lại"
+      );
     }
   };
 
@@ -427,14 +459,13 @@ export default function RoomBookingTable({
 
     if (selected) return `${styles.cell} ${styles.selected}`;
 
-    // ✅ Add 'booked' class if has bookings
-    if (
-      bookingStatus.status === "booked" ||
-      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
-    ) {
+    // ✅ Chỉ hiển thị 'booked' (đỏ) nếu là overnight package và đã có booking
+    if (bookingStatus.status === "booked") {
       return `${styles.cell} ${styles.booked}`;
     }
 
+    // ✅ Với gói giờ thông thường, vẫn hiển thị available (xanh) 
+    // ngay cả khi đã có booking (vì có thể đặt giờ khác)
     return `${styles.cell} ${styles.available}`;
   };
 
@@ -492,11 +523,8 @@ export default function RoomBookingTable({
       timeSlotId
     );
 
-    // Show BookedIcon if has bookings
-    if (
-      bookingStatus.status === "booked" ||
-      (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0)
-    ) {
+    // ✅ Nếu là overnight package và đã có booking → Show BookedIcon (đỏ)
+    if (bookingStatus.status === "booked") {
       return (
         <div style={{ position: "relative" }}>
           <BookedIcon size={iconSize} />
@@ -518,6 +546,35 @@ export default function RoomBookingTable({
             }}
           >
             {bookingStatus.bookedSlots?.length || 1}
+          </span>
+        </div>
+      );
+    }
+
+    // ✅ Với gói giờ thông thường, có booking nhưng vẫn available
+    // → Show AvailableIcon (xanh) kèm badge số lượng booking
+    if (bookingStatus.bookedSlots && bookingStatus.bookedSlots.length > 0) {
+      return (
+        <div style={{ position: "relative" }}>
+          <AvailableIcon size={iconSize} />
+          <span
+            style={{
+              position: "absolute",
+              top: -5,
+              right: -5,
+              background: "#1890ff",
+              color: "white",
+              borderRadius: "50%",
+              width: 16,
+              height: 16,
+              fontSize: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+            }}
+          >
+            {bookingStatus.bookedSlots.length}
           </span>
         </div>
       );

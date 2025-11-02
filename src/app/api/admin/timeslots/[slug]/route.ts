@@ -44,7 +44,18 @@ const { slug } = await params;
       );
 
     const body = await request.json();
-    const { time, price, isActive, isWeekend } = body;
+    const { time, price, duration, isOvernight, weekendSurcharge, isActive } = body;
+
+    // Validate duration for non-overnight packages
+    if (isOvernight === false && duration === undefined) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Vui lòng nhập thời lượng (duration) cho gói giờ thông thường",
+        },
+        { status: 400 }
+      );
+    }
 
     // Kiểm tra khung giờ tồn tại
     const existing = await prisma.timeSlot.findUnique({
@@ -64,8 +75,10 @@ const { slug } = await params;
       data: {
         ...(time !== undefined && { time }),
         ...(price !== undefined && { price: parseInt(price) }),
+        ...(duration !== undefined && { duration: duration ? parseInt(duration) : null }),
+        ...(isOvernight !== undefined && { isOvernight }),
+        ...(weekendSurcharge !== undefined && { weekendSurcharge: parseInt(weekendSurcharge) }),
         ...(isActive !== undefined && { isActive }),
-        // ...(isWeekend !== undefined && { isWeekend }),
       },
     });
 

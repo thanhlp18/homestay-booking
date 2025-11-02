@@ -18,7 +18,7 @@ import {
 } from "@/app/components/bookingUtils";
 import CCCDUpload from "@/app/components/CCCDUpload";
 import CCCDImageUpload from "@/app/components/CCCDUpload";
-import { useToast } from "@/providers/ToastProvider";
+import { useToast } from "@/hooks/useToast";
 
 interface TimeSlot {
   id: string;

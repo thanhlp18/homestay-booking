@@ -309,6 +309,7 @@ export default function BookingsPage() {
       title: "Khách hàng",
       dataIndex: "fullName",
       key: "fullName",
+      fixed: "left",
       render: (text, record) => (
         <div>
           <div style={{ fontWeight: "bold" }}>{text}</div>
@@ -391,9 +392,14 @@ export default function BookingsPage() {
     },
     {
       title: "Thao tác",
+      fixed: "right",
       key: "actions",
       render: (_, record) => (
-        <Space direction={isMobile ? "vertical" : "horizontal"} size="small">
+        <Space
+          direction={isMobile ? "vertical" : "horizontal"}
+          size="small"
+          style={{ display: "flex", flexWrap: "wrap" }}
+        >
           <Button
             type="primary"
             icon={<EyeOutlined />}
@@ -544,13 +550,13 @@ export default function BookingsPage() {
           </Text>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
           <Button
             type="primary"
-            size="small"
+            size="large"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetails(booking)}
-            style={{ flex: 1, minWidth: "80px" }}
+            style={{ flex: "1 1 auto", minWidth: "140px" }}
           >
             Chi tiết
           </Button>
@@ -560,19 +566,19 @@ export default function BookingsPage() {
             <>
               <Button
                 type="primary"
-                size="small"
+                size="large"
                 loading={actionLoading === booking.id}
                 onClick={() => handleApproveBooking(booking.id)}
-                style={{ flex: 1, minWidth: "80px" }}
+                style={{ flex: "1 1 auto", minWidth: "140px" }}
               >
                 Phê duyệt
               </Button>
               <Button
                 danger
-                size="small"
+                size="large"
                 loading={actionLoading === booking.id}
                 onClick={() => handleRejectBooking(booking.id)}
-                style={{ flex: 1, minWidth: "80px" }}
+                style={{ flex: "1 1 auto", minWidth: "140px" }}
               >
                 Từ chối
               </Button>
@@ -588,9 +594,9 @@ export default function BookingsPage() {
             >
               <Button
                 danger
-                size="small"
+                size="large"
                 loading={actionLoading === booking.id}
-                style={{ flex: 1, minWidth: "80px" }}
+                style={{ flex: "1 1 auto", minWidth: "140px" }}
               >
                 Hủy
               </Button>
@@ -605,26 +611,232 @@ export default function BookingsPage() {
     <div>
       <Title
         level={isMobile ? 3 : 2}
-        style={{ marginBottom: isMobile ? 16 : 24 }}
+        style={{ marginBottom: isMobile ? 16 : 24, color: "#83311b" }}
       >
         Quản lý đặt phòng
       </Title>
 
-      {/* Statistics - giữ nguyên */}
+      {/* Statistics */}
       <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
-        {/* ... Statistics code giữ nguyên ... */}
+        <Col xs={12} sm={12} lg={6}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#83311b",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng đặt phòng
+                </span>
+              }
+              value={stats.total}
+              prefix={
+                <CalendarOutlined
+                  style={{
+                    color: "#83311b",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                fontSize: isMobile ? "28px" : "36px",
+                color: "#83311b",
+                fontWeight: "bold",
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#bd8049",
+                    fontWeight: 500,
+                  }}
+                >
+                  Chờ phê duyệt
+                </span>
+              }
+              value={stats.paymentConfirmed}
+              prefix={
+                <ClockCircleOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#bd8049",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#605f3a",
+                    fontWeight: 500,
+                  }}
+                >
+                  Đã phê duyệt
+                </span>
+              }
+              value={stats.approved}
+              prefix={
+                <CheckCircleOutlined
+                  style={{
+                    color: "#605f3a",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#605f3a",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={12} lg={6}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#bd8049",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng doanh thu
+                </span>
+              }
+              value={stats.totalRevenue}
+              prefix={
+                <DollarOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#bd8049",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
+              formatter={(value) => `${value?.toLocaleString("vi-VN")} đ`}
+            />
+          </Card>
+        </Col>
       </Row>
 
-      {/* Filters - giữ nguyên */}
+      {/* Filters */}
       <Card
-        style={{ marginBottom: 16 }}
+        style={{
+          marginBottom: 16,
+          border: "1px solid #fbe0a2",
+          boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+          borderRadius: 12,
+          background: "#ffffff",
+        }}
         bodyStyle={{ padding: isMobile ? 12 : 24 }}
       >
-        {/* ... Filters code giữ nguyên ... */}
+        <Space
+          direction={isMobile ? "vertical" : "horizontal"}
+          size="middle"
+          style={{ width: "100%" }}
+        >
+          <Select
+            placeholder="Lọc theo trạng thái"
+            allowClear
+            style={{ width: isMobile ? "100%" : 200 }}
+            onChange={(value) =>
+              setFilters({ ...filters, status: value || "" })
+            }
+          >
+            <Option value="">Tất cả</Option>
+            <Option value="PENDING">Chờ thanh toán</Option>
+            <Option value="PAYMENT_CONFIRMED">Chờ phê duyệt</Option>
+            <Option value="APPROVED">Đã phê duyệt</Option>
+            <Option value="REJECTED">Đã từ chối</Option>
+            <Option value="CANCELLED">Đã hủy</Option>
+          </Select>
+          <RangePicker
+            style={{ width: isMobile ? "100%" : "auto" }}
+            onChange={(dates) => setFilters({ ...filters, dateRange: dates })}
+          />
+        </Space>
       </Card>
 
       {/* Bookings Table/Cards */}
-      <Card bodyStyle={{ padding: isMobile ? 0 : 24 }}>
+      <Card
+        bodyStyle={{ padding: isMobile ? 0 : 24 }}
+        style={{
+          border: "1px solid #fbe0a2",
+          boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+          borderRadius: 12,
+          background: "#ffffff",
+        }}
+      >
         {isMobile ? (
           <div style={{ padding: isMobile ? 16 : 0 }}>
             {bookings.map(renderMobileBookingCard)}

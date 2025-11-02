@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, createContext, useContext } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, Form, Input, Button, message, Typography } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useEffect, useState, createContext, useContext } from "react";
+import { useRouter } from "next/navigation";
+import { Card, Form, Input, Button, message, Typography } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import Image from "next/image";
 
 const { Title } = Typography;
 
@@ -17,17 +18,21 @@ interface AdminAuthContextType {
   checkAuthStatus: () => Promise<void>;
 }
 
-const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
+const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
+  undefined
+);
 
 export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext);
   if (!context) {
-    throw new Error('useAdminAuth must be used within AdminAuthProvider');
+    throw new Error("useAdminAuth must be used within AdminAuthProvider");
   }
   return context;
 };
 
-export default function AdminAuthProvider({ children }: AdminAuthProviderProps) {
+export default function AdminAuthProvider({
+  children,
+}: AdminAuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -38,8 +43,8 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include',
+      const response = await fetch("/api/admin/auth/verify", {
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -54,31 +59,31 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
 
   const logout = async () => {
     try {
-      const response = await fetch('/api/admin/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
+      const response = await fetch("/api/admin/auth/logout", {
+        method: "POST",
+        credentials: "include",
       });
 
       if (response.ok) {
         setIsAuthenticated(false);
-        message.success('Đăng xuất thành công');
-        router.push('/admin');
+        message.success("Đăng xuất thành công");
+        router.push("/admin");
       } else {
-        message.error('Đã xảy ra lỗi khi đăng xuất');
+        message.error("Đã xảy ra lỗi khi đăng xuất");
       }
     } catch (error) {
-      console.error('Logout error:', error);
-      message.error('Đã xảy ra lỗi khi đăng xuất');
+      console.error("Logout error:", error);
+      message.error("Đã xảy ra lỗi khi đăng xuất");
     }
   };
 
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/admin/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
       });
@@ -86,14 +91,14 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
       const data = await response.json();
 
       if (response.ok) {
-        message.success('Đăng nhập thành công!');
+        message.success("Đăng nhập thành công!");
         setIsAuthenticated(true);
-        router.push('/admin');
+        router.push("/admin");
       } else {
-        message.error(data.message || 'Đăng nhập thất bại');
+        message.error(data.message || "Đăng nhập thất bại");
       }
     } catch {
-      message.error('Đã xảy ra lỗi khi đăng nhập');
+      message.error("Đã xảy ra lỗi khi đăng nhập");
     } finally {
       setLoading(false);
     }
@@ -105,33 +110,45 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
 
   if (isAuthenticated) {
     return (
-      <AdminAuthContext.Provider value={{ isAuthenticated, logout, checkAuthStatus }}>
+      <AdminAuthContext.Provider
+        value={{ isAuthenticated, logout, checkAuthStatus }}
+      >
         {children}
       </AdminAuthContext.Provider>
     );
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px'
-    }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        background: "#ffefd9",
+        padding: "20px",
+      }}
+    >
       <Card
         style={{
-          width: '100%',
+          width: "100%",
           maxWidth: 400,
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
+        <Image
+          src="/transparent-bg.png"
+          alt="O Ni Homestay Logo"
+          width={100}
+          height={100}
+          style={{ scale: 2.5, display: "block", margin: "0 auto 24px auto" }}
+        ></Image>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <Title level={2} style={{ margin: 0, color: "#83311b" }}>
             O Ni Homestay Admin
           </Title>
-          <p style={{ color: '#666', margin: '8px 0 0 0' }}>
+          <p style={{ color: "#666", margin: "8px 0 0 0" }}>
             Đăng nhập vào hệ thống quản lý
           </p>
         </div>
@@ -145,20 +162,16 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
           <Form.Item
             name="email"
             rules={[
-              { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Email không hợp lệ!' },
+              { required: true, message: "Vui lòng nhập email!" },
+              { type: "email", message: "Email không hợp lệ!" },
             ]}
           >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Email"
-              size="large"
-            />
+            <Input prefix={<UserOutlined />} placeholder="Email" size="large" />
           </Form.Item>
 
           <Form.Item
             name="password"
-            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+            rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
           >
             <Input.Password
               prefix={<LockOutlined />}
@@ -173,19 +186,19 @@ export default function AdminAuthProvider({ children }: AdminAuthProviderProps) 
               htmlType="submit"
               size="large"
               loading={loading}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             >
               Đăng nhập
             </Button>
           </Form.Item>
         </Form>
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <p style={{ color: '#999', fontSize: '12px' }}>
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <p style={{ color: "#999", fontSize: "12px" }}>
             Hệ thống quản lý O Ni Homestay Homestay
           </p>
         </div>
       </Card>
     </div>
   );
-} 
+}

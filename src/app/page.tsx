@@ -9,7 +9,7 @@ import RoomBookingTable from "./components/RoomBookingTable";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Footer from "./components/Footer";
 import styles from "./page.module.css";
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt } from "react-icons/fa";
 
 interface Room {
   id: string;
@@ -273,36 +273,6 @@ export default function Home() {
   };
 
   // Handle booking submission - redirect to room detail page
-  const handleBookingSubmit = (
-    selectedSlots: Array<{
-      date: string;
-      branchId: string;
-      roomId: string;
-      timeSlotId: string;
-      price: number;
-    }>
-  ) => {
-    // Only proceed if there are selected slots
-    if (selectedSlots.length === 0) {
-      return; // Don't show alert, just return silently
-    }
-
-    // Find the room for the first selected slot
-    const firstSlot = selectedSlots[0];
-
-    // Find the room slug from the branches data
-    const branchData = branches.find((b) => b.id === firstSlot.branchId);
-    const roomData = branchData?.rooms.find((r) => r.id === firstSlot.roomId);
-
-    if (!roomData?.slug) {
-      alert("Không tìm thấy thông tin phòng!");
-      return;
-    }
-
-    // Encode selected slots and redirect to room detail page
-    const encodedSlots = encodeURIComponent(JSON.stringify(selectedSlots));
-    router.push(`/rooms/${roomData.slug}?selectedSlots=${encodedSlots}`);
-  };
 
   if (loading) {
     return (
@@ -362,13 +332,16 @@ export default function Home() {
           return locationParts[0] === selectedDestination;
         });
 
-  const branchInformationFitter = selectedDestination !== "Tất cả" ? branches.filter((branch) => {
-    const locationParts = branch.location.split(", ");
-    return locationParts[0] === selectedDestination;
-  })[0] : null
-console.log(branchInformationFitter)
+  const branchInformationFitter =
+    selectedDestination !== "Tất cả"
+      ? branches.filter((branch) => {
+          const locationParts = branch.location.split(", ");
+          return locationParts[0] === selectedDestination;
+        })[0]
+      : null;
+  console.log(branchInformationFitter);
   // Get Can Tho homes (filtered by selected destination)
-  const canThoHomes = filteredRooms.slice(0, 3).map((room) => {
+  const canThoHomes = filteredRooms.map((room) => {
     return {
       title: room.name,
       description: room.description,
@@ -486,7 +459,7 @@ console.log(branchInformationFitter)
       </section>
 
       {/* Interactive Room Booking Table */}
-      <section className={styles.calendarSection}>
+      {/* <section className={styles.calendarSection}>
         <div className={styles.calendarContainer}>
           <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
           <p className={styles.sectionSubtitle}>
@@ -501,7 +474,7 @@ console.log(branchInformationFitter)
             submitOnSelect={false}
           />
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>

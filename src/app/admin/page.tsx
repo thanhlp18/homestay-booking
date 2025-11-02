@@ -1,11 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Button, Space, Typography, Spin, Avatar } from 'antd';
-import { adminApiCall, handleApiResponse } from '@/lib/adminApi';
-import { 
-  BookOutlined, 
-  HomeOutlined, 
+import { useEffect, useState } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Table,
+  Tag,
+  Button,
+  Space,
+  Typography,
+  Spin,
+  Avatar,
+} from "antd";
+import { adminApiCall, handleApiResponse } from "@/lib/adminApi";
+import {
+  BookOutlined,
+  HomeOutlined,
   DollarOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -14,8 +26,8 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
 
 const { Title, Text } = Typography;
 
@@ -28,34 +40,36 @@ interface BookingRecord {
   guests: number;
   notes: string;
   paymentMethod: string;
-  status: 'PENDING' | 'PAYMENT_CONFIRMED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status:
+    | "PENDING"
+    | "PAYMENT_CONFIRMED"
+    | "APPROVED"
+    | "REJECTED"
+    | "CANCELLED";
   createdAt: string;
   updatedAt: string;
+  checkInDateTime: string;
+  checkOutDateTime: string;
   approvedAt?: string;
   rejectedAt?: string;
   adminNotes?: string;
   totalPrice: number;
   basePrice: number;
-  discountAmount: number;
-  discountPercentage: number;
-  bookingSlots: Array<{
+  weekendSurchargeApplied: number;
+  guestSurcharge: number;
+  room: {
     id: string;
-    bookingDate: string;
-    price: number;
-    room: {
+    name: string;
+    branch: {
       id: string;
       name: string;
-      branch: {
-        id: string;
-        name: string;
-        location: string;
-      };
+      location: string;
     };
-    timeSlot: {
-      id: string;
-      time: string;
-    };
-  }>;
+  };
+  timeSlot: {
+    id: string;
+    time: string;
+  };
 }
 
 interface DashboardStats {
@@ -84,13 +98,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchData();
     checkMobile();
-    
+
     const handleResize = () => {
       checkMobile();
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const checkMobile = () => {
@@ -100,32 +114,34 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch bookings
-      const bookingsResponse = await fetch('/api/bookings');
+      const bookingsResponse = await fetch("/api/bookings");
       const bookingsData = await bookingsResponse.json();
       const bookingsList = bookingsData.data || [];
       setBookings(bookingsList);
 
       // Fetch branches and rooms
-      const branchesResponse = await fetch('/api/branches');
+      const branchesResponse = await fetch("/api/branches");
       const branchesData = await branchesResponse.json();
       const branchesList = branchesData.data || [];
 
       // Calculate stats
       const totalBookings = bookingsList.length;
-      const pendingApproval = bookingsList.filter((b: BookingRecord) => 
-        b.status === 'PAYMENT_CONFIRMED'
+      const pendingApproval = bookingsList.filter(
+        (b: BookingRecord) => b.status === "PAYMENT_CONFIRMED"
       ).length;
-      const approvedBookings = bookingsList.filter((b: BookingRecord) => 
-        b.status === 'APPROVED'
+      const approvedBookings = bookingsList.filter(
+        (b: BookingRecord) => b.status === "APPROVED"
       ).length;
       const totalRevenue = bookingsList
-        .filter((b: BookingRecord) => b.status === 'APPROVED')
+        .filter((b: BookingRecord) => b.status === "APPROVED")
         .reduce((sum: number, b: BookingRecord) => sum + b.totalPrice, 0);
       const totalBranches = branchesList.length;
-      const totalRooms = branchesList.reduce((sum: number, branch: { rooms?: Array<unknown> }) => 
-        sum + (branch.rooms?.length || 0), 0
+      const totalRooms = branchesList.reduce(
+        (sum: number, branch: { rooms?: Array<unknown> }) =>
+          sum + (branch.rooms?.length || 0),
+        0
       );
 
       setStats({
@@ -137,7 +153,7 @@ export default function AdminDashboard() {
         totalRooms,
       });
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -147,34 +163,34 @@ export default function AdminDashboard() {
     try {
       setActionLoading(bookingId);
       const response = await adminApiCall(`/api/admin/bookings/${bookingId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         body: JSON.stringify({
-          action: 'approve',
+          action: "approve",
         }),
       });
 
       await handleApiResponse(response);
       await fetchData();
     } catch (error) {
-      console.error('Error approving booking:', error);
+      console.error("Error approving booking:", error);
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleRejectBooking = async (bookingId: string) => {
-    const reason = prompt('Lý do từ chối đặt phòng:');
+    const reason = prompt("Lý do từ chối đặt phòng:");
     if (!reason) return;
 
     try {
       setActionLoading(bookingId);
       const response = await fetch(`/api/admin/bookings/${bookingId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          action: 'reject',
+          action: "reject",
           reason,
         }),
       });
@@ -183,7 +199,7 @@ export default function AdminDashboard() {
         await fetchData();
       }
     } catch (error) {
-      console.error('Error rejecting booking:', error);
+      console.error("Error rejecting booking:", error);
     } finally {
       setActionLoading(null);
     }
@@ -191,15 +207,47 @@ export default function AdminDashboard() {
 
   const getStatusTag = (status: string) => {
     switch (status) {
-      case 'PENDING':
-        return <Tag icon={<ClockCircleOutlined />} color="orange">Chờ thanh toán</Tag>;
-      case 'PAYMENT_CONFIRMED':
-        return <Tag icon={<ClockCircleOutlined />} color="blue">Chờ phê duyệt</Tag>;
-      case 'APPROVED':
-        return <Tag icon={<CheckCircleOutlined />} color="green">Đã phê duyệt</Tag>;
-      case 'REJECTED':
-      case 'CANCELLED':
-        return <Tag icon={<CloseCircleOutlined />} color="red">Đã từ chối</Tag>;
+      case "PENDING":
+        return (
+          <Tag
+            icon={<ClockCircleOutlined />}
+            color="#fbe0a2"
+            style={{ color: "#83311b", border: "1px solid #fbe0a2" }}
+          >
+            Chờ thanh toán
+          </Tag>
+        );
+      case "PAYMENT_CONFIRMED":
+        return (
+          <Tag
+            icon={<ClockCircleOutlined />}
+            color="#1890ff"
+            style={{ color: "#fff" }}
+          >
+            Chờ phê duyệt
+          </Tag>
+        );
+      case "APPROVED":
+        return (
+          <Tag
+            icon={<CheckCircleOutlined />}
+            color="#605f3a"
+            style={{ color: "#fff" }}
+          >
+            Đã phê duyệt
+          </Tag>
+        );
+      case "REJECTED":
+      case "CANCELLED":
+        return (
+          <Tag
+            icon={<CloseCircleOutlined />}
+            color="#83311b"
+            style={{ color: "#fff" }}
+          >
+            Đã từ chối
+          </Tag>
+        );
       default:
         return <Tag color="default">Không xác định</Tag>;
     }
@@ -207,65 +255,89 @@ export default function AdminDashboard() {
 
   const columns: ColumnsType<BookingRecord> = [
     {
-      title: 'Khách hàng',
-      dataIndex: 'fullName',
-      key: 'fullName',
+      title: "Khách hàng",
+      dataIndex: "fullName",
+      fixed: "left",
+      key: "fullName",
       render: (text, record) => (
         <div>
-          <div style={{ fontWeight: 'bold' }}>{text}</div>
-          <div style={{ fontSize: '12px', color: '#666' }}>{record.phone}</div>
+          <div style={{ fontWeight: 600, color: "#83311b" }}>{text}</div>
+          <div style={{ fontSize: "12px", color: "#999" }}>{record.phone}</div>
         </div>
       ),
     },
     {
-      title: 'Phòng',
-      key: 'room',
+      title: "Phòng",
+      key: "room",
       render: (_, record) => (
         <div>
-          <div>{record.bookingSlots[0]?.room.name}</div>
-          <div style={{ fontSize: '12px', color: '#666' }}>
-            {record.bookingSlots[0]?.room.branch.location}
+          <div style={{ fontWeight: 500, color: "#bd8049" }}>
+            {record.room?.name || "-"}
+          </div>
+          <div style={{ fontSize: "12px", color: "#999" }}>
+            {record.room?.branch?.location || "-"}
           </div>
         </div>
       ),
     },
     {
-      title: 'Ngày đặt',
-      key: 'bookingDate',
-      render: (_, record) => (
-        <div>
-          {record.bookingSlots.map(slot => {
-            const date = new Date(slot.bookingDate).toLocaleDateString('vi-VN');
-            return `${date} - ${slot.timeSlot.time}`;
-          }).join(', ')}
-        </div>
+      title: "Ngày đặt",
+      key: "bookingDate",
+      render: (_, record) => {
+        if (!record.checkInDateTime) return "-";
+        const checkIn = new Date(record.checkInDateTime).toLocaleString(
+          "vi-VN"
+        );
+        const checkOut = record.checkOutDateTime
+          ? new Date(record.checkOutDateTime).toLocaleString("vi-VN")
+          : "-";
+        return (
+          <div>
+            <div style={{ fontSize: "13px" }}>Check-in: {checkIn}</div>
+            <div style={{ fontSize: "12px", color: "#999" }}>
+              Check-out: {checkOut}
+            </div>
+            <div
+              style={{ fontSize: "12px", color: "#bd8049", fontWeight: 500 }}
+            >
+              {record.timeSlot?.time || "-"}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Tổng tiền",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      render: (price) => (
+        <span style={{ fontWeight: 600, color: "#605f3a", fontSize: "14px" }}>
+          {price?.toLocaleString("vi-VN") || 0} đ
+        </span>
       ),
     },
     {
-      title: 'Tổng tiền',
-      dataIndex: 'totalPrice',
-      key: 'totalPrice',
-      render: (price) => `${price.toLocaleString('vi-VN')} đ`,
-    },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
       render: (status) => getStatusTag(status),
     },
     {
-      title: 'Thao tác',
-      key: 'actions',
+      title: "Thao tác",
+      key: "actions",
+      fixed: "right",
+
       render: (_, record) => (
-        <Space direction={isMobile ? 'vertical' : 'horizontal'} size="small">
-          {(record.status === 'PENDING' || record.status === 'PAYMENT_CONFIRMED') && (
+        <Space direction={isMobile ? "vertical" : "horizontal"} size="small">
+          {(record.status === "PENDING" ||
+            record.status === "PAYMENT_CONFIRMED") && (
             <>
               <Button
                 type="primary"
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleApproveBooking(record.id)}
-                style={{ width: isMobile ? '100%' : 'auto' }}
+                style={{ width: isMobile ? "100%" : "auto" }}
               >
                 Phê duyệt
               </Button>
@@ -274,7 +346,7 @@ export default function AdminDashboard() {
                 size="small"
                 loading={actionLoading === record.id}
                 onClick={() => handleRejectBooking(record.id)}
-                style={{ width: isMobile ? '100%' : 'auto' }}
+                style={{ width: isMobile ? "100%" : "auto" }}
               >
                 Từ chối
               </Button>
@@ -285,80 +357,111 @@ export default function AdminDashboard() {
     },
   ];
 
-  const renderMobileBookingCard = (booking: BookingRecord) => (
-    <Card 
-      key={booking.id} 
-      style={{ marginBottom: 16 }}
-      bodyStyle={{ padding: 16 }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-        <Avatar icon={<UserOutlined />} style={{ marginRight: 12 }} />
-        <div>
-          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>{booking.fullName}</div>
-          <div style={{ color: '#666', fontSize: '14px' }}>
-            <PhoneOutlined style={{ marginRight: 4 }} />
-            {booking.phone}
+  const renderMobileBookingCard = (booking: BookingRecord) => {
+    return (
+      <Card
+        key={booking.id}
+        style={{ marginBottom: 16 }}
+        bodyStyle={{ padding: 16 }}
+      >
+        <div
+          style={{ display: "flex", alignItems: "center", marginBottom: 12 }}
+        >
+          <Avatar icon={<UserOutlined />} style={{ marginRight: 12 }} />
+          <div>
+            <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+              {booking.fullName}
+            </div>
+            <div style={{ color: "#666", fontSize: "14px" }}>
+              <PhoneOutlined style={{ marginRight: 4 }} />
+              {booking.phone}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <HomeOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-          <Text strong>{booking.bookingSlots[0]?.room.name}</Text>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-          <EnvironmentOutlined style={{ marginRight: 8, color: '#52c41a' }} />
-          <Text>{booking.bookingSlots[0]?.room.branch.location}</Text>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <CalendarOutlined style={{ marginRight: 8, color: '#faad14' }} />
-          <Text>
-            {booking.bookingSlots.map(slot => {
-              const date = new Date(slot.bookingDate).toLocaleDateString('vi-VN');
-              return `${date} - ${slot.timeSlot.time}`;
-            }).join(', ')}
-          </Text>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div>
-          <Text strong style={{ fontSize: '16px', color: '#52c41a' }}>
-            {booking.totalPrice.toLocaleString('vi-VN')} đ
-          </Text>
-        </div>
-        {getStatusTag(booking.status)}
-      </div>
-
-      {(booking.status === 'PENDING' || booking.status === 'PAYMENT_CONFIRMED') && (
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button
-            type="primary"
-            size="small"
-            loading={actionLoading === booking.id}
-            onClick={() => handleApproveBooking(booking.id)}
-            style={{ flex: 1 }}
+        <div style={{ marginBottom: 12 }}>
+          <div
+            style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
           >
-            Phê duyệt
-          </Button>
-          <Button
-            danger
-            size="small"
-            loading={actionLoading === booking.id}
-            onClick={() => handleRejectBooking(booking.id)}
-            style={{ flex: 1 }}
+            <HomeOutlined style={{ marginRight: 8, color: "#1890ff" }} />
+            <Text strong>{booking.room?.name || "-"}</Text>
+          </div>
+          <div
+            style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
           >
-            Từ chối
-          </Button>
+            <EnvironmentOutlined style={{ marginRight: 8, color: "#52c41a" }} />
+            <Text>{booking.room?.branch?.location || "-"}</Text>
+          </div>
+          <div
+            style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
+          >
+            <CalendarOutlined style={{ marginRight: 8, color: "#faad14" }} />
+            <div>
+              <div style={{ fontSize: "14px" }}>
+                Check-in:{" "}
+                {booking.checkInDateTime
+                  ? new Date(booking.checkInDateTime).toLocaleString("vi-VN")
+                  : "-"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#666" }}>
+                Check-out:{" "}
+                {booking.checkOutDateTime
+                  ? new Date(booking.checkOutDateTime).toLocaleString("vi-VN")
+                  : "-"}
+              </div>
+              <div style={{ fontSize: "12px", color: "#1890ff" }}>
+                {booking.timeSlot?.time || "-"}
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-    </Card>
-  );
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            <Text strong style={{ fontSize: "16px", color: "#52c41a" }}>
+              {booking.totalPrice?.toLocaleString("vi-VN") || 0} đ
+            </Text>
+          </div>
+          {getStatusTag(booking.status)}
+        </div>
+
+        {(booking.status === "PENDING" ||
+          booking.status === "PAYMENT_CONFIRMED") && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button
+              type="primary"
+              size="small"
+              loading={actionLoading === booking.id}
+              onClick={() => handleApproveBooking(booking.id)}
+              style={{ flex: 1 }}
+            >
+              Phê duyệt
+            </Button>
+            <Button
+              danger
+              size="small"
+              loading={actionLoading === booking.id}
+              onClick={() => handleRejectBooking(booking.id)}
+              style={{ flex: 1 }}
+            >
+              Từ chối
+            </Button>
+          </div>
+        )}
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div style={{ textAlign: "center", padding: "50px" }}>
         <Spin size="large" />
       </div>
     );
@@ -366,50 +469,181 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <Title level={isMobile ? 3 : 2} style={{ marginBottom: isMobile ? 16 : 24 }}>
+      <Title
+        level={isMobile ? 3 : 2}
+        style={{ marginBottom: isMobile ? 16 : 24, color: "#83311b" }}
+      >
         Dashboard
       </Title>
-      
+
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng đặt phòng</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#83311b",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng đặt phòng
+                </span>
+              }
               value={stats.totalBookings}
-              prefix={<BookOutlined />}
-              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+              prefix={
+                <BookOutlined
+                  style={{
+                    color: "#83311b",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                fontSize: isMobile ? "28px" : "36px",
+                color: "#83311b",
+                fontWeight: "bold",
+              }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Chờ phê duyệt</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#bd8049",
+                    fontWeight: 500,
+                  }}
+                >
+                  Chờ phê duyệt
+                </span>
+              }
               value={stats.pendingApproval}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#1890ff', fontSize: isMobile ? '20px' : '24px' }}
+              prefix={
+                <ClockCircleOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#bd8049",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đã phê duyệt</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#605f3a",
+                    fontWeight: 500,
+                  }}
+                >
+                  Đã phê duyệt
+                </span>
+              }
               value={stats.approvedBookings}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
+              prefix={
+                <CheckCircleOutlined
+                  style={{
+                    color: "#605f3a",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#605f3a",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng doanh thu</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#bd8049",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng doanh thu
+                </span>
+              }
               value={stats.totalRevenue}
-              prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
-              formatter={(value) => `${value?.toLocaleString('vi-VN')} đ`}
+              prefix={
+                <DollarOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                color: "#bd8049",
+                fontSize: isMobile ? "28px" : "36px",
+                fontWeight: "bold",
+              }}
+              formatter={(value) => `${value?.toLocaleString("vi-VN")} đ`}
             />
           </Card>
         </Col>
@@ -417,32 +651,117 @@ export default function AdminDashboard() {
 
       <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng chi nhánh</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#83311b",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng chi nhánh
+                </span>
+              }
               value={stats.totalBranches}
-              prefix={<HomeOutlined />}
-              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+              prefix={
+                <HomeOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                fontSize: isMobile ? "28px" : "36px",
+                color: "#bd8049",
+                fontWeight: "bold",
+              }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card
+            bodyStyle={{
+              padding: isMobile ? 16 : 24,
+              background: "#ffffff",
+              borderRadius: 12,
+            }}
+            style={{
+              border: "1px solid #fbe0a2",
+              boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+              borderRadius: 12,
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng phòng</span>}
+              title={
+                <span
+                  style={{
+                    fontSize: isMobile ? "13px" : "14px",
+                    color: "#83311b",
+                    fontWeight: 500,
+                  }}
+                >
+                  Tổng phòng
+                </span>
+              }
               value={stats.totalRooms}
-              prefix={<HomeOutlined />}
-              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+              prefix={
+                <HomeOutlined
+                  style={{
+                    color: "#bd8049",
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                />
+              }
+              valueStyle={{
+                fontSize: isMobile ? "28px" : "36px",
+                color: "#bd8049",
+                fontWeight: "bold",
+              }}
             />
           </Card>
         </Col>
       </Row>
 
       {/* Recent Bookings */}
-      <Card 
-        title={<span style={{ fontSize: isMobile ? '16px' : '18px' }}>Đặt phòng gần đây</span>}
-        style={{ marginBottom: 24 }}
+      <Card
+        title={
+          <span
+            style={{
+              fontSize: isMobile ? "16px" : "18px",
+              color: "#83311b",
+              fontWeight: "bold",
+            }}
+          >
+            Đặt phòng gần đây
+          </span>
+        }
+        style={{
+          marginBottom: 24,
+          border: "1px solid #fbe0a2",
+          boxShadow: "0 4px 12px rgba(189, 128, 73, 0.1)",
+          borderRadius: 12,
+          background: "#ffffff",
+        }}
         bodyStyle={{ padding: isMobile ? 0 : 24 }}
+        headStyle={{
+          background: "white",
+          borderBottom: "1px solid #fbe0a2",
+          borderRadius: "12px 12px 0 0",
+        }}
       >
         {isMobile ? (
           <div style={{ padding: isMobile ? 16 : 0 }}>
@@ -455,10 +774,10 @@ export default function AdminDashboard() {
             rowKey="id"
             pagination={false}
             scroll={{ x: 800 }}
-            size="small"
+            size="middle"
           />
         )}
       </Card>
     </div>
   );
-} 
+}

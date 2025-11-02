@@ -391,7 +391,7 @@ export default function BranchesPage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMobile ? 16 : 24 }}>
-        <Title level={isMobile ? 3 : 2}>Quản lý chi nhánh</Title>
+        <Title level={isMobile ? 3 : 2} style={{ color: '#83311b' }}>Quản lý chi nhánh</Title>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -405,48 +405,100 @@ export default function BranchesPage() {
       {/* Statistics */}
       <Row gutter={[16, 16]} style={{ marginBottom: isMobile ? 16 : 24 }}>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card 
+            bodyStyle={{ 
+              padding: isMobile ? 16 : 24,
+              background: '#ffffff',
+              borderRadius: 12
+            }}
+            style={{ 
+              border: '1px solid #fbe0a2', 
+              boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+              borderRadius: 12
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng chi nhánh</span>}
+              title={<span style={{ fontSize: isMobile ? '13px' : '14px', color: '#83311b', fontWeight: 500 }}>Tổng chi nhánh</span>}
               value={stats.total}
-              prefix={<HomeOutlined />}
-              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+              prefix={<HomeOutlined style={{ color: '#83311b', fontSize: isMobile ? '20px' : '24px' }} />}
+              valueStyle={{ fontSize: isMobile ? '28px' : '36px', color: '#83311b', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card 
+            bodyStyle={{ 
+              padding: isMobile ? 16 : 24,
+              background: '#ffffff',
+              borderRadius: 12
+            }}
+            style={{ 
+              border: '1px solid #fbe0a2', 
+              boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+              borderRadius: 12
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Đang hoạt động</span>}
+              title={<span style={{ fontSize: isMobile ? '13px' : '14px', color: '#605f3a', fontWeight: 500 }}>Đang hoạt động</span>}
               value={stats.active}
-              prefix={<HomeOutlined />}
-              valueStyle={{ color: '#52c41a', fontSize: isMobile ? '20px' : '24px' }}
+              prefix={<HomeOutlined style={{ color: '#605f3a', fontSize: isMobile ? '20px' : '24px' }} />}
+              valueStyle={{ color: '#605f3a', fontSize: isMobile ? '28px' : '36px', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card 
+            bodyStyle={{ 
+              padding: isMobile ? 16 : 24,
+              background: '#ffffff',
+              borderRadius: 12
+            }}
+            style={{ 
+              border: '1px solid #fbe0a2', 
+              boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+              borderRadius: 12
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Không hoạt động</span>}
+              title={<span style={{ fontSize: isMobile ? '13px' : '14px', color: '#83311b', fontWeight: 500 }}>Không hoạt động</span>}
               value={stats.inactive}
-              prefix={<HomeOutlined />}
-              valueStyle={{ color: '#ff4d4f', fontSize: isMobile ? '20px' : '24px' }}
+              prefix={<HomeOutlined style={{ color: '#bd8049', fontSize: isMobile ? '20px' : '24px' }} />}
+              valueStyle={{ color: '#bd8049', fontSize: isMobile ? '28px' : '36px', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
         <Col xs={12} sm={12} lg={6}>
-          <Card bodyStyle={{ padding: isMobile ? 12 : 24 }}>
+          <Card 
+            bodyStyle={{ 
+              padding: isMobile ? 16 : 24,
+              background: '#ffffff',
+              borderRadius: 12
+            }}
+            style={{ 
+              border: '1px solid #fbe0a2', 
+              boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+              borderRadius: 12
+            }}
+          >
             <Statistic
-              title={<span style={{ fontSize: isMobile ? '12px' : '14px' }}>Tổng phòng</span>}
+              title={<span style={{ fontSize: isMobile ? '13px' : '14px', color: '#bd8049', fontWeight: 500 }}>Tổng phòng</span>}
               value={stats.totalRooms}
-              prefix={<HomeOutlined />}
-              valueStyle={{ fontSize: isMobile ? '20px' : '24px' }}
+              prefix={<HomeOutlined style={{ color: '#bd8049', fontSize: isMobile ? '20px' : '24px' }} />}
+              valueStyle={{ fontSize: isMobile ? '28px' : '36px', color: '#bd8049', fontWeight: 'bold' }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card bodyStyle={{ padding: isMobile ? 0 : 24 }}>
+      <Card 
+        bodyStyle={{ padding: isMobile ? 0 : 24 }}
+        style={{
+          border: '1px solid #fbe0a2',
+          boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+          borderRadius: 12,
+          background: '#ffffff'
+        }}
+      >
         {isMobile ? (
           <div style={{ padding: isMobile ? 16 : 0 }}>
             {branches.map(renderMobileBranchCard)}

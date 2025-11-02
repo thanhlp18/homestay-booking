@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { App, ConfigProvider } from "antd";
-import viVN from "antd/locale/vi_VN";
 
 export const metadata: Metadata = {
   title: "Homestay check in tự động - Hẹn hò riêng tư không lễ tân",
@@ -18,11 +17,8 @@ export default function RootLayout({
     <html lang="vi">
       <body>
         <ConfigProvider
-          locale={viVN}
           theme={{
             token: {
-              colorPrimary: "#bd8049",
-              borderRadius: 12,
               fontFamily: 'Bahnschrift, "Segoe UI", Roboto, sans-serif',
             },
           }}

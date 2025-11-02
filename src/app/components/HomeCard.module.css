@@ -132,6 +132,7 @@
 
 .bookButton:hover {
   background: #83311b;
+  color: white;
   transform: translateY(-1px);
 }
 

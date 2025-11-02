@@ -1,8 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { Layout, Menu, Button, Avatar, Dropdown, theme, Drawer, Badge } from 'antd';
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Layout,
+  Menu,
+  Button,
+  Avatar,
+  Dropdown,
+  theme,
+  Drawer,
+  Badge,
+  ConfigProvider,
+} from "antd";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -14,9 +24,12 @@ import {
   LogoutOutlined,
   MenuOutlined,
   BellOutlined,
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import AdminAuthProvider, { useAdminAuth } from './components/AdminAuthProvider';
+} from "@ant-design/icons";
+import type { MenuProps } from "antd";
+import AdminAuthProvider, {
+  useAdminAuth,
+} from "./components/AdminAuthProvider";
+import Image from "next/image";
 
 const { Header, Sider, Content } = Layout;
 
@@ -47,13 +60,13 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
   useEffect(() => {
     fetchAdminUser();
     checkMobile();
-    
+
     const handleResize = () => {
       checkMobile();
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const checkMobile = () => {
@@ -67,8 +80,8 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
 
   const fetchAdminUser = async () => {
     try {
-      const response = await fetch('/api/admin/auth/verify', {
-        credentials: 'include',
+      const response = await fetch("/api/admin/auth/verify", {
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -76,7 +89,7 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         setAdminUser(data.user);
       }
     } catch (error) {
-      console.error('Error fetching admin user:', error);
+      console.error("Error fetching admin user:", error);
     }
   };
 
@@ -92,108 +105,121 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
   };
 
   const getSelectedKey = () => {
-    if (pathname === '/admin') return 'dashboard';
-    if (pathname.startsWith('/admin/bookings')) return 'bookings';
-    if (pathname.startsWith('/admin/branches')) return 'branches';
-    if (pathname.startsWith('/admin/rooms')) return 'rooms';
-    if (pathname.startsWith('/admin/settings')) return 'settings';
-    return 'dashboard';
+    if (pathname === "/admin") return "dashboard";
+    if (pathname.startsWith("/admin/bookings")) return "bookings";
+    if (pathname.startsWith("/admin/branches")) return "branches";
+    if (pathname.startsWith("/admin/rooms")) return "rooms";
+    if (pathname.startsWith("/admin/settings")) return "settings";
+    return "dashboard";
   };
 
-  const menuItems: MenuProps['items'] = [
+  const menuItems: MenuProps["items"] = [
     {
-      key: 'dashboard',
+      key: "dashboard",
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
-      onClick: () => handleMenuClick('/admin'),
+      label: "Dashboard",
+      onClick: () => handleMenuClick("/admin"),
     },
     {
-      key: 'bookings',
+      key: "bookings",
       icon: <BookOutlined />,
-      label: 'Quản lý đặt phòng',
-      onClick: () => handleMenuClick('/admin/bookings'),
+      label: "Quản lý đặt phòng",
+      onClick: () => handleMenuClick("/admin/bookings"),
     },
     {
-      key: 'branches',
+      key: "branches",
       icon: <HomeOutlined />,
-      label: 'Quản lý chi nhánh',
-      onClick: () => handleMenuClick('/admin/branches'),
+      label: "Quản lý chi nhánh",
+      onClick: () => handleMenuClick("/admin/branches"),
     },
     {
-      key: 'rooms',
+      key: "rooms",
       icon: <HomeOutlined />,
-      label: 'Quản lý phòng',
-      onClick: () => handleMenuClick('/admin/rooms'),
+      label: "Quản lý phòng",
+      onClick: () => handleMenuClick("/admin/rooms"),
     },
     {
-      key: 'settings',
+      key: "settings",
       icon: <SettingOutlined />,
-      label: 'Cài đặt',
-      onClick: () => handleMenuClick('/admin/settings'),
+      label: "Cài đặt",
+      onClick: () => handleMenuClick("/admin/settings"),
     },
   ];
 
-  const userMenuItems: MenuProps['items'] = [
+  const userMenuItems: MenuProps["items"] = [
     {
-      key: 'profile',
+      key: "profile",
       icon: <UserOutlined />,
-      label: 'Hồ sơ',
+      label: "Hồ sơ",
     },
     {
-      key: 'logout',
+      key: "logout",
       icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
+      label: "Đăng xuất",
       onClick: handleLogout,
     },
   ];
 
   const renderSidebar = () => (
     <>
-      <div style={{ 
-        height: isMobile ? 48 : 32, 
-        margin: isMobile ? 8 : 16, 
-        background: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: 6,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: isMobile ? '14px' : '16px'
-      }}>
-        {collapsed && !isMobile ? 'TT' : 'O Ni Homestay Admin'}
+      <div
+        style={{
+          height: isMobile ? 48 : 32,
+          margin: isMobile ? 8 : 16,
+          background: "transparent",
+          borderRadius: 6,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#83311b",
+          fontWeight: "bold",
+          fontSize: isMobile ? "14px" : "16px",
+          // boxShadow: "0 2px 8px rgba(189, 128, 73, 0.3)",
+        }}
+      >
+        <Image
+          src="/transparent-bg.png"
+          alt="O Ni Homestay Logo"
+          width={60}
+          height={60}
+          style={{ scale: 1.5, display: "block" }}
+        ></Image>
+        {!collapsed && "O Ni Homestay Admin"}
       </div>
       <Menu
-        theme="dark"
+        theme="light"
         mode="inline"
         selectedKeys={[getSelectedKey()]}
         items={menuItems}
-        style={{ 
+        style={{
           borderRight: 0,
-          fontSize: isMobile ? '14px' : '16px'
+          fontSize: isMobile ? "13px" : "14px",
+          background: "#ffffff",
         }}
       />
     </>
   );
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: "100vh" }}>
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <Sider 
-          trigger={null} 
-          collapsible 
+        <Sider
+          trigger={null}
+          collapsible
           collapsed={collapsed}
           width={256}
           collapsedWidth={80}
           style={{
-            overflow: 'auto',
-            height: '100vh',
-            position: 'fixed',
+            overflow: "auto",
+            height: "100vh",
+            position: "fixed",
             left: 0,
             top: 0,
             bottom: 0,
             zIndex: 1000,
+            background: "#ffffff ",
+            border: "1px solid #ccc",
           }}
         >
           {renderSidebar()}
@@ -203,20 +229,22 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
       {/* Mobile Drawer */}
       <Drawer
         title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ 
-              width: 24, 
-              height: 24, 
-              background: 'white', 
-              borderRadius: 4, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              color: '#001529'
-            }}>
-              TT
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                background: "linear-gradient(135deg, #bd8049 0%, #83311b 100%)",
+                borderRadius: 4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+                fontWeight: "bold",
+                color: "#fff",
+              }}
+            >
+              ON
             </div>
             O Ni Homestay Admin
           </div>
@@ -225,12 +253,14 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         onClose={() => setMobileDrawerVisible(false)}
         open={mobileDrawerVisible}
         width={280}
-        bodyStyle={{ padding: 0, background: '#001529' }}
-        headerStyle={{ 
-          background: '#001529', 
-          color: 'white',
-          borderBottom: '1px solid #303030',
-          height: 56
+        styles={{
+          body: { padding: 0, background: "#fff" },
+          header: {
+            background: "#ffffff",
+            color: "#83311b",
+            borderBottom: "1px solid #fbe0a2",
+            height: 56,
+          },
         }}
         maskClosable={true}
         keyboard={true}
@@ -238,28 +268,30 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         {renderSidebar()}
       </Drawer>
 
-      <Layout style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 256) }}>
-        <Header style={{ 
-          padding: isMobile ? '0 8px' : '0 24px', 
-          background: colorBgContainer,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
-          zIndex: 999,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          height: isMobile ? 56 : 64,
-          borderBottom: '1px solid #f0f0f0',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Layout style={{ marginLeft: isMobile ? 0 : collapsed ? 80 : 256 }}>
+        <Header
+          style={{
+            padding: isMobile ? "0 8px" : "0 0px",
+            background: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            position: "sticky",
+            top: 0,
+            zIndex: 999,
+            // boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            height: isMobile ? 56 : 64,
+            borderBottom: "1px solid #ccc",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
             {isMobile ? (
               <Button
                 type="text"
                 icon={<MenuOutlined />}
                 onClick={() => setMobileDrawerVisible(true)}
                 style={{
-                  fontSize: '18px',
+                  fontSize: "18px",
                   width: 40,
                   height: 40,
                   marginRight: 12,
@@ -271,25 +303,27 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
                 onClick={() => setCollapsed(!collapsed)}
                 style={{
-                  fontSize: '16px',
+                  fontSize: "16px",
                   width: 64,
                   height: 64,
                 }}
               />
             )}
-            
+
             {isMobile && (
-              <div style={{ 
-                fontSize: '18px', 
-                fontWeight: 'bold',
-                color: '#1890ff'
-              }}>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  color: "#bd8049",
+                }}
+              >
                 O Ni Homestay Admin
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {isMobile && (
               <Badge count={0} size="small">
                 <Button
@@ -299,40 +333,42 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
                 />
               </Badge>
             )}
-            
+
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: isMobile ? '6px 8px' : '8px 12px',
-                borderRadius: 6,
-                transition: 'background-color 0.3s',
-                minWidth: isMobile ? 'auto' : 120,
-              }}>
-                <Avatar 
-                  icon={<UserOutlined />} 
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  padding: isMobile ? "6px 8px" : "8px 12px",
+                  borderRadius: 6,
+                  transition: "background-color 0.3s",
+                  minWidth: isMobile ? "auto" : 120,
+                }}
+              >
+                <Avatar
+                  icon={<UserOutlined />}
                   size={isMobile ? 32 : 32}
-                  style={{ marginRight: isMobile ? 0 : 8 }} 
+                  style={{ marginRight: isMobile ? 0 : 8 }}
                 />
                 {!isMobile && (
-                  <span style={{ fontSize: '14px' }}>
-                    {adminUser?.name || 'Admin'}
+                  <span style={{ fontSize: "14px" }}>
+                    {adminUser?.name || "Admin"}
                   </span>
                 )}
               </div>
             </Dropdown>
           </div>
         </Header>
-        
+
         <Content
           style={{
-            margin: isMobile ? '8px' : '24px 16px',
+            margin: isMobile ? "8px" : "24px 16px",
             padding: isMobile ? 16 : 24,
             minHeight: 280,
-            background: colorBgContainer,
+            background: "#ffffff",
             borderRadius: borderRadiusLG,
-            overflow: 'auto',
+            overflow: "auto",
           }}
         >
           {children}
@@ -344,10 +380,69 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <AdminAuthProvider>
-      <AdminLayoutContent>
-        {children}
-      </AdminLayoutContent>
-    </AdminAuthProvider>
+    <ConfigProvider
+      theme={{
+        token: {
+          fontFamily:
+            "'Bahnschrift', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+          fontSize: 14,
+          borderRadius: 8,
+          colorPrimary: "#bd8049",
+          colorSuccess: "#605f3a",
+          colorWarning: "#fbe0a2",
+          colorError: "#83311b",
+          colorInfo: "#bd8049",
+          colorLink: "#bd8049",
+          colorBgLayout: "#ffffff",
+          colorBgContainer: "#ffefd9",
+        },
+        components: {
+          Button: {
+            borderRadius: 8,
+            fontWeight: 500,
+            primaryColor: "#fff",
+            colorPrimaryHover: "#a66d3d",
+            colorPrimaryActive: "#83311b",
+          },
+          Card: {
+            borderRadiusLG: 12,
+            // colorBgContainer: "#ffefd9",
+          },
+          Table: {
+            borderRadiusLG: 12,
+            headerBg: "#ffefd9",
+            headerBorderRadius: 10,
+            headerColor: "#83311b",
+            colorBgContainer: "#ffffff",
+          },
+          Tag: {
+            defaultBg: "#ffefd9",
+          },
+          Menu: {
+            itemBg: "#ffefd9",
+            itemSelectedBg: "#bd8049",
+            itemSelectedColor: "#fff",
+            itemHoverBg: "#a66d3d",
+            itemHoverColor: "#fff",
+            itemActiveBg: "#bd8049",
+            itemColor: "#83311b",
+            itemHeight: 40,
+            itemMarginBlock: 4,
+            itemMarginInline: 8,
+            itemPaddingInline: 12,
+            itemBorderRadius: 6,
+            iconSize: 16,
+          },
+          Layout: {
+            siderBg: "#fff",
+            bodyBg: "#ffffff",
+          },
+        },
+      }}
+    >
+      <AdminAuthProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </AdminAuthProvider>
+    </ConfigProvider>
   );
-} 
+}

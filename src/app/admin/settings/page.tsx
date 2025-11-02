@@ -98,8 +98,8 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <Title level={isMobile ? 3 : 2}>
-        <SettingOutlined style={{ marginRight: 8 }} />
+      <Title level={isMobile ? 3 : 2} style={{ color: '#83311b' }}>
+        <SettingOutlined style={{ marginRight: 8, color: '#83311b' }} />
         Cài đặt hệ thống
       </Title>
 
@@ -133,12 +133,23 @@ export default function SettingsPage() {
         {/* General Settings */}
         <Card 
           title={
-            <span>
-              <GlobalOutlined style={{ marginRight: 8 }} />
+            <span style={{ color: '#83311b', fontWeight: 600 }}>
+              <GlobalOutlined style={{ marginRight: 8, color: '#83311b' }} />
               Cài đặt chung
             </span>
           }
-          style={{ marginBottom: 16 }}
+          style={{ 
+            marginBottom: 16,
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+          headStyle={{ 
+            background: '#ffefd9',
+            borderBottom: '1px solid #fbe0a2',
+            borderRadius: '12px 12px 0 0'
+          }}
         >
           <Row gutter={16}>
             <Col xs={24} md={12}>
@@ -196,12 +207,23 @@ export default function SettingsPage() {
         {/* Booking Settings */}
         <Card 
           title={
-            <span>
-              <UserOutlined style={{ marginRight: 8 }} />
+            <span style={{ color: '#83311b', fontWeight: 600 }}>
+              <UserOutlined style={{ marginRight: 8, color: '#83311b' }} />
               Cài đặt đặt phòng
             </span>
           }
-          style={{ marginBottom: 16 }}
+          style={{ 
+            marginBottom: 16,
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+          headStyle={{ 
+            background: '#ffefd9',
+            borderBottom: '1px solid #fbe0a2',
+            borderRadius: '12px 12px 0 0'
+          }}
         >
           <Row gutter={16}>
             <Col xs={24} md={12}>
@@ -249,12 +271,23 @@ export default function SettingsPage() {
         {/* Payment Settings */}
         <Card 
           title={
-            <span>
-              <LockOutlined style={{ marginRight: 8 }} />
+            <span style={{ color: '#83311b', fontWeight: 600 }}>
+              <LockOutlined style={{ marginRight: 8, color: '#83311b' }} />
               Cài đặt thanh toán
             </span>
           }
-          style={{ marginBottom: 16 }}
+          style={{ 
+            marginBottom: 16,
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+          headStyle={{ 
+            background: '#ffefd9',
+            borderBottom: '1px solid #fbe0a2',
+            borderRadius: '12px 12px 0 0'
+          }}
         >
           <Row gutter={16}>
             <Col xs={24} md={8}>
@@ -298,12 +331,23 @@ export default function SettingsPage() {
         {/* Notification Settings */}
         <Card 
           title={
-            <span>
-              <BellOutlined style={{ marginRight: 8 }} />
+            <span style={{ color: '#83311b', fontWeight: 600 }}>
+              <BellOutlined style={{ marginRight: 8, color: '#83311b' }} />
               Cài đặt thông báo
             </span>
           }
-          style={{ marginBottom: 16 }}
+          style={{ 
+            marginBottom: 16,
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+          headStyle={{ 
+            background: '#ffefd9',
+            borderBottom: '1px solid #fbe0a2',
+            borderRadius: '12px 12px 0 0'
+          }}
         >
           <Row gutter={16}>
             <Col xs={24} md={8}>
@@ -339,12 +383,23 @@ export default function SettingsPage() {
         {/* Discount Settings */}
         <Card 
           title={
-            <span>
-              <SettingOutlined style={{ marginRight: 8 }} />
+            <span style={{ color: '#83311b', fontWeight: 600 }}>
+              <SettingOutlined style={{ marginRight: 8, color: '#83311b' }} />
               Cài đặt khuyến mãi
             </span>
           }
-          style={{ marginBottom: 16 }}
+          style={{ 
+            marginBottom: 16,
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+          headStyle={{ 
+            background: '#ffefd9',
+            borderBottom: '1px solid #fbe0a2',
+            borderRadius: '12px 12px 0 0'
+          }}
         >
           <Form.Item
             name="enableDiscounts"
@@ -385,7 +440,14 @@ export default function SettingsPage() {
         </Card>
 
         {/* Submit Button */}
-        <Card>
+        <Card
+          style={{ 
+            border: '1px solid #fbe0a2',
+            boxShadow: '0 4px 12px rgba(189, 128, 73, 0.1)',
+            borderRadius: 12,
+            background: '#ffffff'
+          }}
+        >
           <Form.Item>
             <Space>
               <Button 

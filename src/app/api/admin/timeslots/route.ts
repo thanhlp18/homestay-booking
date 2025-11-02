@@ -49,7 +49,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { roomId, time, price, isActive = true } = body;
+    const { 
+      roomId, 
+      time, 
+      price, 
+      duration, 
+      isOvernight = false, 
+      weekendSurcharge = 0,
+      isActive = true 
+    } = body;
 
     // Validate input
     if (!roomId || !time || price == null) {
@@ -57,6 +65,17 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           message: "Thiếu thông tin bắt buộc (roomId, time, price)",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate duration for non-overnight packages
+    if (!isOvernight && !duration) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Vui lòng nhập thời lượng (duration) cho gói giờ thông thường",
         },
         { status: 400 }
       );
@@ -94,6 +113,9 @@ export async function POST(request: NextRequest) {
         roomId,
         time,
         price: parseInt(price),
+        duration: duration ? parseInt(duration) : null,
+        isOvernight,
+        weekendSurcharge: parseInt(weekendSurcharge),
         isActive,
       },
     });
