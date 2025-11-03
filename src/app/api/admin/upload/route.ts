@@ -70,11 +70,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file size (10MB limit)
-    if (!isValidFileSize(file.size, 20)) {
+    if (!isValidFileSize(file.size, 100)) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'File size too large. Maximum size is 10MB.' 
+          message: 'File size too large. Maximum size is 100MB.' 
         },
         { status: 400 }
       );
@@ -163,8 +163,8 @@ export async function PUT(request: NextRequest) {
       }
 
       // Validate file size
-      if (!isValidFileSize(file.size, 20)) {
-        errors.push(`${file.name}: File too large (max 10MB)`);
+      if (!isValidFileSize(file.size, 100)) {
+        errors.push(`${file.name}: File too large (max 100MB)`);
         continue;
       }
 

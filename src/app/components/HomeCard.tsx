@@ -80,22 +80,17 @@ export default function HomeCard({
             <p className={styles.homeDescription}>{description}</p>
           )}
           {amenities.length > 0 && (
-            <div className={styles.amenitiesGrid}>
-              {amenities.map((amenity) => (
-                <div className={styles.amenityIconWrapper} key={amenity}>
-                  <span className={styles.amenityIconBg}>
-                    <img
-                      src={
-                        AMENITY_ICON_MAP[amenity] ||
-                        "/tien_nghi/tien_nghi_khac.png"
-                      }
-                      alt={amenity}
-                      className={styles.amenityIconImg}
-                    />
-                  </span>
-                  <span className={styles.amenityTooltip}>{amenity}</span>
-                </div>
+            <div className={styles.amenitiesTags}>
+              {amenities.slice(0, 3).map((amenity) => (
+                <span className={styles.amenityTag} key={amenity}>
+                  {amenity}
+                </span>
               ))}
+              {amenities.length > 3 && (
+                <span className={styles.amenityTagMore}>
+                  +{amenities.length - 3}
+                </span>
+              )}
             </div>
           )}
           {showDetails &&

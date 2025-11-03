@@ -91,6 +91,7 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   scrollbar-color: #FEA38E #f1f3f4;
+  position: relative; /* ✅ Add for sticky positioning */
 }
 
 /* Header Styles */
@@ -100,22 +101,25 @@
   position: sticky;
   top: 0;
   z-index: 20;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* ✅ Add shadow for better visibility */
 }
 
 .roomRow {
   background: #f8f9fa;
   border-bottom: 2px solid #e5e7eb;
   position: sticky;
-  top: 52px;
+  top: 52px; /* ✅ Height of branch row */
   z-index: 19;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* ✅ Add shadow */
 }
 
 .timeRow {
   background: #f1f3f4;
   border-bottom: 3px solid #605f3a;
   position: sticky;
-  top: 92px;
+  top: 92px; /* ✅ Height of branch + room rows */
   z-index: 18;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* ✅ Add shadow */
 }
 
 .dateHeader {
@@ -127,10 +131,27 @@
   border-right: 2px solid #e5e7eb;
   position: sticky;
   left: 0;
-  z-index: 25;
+  z-index: 25; /* ✅ Higher than header rows */
   min-width: 120px;
   width: 120px;
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Special styling for date headers in header rows to stack properly */
+.branchRow .dateHeader {
+  background: #605f3a;
+  color: white;
+  z-index: 30; /* ✅ Highest for branch row date header */
+}
+
+.roomRow .dateHeader {
+  background: #f8f9fa;
+  z-index: 29; /* ✅ Second highest for room row date header */
+}
+
+.timeRow .dateHeader {
+  background: #f1f3f4;
+  z-index: 28; /* ✅ Third highest for time row date header */
 }
 
 .branchHeader {
@@ -491,6 +512,15 @@
     width: 100%;
     min-width: auto;
   }
+
+  /* ✅ Adjust sticky positions for mobile */
+  .roomRow {
+    top: 48px; /* Smaller height for mobile branch row */
+  }
+
+  .timeRow {
+    top: 84px; /* Adjusted for mobile branch + room rows */
+  }
 }
 
 @media (max-width: 480px) {
@@ -579,6 +609,15 @@
 
   .cell:active {
     transform: scale(0.95);
+  }
+
+  /* ✅ Adjust sticky positions for small mobile */
+  .roomRow {
+    top: 44px; /* Smaller height for small mobile branch row */
+  }
+
+  .timeRow {
+    top: 78px; /* Adjusted for small mobile branch + room rows */
   }
 }
 

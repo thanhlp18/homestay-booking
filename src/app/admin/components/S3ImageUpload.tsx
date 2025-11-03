@@ -28,7 +28,7 @@ interface UploadResponse {
 export default function S3ImageUpload({
   value = [],
   onChange,
-  maxCount = 10,
+  maxCount = 20,
   folder = "uploads",
   disabled = false,
 }: S3ImageUploadProps) {
@@ -193,10 +193,10 @@ export default function S3ImageUpload({
       return false;
     }
 
-    // Check file size (20MB)
-    const isLt20M = file.size / 1024 / 1024 < 20;
-    if (!isLt20M) {
-      message.error("Image must be smaller than 20MB!");
+    // Check file size (100MB)
+    const isLt100M = file.size / 1024 / 1024 < 100;
+    if (!isLt100M) {
+      message.error("Image must be smaller than 100MB!");
       return false;
     }
 

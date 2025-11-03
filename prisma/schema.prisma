@@ -76,6 +76,7 @@ model Room {
   capacity      Int
   bedrooms      Int
   bathrooms     Int
+  floor         String?  // Floor information (e.g., "1", "2", "Ground Floor", etc.)
   features      String[] // Array of features
   policies      String[] // Array of policies
   checkIn       String

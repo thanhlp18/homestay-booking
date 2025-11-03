@@ -34,6 +34,7 @@ const { Option } = Select;
 interface Room {
   id: string;
   name: string;
+  floor?: string;
 }
 
 interface TimeSlot {

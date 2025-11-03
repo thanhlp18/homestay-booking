@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "./components/Header";
 import HomeCard from "./components/HomeCard";
 import DemoNotice from "./components/DemoNotice";
@@ -26,6 +27,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   features: string[];
   policies: string[];
   checkIn: string;
@@ -363,27 +365,93 @@ export default function Home() {
 
       {/* Featured Homes Section */}
       <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Danh sách tất cả các Home</h2>
-        <div className={styles.homeGrid}>
-          {featuredHomes.map((home, index) => {
-            const branch = branches.find((b) => b.slug === home.branchSlug);
-            const amenities = branch?.rooms[0]?.amenities || [];
-            return (
-              <div key={index} style={{ position: "relative" }}>
-                <HomeCard
-                  title={home.title}
-                  type={home.type}
-                  description={home.description}
-                  showDetails={true}
-                  imageUrl={home.imageUrl}
-                  imageGradient={home.imageGradient}
-                  branchSlug={home.branchSlug}
-                  amenities={amenities}
-                />
+        <h2 className={styles.sectionTitle}>O Ni Homestay - Thành phố Huế</h2>
+        <p className={styles.sectionSubtitle}>
+          Không gian nghỉ dưỡng ấm cúng giữa lòng cố đô
+        </p>
+        {branches.length === 1 ? (
+          // Layout đặc biệt cho 1 branch
+          <div className={styles.singleBranchLayout}>
+            {branches.map((branch) => (
+              <div key={branch.id} className={styles.branchHero}>
+                <div className={styles.branchImageGallery}>
+                  <div
+                    className={styles.branchMainImage}
+                    style={{
+                      backgroundImage: `url(${branch.images[0]})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                </div>
+                <div className={styles.branchContent}>
+                  <div className={styles.branchHeader}>
+                    <h3 className={styles.branchName}>{branch.name}</h3>
+                    <div className={styles.branchBadge}>
+                      <span>⭐</span> Homestay cao cấp
+                    </div>
+                  </div>
+                  <p className={styles.branchAddress}>
+                    📍 {branch.address}
+                  </p>
+                  <p className={styles.branchDescription}>
+                    {branch.description}
+                  </p>
+                  <div className={styles.branchAmenities}>
+                    <h4>Tiện nghi nổi bật:</h4>
+                    <div className={styles.amenitiesList}>
+                      {branch.amenities.slice(0, 6).map((amenity, idx) => (
+                        <span key={idx} className={styles.amenityItem}>
+                          ✓ {amenity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.branchStats}>
+                    <div className={styles.statItem}>
+                      <span className={styles.statNumber}>{branch.rooms.length}</span>
+                      <span className={styles.statLabel}>Phòng</span>
+                    </div>
+                    <div className={styles.statItem}>
+                      <span className={styles.statNumber}>
+                        {Math.min(...branch.rooms.map((r) => r.basePrice)).toLocaleString()}đ
+                      </span>
+                      <span className={styles.statLabel}>/Ngày</span>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/branches/${branch.slug}`}
+                    className={styles.branchCtaButton}
+                  >
+                    Khám phá các phòng →
+                  </Link>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          // Layout grid cho nhiều branches
+          <div className={styles.homeGrid}>
+            {featuredHomes.map((home, index) => {
+              const branch = branches.find((b) => b.slug === home.branchSlug);
+              const amenities = branch?.rooms[0]?.amenities || [];
+              return (
+                <div key={index} style={{ position: "relative" }}>
+                  <HomeCard
+                    title={home.title}
+                    type={home.type}
+                    description={home.description}
+                    showDetails={true}
+                    imageUrl={home.imageUrl}
+                    imageGradient={home.imageGradient}
+                    branchSlug={home.branchSlug}
+                    amenities={amenities}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Destinations Section */}

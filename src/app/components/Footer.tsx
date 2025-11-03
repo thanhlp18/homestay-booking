@@ -16,7 +16,7 @@ export default function Footer() {
           <div className={styles.footerSubtext}>
             Homestay và lưu trú tại Việt Nam
           </div>
-          <div className={styles.hotline}>Hotline: 0777.013.317</div>
+          <div className={styles.hotline}>Hotline: 0941.571.155</div>
         </div>
 
         <div className={styles.footerSection}>
@@ -86,10 +86,8 @@ export default function Footer() {
       <div className={styles.footerBottom}>
         <p className={styles.footerText}>
           Hộ kinh doanh O Ni Homestay <br /> Địa chỉ: 9/4 Điềm Phùng Thị, phường
-          Vỹ Dạ, Hue, Vietnam <br /> Mã số hộ kinh doanh: 00000000000 - 002 do
-          Phòng Tài Chính - Kế Hoạch Quận Cái Răng cấp lần đầu ngày 13/11/2024.
-          <br /> Điện thoại: 0777.013.317. <br />
-          Chủ trách nhiệm nội dung: Lê Phước Thành
+          Vỹ Dạ, Hue, Vietnam
+          <br /> Điện thoại: 0941.571.155. <br />
         </p>
       </div>
 

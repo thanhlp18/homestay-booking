@@ -166,71 +166,39 @@
   }
 }
 
-.amenitiesGrid {
+.amenitiesTags {
   display: flex;
-  gap: 1rem;
-  margin: auto 0 1.5rem 0;
+  gap: 0.5rem;
+  margin: auto 0 1rem 0;
   flex-wrap: wrap;
+  cursor: pointer;
 }
 
-.amenityIconWrapper {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-}
-
-.amenityIconBg {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.amenityTag {
+  padding: 0.4rem 0.8rem;
   background: #f5f6fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  color: #605f3a;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
-.amenityIconImg {
-  max-width: 70%;
-  max-height: 70%;
-  display: block;
-  object-fit: contain;
+.amenityTag:hover {
+  background: #bd8049;
+  color: white;
+  border-color: #bd8049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(189, 128, 73, 0.2);
 }
 
-.amenityTooltip {
-  visibility: hidden;
-  opacity: 0;
-  position: absolute;
-  bottom: -44px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #222;
-  color: #fff;
-  padding: 6px 16px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  white-space: nowrap;
-  z-index: 10;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  z-index: 1000;
-}
-
-.amenityIconWrapper:hover .amenityTooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.amenityTooltip::after {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 0 8px 8px 8px;
-  border-style: solid;
-  border-color: transparent transparent #222 transparent;
+.amenityTagMore {
+  padding: 0.4rem 0.8rem;
+  background: #e8e9ed;
+  color: #605f3a;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #d0d2d8;
 }

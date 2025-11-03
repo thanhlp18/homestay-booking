@@ -42,6 +42,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   features: string[];
   policies: string[];
   checkIn: string;
@@ -848,6 +849,12 @@ export default function RoomPage() {
                   <span className={styles.specIcon}>📐</span>
                   <span className={styles.specText}>{room.area}</span>
                 </div>
+                {room.floor && (
+                  <div className={styles.spec}>
+                    <span className={styles.specIcon}>🏢</span>
+                    <span className={styles.specText}>{room.floor}</span>
+                  </div>
+                )}
               </div>
 
               <div className={styles.pricing}>
@@ -1020,13 +1027,16 @@ export default function RoomPage() {
               initialSelectedSlots={displaySelectedSlots}
               submitOnSelect={formData.bookingType === "timeSlots"}
               isFullDayBooking={formData.bookingType === "fullDay"}
+              summaryElementId="booking-summary" // ✅ Add summary ID for auto-scroll
             />
             {formData.bookingType === "timeSlots" && (
-              <BookingSummary
-                selectedSlots={selectedSlots} // ✅ Pass same state
-                branches={bookingTableBranches}
-                onRemoveSlot={handleRemoveSlot} // ✅ Pass remove handler
-              />
+              <div id="booking-summary"> {/* ✅ Add ID wrapper */}
+                <BookingSummary
+                  selectedSlots={selectedSlots} // ✅ Pass same state
+                  branches={bookingTableBranches}
+                  onRemoveSlot={handleRemoveSlot} // ✅ Pass remove handler
+                />
+              </div>
             )}
           </div>
 

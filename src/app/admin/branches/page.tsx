@@ -614,7 +614,7 @@ export default function BranchesPage() {
             <S3ImageUpload
               value={imageUrls}
               onChange={setImageUrls}
-              maxCount={10}
+              maxCount={20}
               folder="branches"
             />
           </Form.Item>

@@ -40,6 +40,7 @@ interface RoomBookingTableProps {
   initialSelectedSlots?: SelectedSlot[];
   submitOnSelect?: boolean;
   isFullDayBooking?: boolean;
+  summaryElementId?: string; // ✅ ID of summary element to scroll to
 }
 
 // SVG Icon Components
@@ -97,6 +98,7 @@ export default function RoomBookingTable({
   initialSelectedSlots = [],
   submitOnSelect = false,
   isFullDayBooking = false,
+  summaryElementId,
 }: RoomBookingTableProps) {
   const [selectedSlots, setSelectedSlots] =
     useState<SelectedSlot[]>(initialSelectedSlots);
@@ -113,6 +115,30 @@ export default function RoomBookingTable({
     roomId: string;
     timeSlot: TimeSlot;
   } | null>(null);
+
+  // ✅ Refs for auto-scroll
+  const timeSelectorRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  
+  // ✅ Helper function to scroll to summary
+  const scrollToSummary = () => {
+    setTimeout(() => {
+      if (summaryElementId) {
+        // Scroll to external summary element by ID
+        const summaryElement = document.getElementById(summaryElementId);
+        summaryElement?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      } else if (summaryRef.current) {
+        // Scroll to internal ref (if any)
+        summaryRef.current.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100);
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -259,8 +285,6 @@ export default function RoomBookingTable({
 
   // RoomBookingTable.tsx
 
-  // RoomBookingTable.tsx
-
   const handleCellClick = (
     dateKey: string,
     branchId: string,
@@ -334,6 +358,9 @@ export default function RoomBookingTable({
 
         setSelectedSlots((prev) => [...prev, newSlot]);
         toast.success("Đã thêm vào giỏ", `${timeSlot.time} (Qua đêm)`);
+        
+        // ✅ Auto-scroll to summary after adding overnight slot
+        scrollToSummary();
       } else {
         setPendingSlot({
           date: dateKey,
@@ -342,6 +369,14 @@ export default function RoomBookingTable({
           timeSlot,
         });
         setShowTimeSelector(true);
+        
+        // ✅ Auto-scroll to time selector
+        setTimeout(() => {
+          timeSelectorRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }, 100);
       }
     }
   };
@@ -426,6 +461,9 @@ export default function RoomBookingTable({
         "Đã thêm vào giỏ",
         `${pendingSlot.timeSlot.time} - Check-in: ${checkInTime}`
       );
+      
+      // ✅ Auto-scroll to summary after confirming time
+      scrollToSummary();
     } catch (error) {
       console.error("Error checking availability:", error);
       toast.error(
@@ -699,18 +737,20 @@ export default function RoomBookingTable({
       </div>
 
       {showTimeSelector && pendingSlot && (
-        <TimeSlotSelector
-          date={pendingSlot.date}
-          roomId={pendingSlot.roomId}
-          roomName={
-            branches
-              .find((b) => b.id === pendingSlot.branchId)
-              ?.rooms.find((r) => r.id === pendingSlot.roomId)?.name || ""
-          }
-          timeSlot={pendingSlot.timeSlot}
-          onTimeSelect={handleTimeConfirm}
-          onCancel={handleTimeCancel}
-        />
+        <div ref={timeSelectorRef}>
+          <TimeSlotSelector
+            date={pendingSlot.date}
+            roomId={pendingSlot.roomId}
+            roomName={
+              branches
+                .find((b) => b.id === pendingSlot.branchId)
+                ?.rooms.find((r) => r.id === pendingSlot.roomId)?.name || ""
+            }
+            timeSlot={pendingSlot.timeSlot}
+            onTimeSelect={handleTimeConfirm}
+            onCancel={handleTimeCancel}
+          />
+        </div>
       )}
     </div>
   );

@@ -53,6 +53,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   features: string[];
   policies: string[];
   checkIn: string;
@@ -92,6 +93,7 @@ interface RoomFormData {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   checkIn: string;
   checkOut: string;
   branchId: string;
@@ -281,6 +283,7 @@ export default function RoomModal() {
           <Text style={{ fontSize: "14px" }}>
             {room.capacity} khách • {room.bedrooms} phòng ngủ • {room.bathrooms}{" "}
             phòng tắm
+            {room.floor ? ` • ${room.floor}` : ""}
           </Text>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -435,6 +438,7 @@ export default function RoomModal() {
           </div>
           <div style={{ fontSize: "12px", color: "#666" }}>
             {record.area} • {record.bathrooms} phòng tắm
+            {record.floor ? ` • ${record.floor}` : ""}
           </div>
         </div>
       ),
@@ -543,6 +547,13 @@ export default function RoomModal() {
         </Form.Item>
 
         <Form.Item
+          name="floor"
+          label="Tầng"
+        >
+          <Input placeholder="VD: Tầng 1, Tầng 2, Tầng trệt..." />
+        </Form.Item>
+
+        <Form.Item
           name="basePrice"
           label="Giá cơ bản (VNĐ)"
           rules={[{ required: true, message: "Vui lòng nhập giá cơ bản" }]}
@@ -604,7 +615,7 @@ export default function RoomModal() {
         <S3ImageUpload
           value={imageUrls}
           onChange={setImageUrls}
-          maxCount={10}
+          maxCount={20}
           folder="rooms"
         />
       </Form.Item>

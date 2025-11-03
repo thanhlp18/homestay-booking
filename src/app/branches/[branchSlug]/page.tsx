@@ -29,6 +29,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   features: string[];
   policies: string[];
   checkIn: string;
