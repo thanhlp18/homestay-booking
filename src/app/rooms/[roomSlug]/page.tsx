@@ -9,14 +9,11 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./room.module.css";
 import { AMENITY_ICON_MAP } from "@/app/components/HomeCard";
 import BookingSummary from "../../components/BookingSummary";
-import ConflictWarning, {
-  TimeConflict,
-} from "../../components/ConflictWarning";
+import { TimeConflict } from "../../components/ConflictWarning";
 import {
   checkTimeConflicts,
   SelectedSlotWithTime,
 } from "@/app/components/bookingUtils";
-import CCCDUpload from "@/app/components/CCCDUpload";
 import CCCDImageUpload from "@/app/components/CCCDUpload";
 import { useToast } from "@/hooks/useToast";
 
@@ -1030,7 +1027,7 @@ export default function RoomPage() {
               summaryElementId="booking-summary" // ✅ Add summary ID for auto-scroll
             />
             {formData.bookingType === "timeSlots" && (
-              <div id="booking-summary"> {/* ✅ Add ID wrapper */}
+              <div id="booking-summary">
                 <BookingSummary
                   selectedSlots={selectedSlots} // ✅ Pass same state
                   branches={bookingTableBranches}
