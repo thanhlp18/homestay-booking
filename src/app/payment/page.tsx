@@ -453,7 +453,7 @@ function PaymentPageContent() {
             >
               {isSubmitting ? 'Đang xử lý...' : 'Xác nhận đã chuyển khoản'}
             </button> */}
-              {!paymentStatus?.paymentConfirmed && (
+              {/* {!paymentStatus?.paymentConfirmed && (
                 <button
                   onClick={handleBackToHome}
                   className={styles.cancelBtn}
@@ -461,7 +461,7 @@ function PaymentPageContent() {
                 >
                   {isSubmitting ? "Đang hủy..." : "← Hủy đặt phòng"}
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         )}
