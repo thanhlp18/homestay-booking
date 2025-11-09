@@ -30,7 +30,7 @@ async function verifyAdminToken(request: NextRequest) {
 // ====== PUT /api/admin/time-slots/[slug] ======
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   console.log("=== PUT /api/admin/time-slots/[slug] ===");
 const { slug } = await params;
@@ -99,10 +99,10 @@ const { slug } = await params;
 // ====== DELETE /api/admin/time-slots/[slug] ======
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   console.log("=== DELETE /api/admin/time-slots/[slug] ===");
-  const { slug } = params;
+  const { slug } = await params;
 
   try {
     const admin = await verifyAdminToken(request);
