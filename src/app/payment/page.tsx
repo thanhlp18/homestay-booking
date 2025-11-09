@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import styles from "./payment.module.css";
@@ -32,7 +32,8 @@ interface BookingData {
   bookingId: string;
 }
 
-export default function PaymentPage() {
+// Extract the component that uses useSearchParams
+function PaymentPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
@@ -526,5 +527,21 @@ export default function PaymentPage() {
 
       <Footer />
     </div>
+  );
+}
+
+// Main component wrapped in Suspense
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className={styles.page}>
+          <Header />
+          <LoadingSpinner text="Đang tải thông tin đặt phòng..." />
+        </div>
+      }
+    >
+      <PaymentPageContent />
+    </Suspense>
   );
 }
