@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #ffefd9;
 }
 
 .hero {
@@ -13,7 +13,9 @@
 .headerContent {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 2rem 2rem;
+
+  background-color: #ffefd9;
 }
 
 .breadcrumb {
@@ -22,44 +24,50 @@
 }
 
 .breadcrumbLink {
-  color: rgba(255, 255, 255, 0.8);
+  color: #666;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .breadcrumbLink:hover {
-  color: white;
+  color: #83311b;
+  text-decoration: underline;
+  transition: all;
 }
 
 .breadcrumbSeparator {
   margin: 0 0.5rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #83311b;
 }
 
 .breadcrumbCurrent {
-  color: white;
+  color: #83311b;
   font-weight: 500;
 }
 
 .branchTitle {
-  font-size: 2rem;
-  font-weight: 600;
-  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #83311b;
 }
 
 .branchInfo {
-  background: white;
+  background: transparent;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
 }
 
 .infoContainer {
-  max-width: 1200px;
+  background: white;
+  max-width: 1140px;
   margin: 0 auto;
   padding: 2rem;
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
+  border-radius: 12px;
+
 }
 
 .infoMain {
@@ -70,13 +78,13 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #333;
+  color: #83311b;
 }
 
 .description {
   font-size: 1rem;
   line-height: 1.6;
-  color: #666;
+  color: #605f3a;
   margin-bottom: 1.5rem;
 }
 
@@ -94,12 +102,12 @@
 
 .contactLabel {
   font-weight: 500;
-  color: #333;
+  color: #83311b;
   min-width: 80px;
 }
 
 .contactValue {
-  color: #666;
+  color: #605f3a;
 }
 
 .amenities {
@@ -110,7 +118,7 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #333;
+  color: #83311b;
 }
 
 .amenitiesList {
@@ -124,13 +132,12 @@
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
   font-size: 0.85rem;
-  color: #666;
+  color: #605f3a;
   border: 1px solid #e0e0e0;
 }
 
 .roomSection {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: transparent;
 }
 
 .roomContainer {
@@ -143,7 +150,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-  color: #333;
+  color: #83311b;
 }
 
 .roomGrid {
@@ -194,19 +201,23 @@
 
 .roomContent {
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 73%;
 }
 
 .roomName {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #83311b;
 }
 
 .roomDescription {
   font-size: 0.9rem;
   line-height: 1.5;
-  color: #666;
+  color: #605f3a;
   margin-bottom: 1rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -230,7 +241,7 @@
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
   font-size: 0.8rem;
-  color: #555;
+  color: #605f3a;
 }
 
 .roomFeatures {
@@ -241,7 +252,7 @@
 
 .featureTag {
   background: #e8f5e8;
-  color: #2d5a2d;
+  color: #605f3a;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -263,7 +274,7 @@
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #666;
+  color: #605f3a;
 }
 
 .roomPricing {
@@ -282,12 +293,12 @@
 .currentPrice {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fea38e;
+  color: #83311b;
 }
 
 .originalPrice {
   font-size: 0.9rem;
-  color: #999;
+  color: #605f3a;
   text-decoration: line-through;
 }
 
@@ -306,8 +317,8 @@
 }
 
 .bookButton {
-  background: #FEA38E;
-  color: white;
+  background: #83311b;
+  color: #ffefd9;
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 8px;
@@ -318,13 +329,15 @@
 }
 
 .bookButton:hover {
-  background: #FBA2AB;
+  background: #83311b;
+  transform: scale(1.02);
+  transition: 0.1s all;
+  color: #ffefd9;
 }
 
 .bookingSection {
-  background: white;
+  background: transparent;
   margin-top: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .bookingContainer {
@@ -339,13 +352,13 @@
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: #83311b;
   text-align: center;
 }
 
 .bookingSubtitle {
   font-size: 1rem;
-  color: #666;
+  color: #605f3a;
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -381,20 +394,20 @@
     gap: 1.5rem;
     padding: 1.5rem;
   }
-  
+
   .branchTitle {
     font-size: 1.5rem;
   }
-  
+
   .roomGrid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .roomContainer {
     padding: 1.5rem;
   }
-  
+
   .bookingContainer {
     padding: 1.5rem 1rem;
     max-width: 100%;
@@ -408,4 +421,4 @@
     max-width: 100vw;
     margin: 0;
   }
-} 
+}

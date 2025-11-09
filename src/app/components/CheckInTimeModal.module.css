@@ -1,0 +1,137 @@
+/* Add to RoomBookingTable.module.css */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.timeModal {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.timeModal h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #83311b !important;
+}
+
+.slotInfo {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.slotInfo p {
+  margin: 4px 0;
+  color: #605f3a;
+  font-size: 14px;
+}
+
+.timePickerSection {
+  margin: 16px 0;
+}
+
+.timePickerSection label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #83311b
+}
+
+.timeInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #605f3a;
+}
+
+.hint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancelBtn,
+.confirmBtn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.confirmBtn {
+  background: #bd8049;
+  color: white;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* CheckInTimeModal.module.css */
+
+.unavailableSection {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+}
+
+.unavailableTitle {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: #856404;
+  font-size: 14px;
+}
+
+.unavailableSlot {
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.unavailableSlot:last-child {
+  margin-bottom: 0;
+}
+
+.unavailableHint {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+

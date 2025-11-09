@@ -65,16 +65,12 @@ export async function POST(request: NextRequest) {
           status: 'PENDING'
         },
         include: {
-          bookingSlots: {
+          room: {
             include: {
-              room: {
-                include: {
-                  branch: true,
-                },
-              },
-              timeSlot: true,
+              branch: true,
             },
           },
+          timeSlot: true,
         },
       });
       console.log({booking})
@@ -131,8 +127,8 @@ export async function POST(request: NextRequest) {
             guests: booking.guests,
             notes: booking.notes || undefined,
             paymentMethod: booking.paymentMethod,
-            room: booking.bookingSlots[0]?.room?.name || 'Unknown',
-            location: booking.bookingSlots[0]?.room?.branch?.location || 'Unknown',
+            room: booking.room?.name || 'Unknown',
+            location: booking.room?.branch?.location || 'Unknown',
             totalPrice: booking.totalPrice,
             basePrice: booking.basePrice,
             discountAmount: booking.discountAmount,

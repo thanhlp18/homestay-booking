@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import styles from './Footer.module.css';
+import Link from "next/link";
+import Image from "next/image";
+import styles from "./Footer.module.css";
 
 export default function Footer() {
   return (
@@ -8,20 +8,22 @@ export default function Footer() {
       <div className={styles.footerContent}>
         <div className={styles.footerSection}>
           <div className={styles.footerLogo}>
-            <span className={styles.logoIcon}>💚</span>
-            <span className={styles.logoText}>TidyToto</span>
+            {/* <span className={styles.logoIcon}>💚</span> */}
+            <img src="footer-logo.png" alt="" className={styles.logoImg} />
+
+            <span className={styles.logoText}>O Ni Homestay</span>
           </div>
-          <div className={styles.footerSubtext}>Homestay và lưu trú tại Việt Nam</div>
-          <div className={styles.hotline}>Hotline: 0932000000</div>
+          <div className={styles.footerSubtext}>
+            Homestay và lưu trú tại Việt Nam
+          </div>
+          <div className={styles.hotline}>Hotline: 0941.571.155</div>
         </div>
 
         <div className={styles.footerSection}>
           <h3 className={styles.footerTitle}>Chính sách</h3>
           <ul className={styles.footerLinks}>
             <li>
-              <Link href="/policies/privacy">
-                Chính sách bảo mật thông tin
-              </Link>
+              <Link href="/policies/privacy">Chính sách bảo mật thông tin</Link>
             </li>
             <li>
               <Link href="/policies/promotion">Chính sách khuyến mãi</Link>
@@ -83,19 +85,35 @@ export default function Footer() {
 
       <div className={styles.footerBottom}>
         <p className={styles.footerText}>
-          Hộ kinh doanh TidyToto / Địa chỉ: Hưng Phú, Q. Cái Răng, TP. Cần Thơ / Mã số hộ kinh doanh: 
-          00000000000 - 002 do Phòng Tài Chính - Kế Hoạch Quận Cái Răng cấp lần đầu ngày 13/11/2024. Điện thoại: 090000000. Chủ trách nhiệm 
-          nội dung: Lê Phước Thành
+          Hộ kinh doanh O Ni Homestay <br /> Địa chỉ: 9/4 Điềm Phùng Thị, phường
+          Vỹ Dạ, Hue, Vietnam
+          <br /> Điện thoại: 0941.571.155. <br />
         </p>
       </div>
 
       <div className={styles.footerCopyright}>
         <p>© Copyright LocalHome 2025</p>
         <div className={styles.socialIcons}>
-          <span className={styles.socialIcon}>f</span>
-          <span className={styles.socialIcon}>📱</span>
+          <Link
+            href="https://www.facebook.com/profile.php?id=61576760382745"
+            className={styles.socialIcon}
+            target="_blank"
+          >
+            f
+          </Link>
+          <Link
+            href="https://www.instagram.com/onihomestay?igsh=dzcycGMzb213eXow"
+            target="_blank"
+            className={styles.socialIcon}
+          >
+            <img
+              src="/instagram.webp"
+              alt=""
+              className={styles.instagramIcon}
+            />
+          </Link>
         </div>
       </div>
     </footer>
   );
-} 
+}

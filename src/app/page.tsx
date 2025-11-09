@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "./components/Header";
 import HomeCard from "./components/HomeCard";
 import DemoNotice from "./components/DemoNotice";
@@ -9,7 +10,7 @@ import RoomBookingTable from "./components/RoomBookingTable";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Footer from "./components/Footer";
 import styles from "./page.module.css";
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt } from "react-icons/fa";
 
 interface Room {
   id: string;
@@ -26,6 +27,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   features: string[];
   policies: string[];
   checkIn: string;
@@ -273,41 +275,11 @@ export default function Home() {
   };
 
   // Handle booking submission - redirect to room detail page
-  const handleBookingSubmit = (
-    selectedSlots: Array<{
-      date: string;
-      branchId: string;
-      roomId: string;
-      timeSlotId: string;
-      price: number;
-    }>
-  ) => {
-    // Only proceed if there are selected slots
-    if (selectedSlots.length === 0) {
-      return; // Don't show alert, just return silently
-    }
-
-    // Find the room for the first selected slot
-    const firstSlot = selectedSlots[0];
-
-    // Find the room slug from the branches data
-    const branchData = branches.find((b) => b.id === firstSlot.branchId);
-    const roomData = branchData?.rooms.find((r) => r.id === firstSlot.roomId);
-
-    if (!roomData?.slug) {
-      alert("Không tìm thấy thông tin phòng!");
-      return;
-    }
-
-    // Encode selected slots and redirect to room detail page
-    const encodedSlots = encodeURIComponent(JSON.stringify(selectedSlots));
-    router.push(`/rooms/${roomData.slug}?selectedSlots=${encodedSlots}`);
-  };
 
   if (loading) {
     return (
       <div className={styles.page}>
-        <DemoNotice />
+        {/* <DemoNotice /> */}
         <Header />
         <LoadingSpinner text="Đang tải dữ liệu..." />
       </div>
@@ -317,7 +289,7 @@ export default function Home() {
   if (error) {
     return (
       <div className={styles.page}>
-        <DemoNotice />
+        {/* <DemoNotice /> */}
         <Header />
         <div className={styles.error}>
           <p>Lỗi: {error}</p>
@@ -362,13 +334,16 @@ export default function Home() {
           return locationParts[0] === selectedDestination;
         });
 
-  const branchInformationFitter = selectedDestination !== "Tất cả" ? branches.filter((branch) => {
-    const locationParts = branch.location.split(", ");
-    return locationParts[0] === selectedDestination;
-  })[0] : null
-console.log(branchInformationFitter)
+  const branchInformationFitter =
+    selectedDestination !== "Tất cả"
+      ? branches.filter((branch) => {
+          const locationParts = branch.location.split(", ");
+          return locationParts[0] === selectedDestination;
+        })[0]
+      : null;
+  console.log(branchInformationFitter);
   // Get Can Tho homes (filtered by selected destination)
-  const canThoHomes = filteredRooms.slice(0, 3).map((room) => {
+  const canThoHomes = filteredRooms.map((room) => {
     return {
       title: room.name,
       description: room.description,
@@ -376,7 +351,7 @@ console.log(branchInformationFitter)
       originalPrice: room.originalPrice
         ? `${room.originalPrice.toLocaleString("vi-VN")} đ/ngày`
         : undefined,
-      availability: "có thể nhận",
+      availability: "Đang trống",
       imageUrl: room.images?.[0], // Add optional chaining to prevent error
       imageGradient: getGradientForBranch(room.branchId), // Fallback gradient
       roomSlug: room.slug,
@@ -385,38 +360,104 @@ console.log(branchInformationFitter)
 
   return (
     <div className={styles.page}>
-      <DemoNotice />
+      {/* <DemoNotice /> */}
       <Header />
 
       {/* Featured Homes Section */}
       <section className={styles.featuredSection}>
-        <h2 className={styles.sectionTitle}>Danh sách tất cả các Home</h2>
-        <div className={styles.homeGrid}>
-          {featuredHomes.map((home, index) => {
-            const branch = branches.find((b) => b.slug === home.branchSlug);
-            const amenities = branch?.rooms[0]?.amenities || [];
-            return (
-              <div key={index} style={{ position: "relative" }}>
-                <HomeCard
-                  title={home.title}
-                  type={home.type}
-                  description={home.description}
-                  showDetails={true}
-                  imageUrl={home.imageUrl}
-                  imageGradient={home.imageGradient}
-                  branchSlug={home.branchSlug}
-                  amenities={amenities}
-                />
+        <h2 className={styles.sectionTitle}>O Ni Homestay - Thành phố Huế</h2>
+        <p className={styles.sectionSubtitle}>
+          Không gian nghỉ dưỡng ấm cúng giữa lòng cố đô
+        </p>
+        {branches.length === 1 ? (
+          // Layout đặc biệt cho 1 branch
+          <div className={styles.singleBranchLayout}>
+            {branches.map((branch) => (
+              <div key={branch.id} className={styles.branchHero}>
+                <div className={styles.branchImageGallery}>
+                  <div
+                    className={styles.branchMainImage}
+                    style={{
+                      backgroundImage: `url(${branch.images[0]})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                </div>
+                <div className={styles.branchContent}>
+                  <div className={styles.branchHeader}>
+                    <h3 className={styles.branchName}>{branch.name}</h3>
+                    <div className={styles.branchBadge}>
+                      <span>⭐</span> Homestay cao cấp
+                    </div>
+                  </div>
+                  <p className={styles.branchAddress}>
+                    📍 {branch.address}
+                  </p>
+                  <p className={styles.branchDescription}>
+                    {branch.description}
+                  </p>
+                  <div className={styles.branchAmenities}>
+                    <h4>Tiện nghi nổi bật:</h4>
+                    <div className={styles.amenitiesList}>
+                      {branch.amenities.slice(0, 6).map((amenity, idx) => (
+                        <span key={idx} className={styles.amenityItem}>
+                          ✓ {amenity}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={styles.branchStats}>
+                    <div className={styles.statItem}>
+                      <span className={styles.statNumber}>{branch.rooms.length}</span>
+                      <span className={styles.statLabel}>Phòng</span>
+                    </div>
+                    <div className={styles.statItem}>
+                      <span className={styles.statNumber}>
+                        {Math.min(...branch.rooms.map((r) => r.basePrice)).toLocaleString()}đ
+                      </span>
+                      <span className={styles.statLabel}>/Ngày</span>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/branches/${branch.slug}`}
+                    className={styles.branchCtaButton}
+                  >
+                    Khám phá các phòng →
+                  </Link>
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          // Layout grid cho nhiều branches
+          <div className={styles.homeGrid}>
+            {featuredHomes.map((home, index) => {
+              const branch = branches.find((b) => b.slug === home.branchSlug);
+              const amenities = branch?.rooms[0]?.amenities || [];
+              return (
+                <div key={index} style={{ position: "relative" }}>
+                  <HomeCard
+                    title={home.title}
+                    type={home.type}
+                    description={home.description}
+                    showDetails={true}
+                    imageUrl={home.imageUrl}
+                    imageGradient={home.imageGradient}
+                    branchSlug={home.branchSlug}
+                    amenities={amenities}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Destinations Section */}
       <section className={styles.destinationsSection}>
         <h2 className={styles.sectionTitle}>Điểm đến</h2>
-        <p className={styles.sectionSubtitle}>tại Tp.Cần Thơ</p>
+        <p className={styles.sectionSubtitle}>tại Thành phố Huế</p>
         <div className={styles.destinationTabs}>
           {uniqueDestinations.map((destination) => (
             <button
@@ -434,8 +475,8 @@ console.log(branchInformationFitter)
         <div className={styles.locationHeader}>
           <h3 className={styles.locationTitle}>
             {selectedDestination === "Tất cả"
-              ? "Tất cả các Home tại Tp.Cần Thơ"
-              : `Home - ${selectedDestination}, Ninh Kiều`}
+              ? "Tất cả các Home tại Thành phố Huế"
+              : `Home - ${selectedDestination}`}
           </h3>
           {branchInformationFitter && branchInformationFitter.googleMapUrl && (
             <a
@@ -486,7 +527,7 @@ console.log(branchInformationFitter)
       </section>
 
       {/* Interactive Room Booking Table */}
-      <section className={styles.calendarSection}>
+      {/* <section className={styles.calendarSection}>
         <div className={styles.calendarContainer}>
           <h2 className={styles.sectionTitle}>Lịch đặt phòng</h2>
           <p className={styles.sectionSubtitle}>
@@ -501,7 +542,7 @@ console.log(branchInformationFitter)
             submitOnSelect={false}
           />
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>
