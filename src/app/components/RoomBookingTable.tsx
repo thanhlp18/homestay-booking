@@ -140,6 +140,31 @@ export default function RoomBookingTable({
     }, 100);
   };
 
+  // ✅ Get all unique time slots from all rooms across all branches
+  const getAllTimeSlots = (): TimeSlot[] => {
+    const timeSlotMap = new Map<string, TimeSlot>();
+    
+    branches.forEach((branch) => {
+      branch.rooms.forEach((room) => {
+        room.timeSlots.forEach((timeSlot) => {
+          if (!timeSlotMap.has(timeSlot.id)) {
+            timeSlotMap.set(timeSlot.id, timeSlot);
+          }
+        });
+      });
+    });
+    
+    return Array.from(timeSlotMap.values());
+  };
+
+  const allTimeSlots = getAllTimeSlots();
+
+  // ✅ Check if a room has a specific time slot
+  const roomHasTimeSlot = (room: any, timeSlotId: string): TimeSlot | null => {
+    const timeSlot = room.timeSlots.find((ts: TimeSlot) => ts.id === timeSlotId);
+    return timeSlot || null;
+  };
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -641,22 +666,21 @@ export default function RoomBookingTable({
       <div className={styles.tableWrapper}>
         <table className={styles.bookingTable}>
           <thead>
+            {/* Row 1: Branch headers */}
             <tr className={styles.branchRow}>
               <th className={styles.dateHeader}>Ngày</th>
               {branches.map((branch) => (
                 <th
                   key={branch.id}
                   className={styles.branchHeader}
-                  colSpan={branch.rooms.reduce(
-                    (sum, room) => sum + room.timeSlots.length,
-                    0
-                  )}
+                  colSpan={branch.rooms.length * allTimeSlots.length}
                 >
                   {branch.name}
                 </th>
               ))}
             </tr>
 
+            {/* Row 2: Room headers */}
             <tr className={styles.roomRow}>
               <th className={styles.dateHeader}></th>
               {branches.map((branch) =>
@@ -664,7 +688,7 @@ export default function RoomBookingTable({
                   <th
                     key={`${branch.id}-${room.id}`}
                     className={styles.roomHeader}
-                    colSpan={room.timeSlots.length}
+                    colSpan={allTimeSlots.length}
                   >
                     {room.name}
                   </th>
@@ -672,11 +696,12 @@ export default function RoomBookingTable({
               )}
             </tr>
 
+            {/* Row 3: Time slot headers - DYNAMIC */}
             <tr className={styles.timeRow}>
               <th className={styles.dateHeader}>Khung giờ</th>
               {branches.map((branch) =>
                 branch.rooms.map((room) =>
-                  room.timeSlots.map((timeSlot) => (
+                  allTimeSlots.map((timeSlot) => (
                     <th
                       key={`${branch.id}-${room.id}-${timeSlot.id}`}
                       className={styles.timeHeader}
@@ -702,32 +727,49 @@ export default function RoomBookingTable({
                 </td>
                 {branches.map((branch) =>
                   branch.rooms.map((room) =>
-                    room.timeSlots.map((timeSlot) => (
-                      <td
-                        key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
-                        className={getCellClass(
-                          dateInfo.key,
-                          branch.id,
-                          room.id,
-                          timeSlot.id
-                        )}
-                        onClick={() =>
-                          handleCellClick(
+                    allTimeSlots.map((timeSlot) => {
+                      const roomTimeSlot = roomHasTimeSlot(room, timeSlot.id);
+                      
+                      // ✅ If room doesn't have this time slot, show disabled cell
+                      if (!roomTimeSlot) {
+                        return (
+                          <td
+                            key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
+                            className={`${styles.cell} ${styles.disabled}`}
+                          >
+                            <span style={{ opacity: 0.3 }}>—</span>
+                          </td>
+                        );
+                      }
+
+                      // ✅ Room has this time slot, show normal cell
+                      return (
+                        <td
+                          key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
+                          className={getCellClass(
                             dateInfo.key,
                             branch.id,
                             room.id,
-                            timeSlot
-                          )
-                        }
-                      >
-                        {getCellContent(
-                          dateInfo.key,
-                          branch.id,
-                          room.id,
-                          timeSlot.id
-                        )}
-                      </td>
-                    ))
+                            timeSlot.id
+                          )}
+                          onClick={() =>
+                            handleCellClick(
+                              dateInfo.key,
+                              branch.id,
+                              room.id,
+                              roomTimeSlot
+                            )
+                          }
+                        >
+                          {getCellContent(
+                            dateInfo.key,
+                            branch.id,
+                            room.id,
+                            timeSlot.id
+                          )}
+                        </td>
+                      );
+                    })
                   )
                 )}
               </tr>

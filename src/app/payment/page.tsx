@@ -43,6 +43,7 @@ export default function PaymentPage() {
     paymentConfirmed: boolean;
     paymentConfirmedAt?: string;
   } | null>(null);
+  const [showPaymentConfirmedModal, setShowPaymentConfirmedModal] = useState(false);
   const paymentTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate QR code URL
@@ -73,6 +74,7 @@ export default function PaymentPage() {
             paymentTimerRef.current = null;
           }
           console.log('Payment confirmed, stopped polling and staying on payment page');
+          setShowPaymentConfirmedModal(true);
         }
       }
     } catch (error) {
@@ -360,6 +362,60 @@ export default function PaymentPage() {
                 >
                   ← Trở về trang chủ
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal overlay shown when payment is confirmed */}
+        {showPaymentConfirmedModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}>
+            <div style={{
+              width: '90%',
+              maxWidth: 640,
+              background: '#fff',
+              borderRadius: 12,
+              padding: 24,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+            }}>
+              <h2 style={{ marginTop: 0, color: '#2f855a' }}>Thanh toán thành công ✅</h2>
+              <p style={{ marginBottom: 16 }}>
+                Cảm ơn bạn đã thanh toán. Hệ thống đã ghi nhận giao dịch của bạn.
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowPaymentConfirmedModal(false)}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    border: '1px solid #ccc',
+                    background: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >Đóng</button>
+                <button
+                  onClick={() => {
+                    // clear booking cookie and go home
+                    document.cookie = 'bookingData=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict';
+                    router.push('/');
+                  }}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: '#2f855a',
+                    color: '#fff',
+                    cursor: 'pointer'
+                  }}
+                >← Trở về trang chủ</button>
               </div>
             </div>
           </div>

@@ -922,9 +922,7 @@ export default function BookingsPage() {
               <Descriptions.Item label="Email">
                 {selectedBooking.email || "Không có"}
               </Descriptions.Item>
-              <Descriptions.Item label="CCCD">
-                {selectedBooking.cccd}
-              </Descriptions.Item>
+              {/* CCCD number removed per UI change: no longer display customer's ID number */}
               <Descriptions.Item label="Số khách">
                 {selectedBooking.guests} người
               </Descriptions.Item>
@@ -999,81 +997,45 @@ export default function BookingsPage() {
               )}
             </Descriptions>
 
-            {/* Hiển thị ảnh CCCD */}
-            {(selectedBooking.cccdFrontImage || selectedBooking.cccdBackImage) && (
+            {/* Hiển thị ảnh CCCD (chỉ mặt trước) */}
+            {selectedBooking.cccdFrontImage && (
               <div style={{ marginTop: 24 }}>
                 <Title level={5} style={{ color: "#83311b", marginBottom: 16 }}>
                   Ảnh CCCD xác minh
                 </Title>
                 <Row gutter={[16, 16]}>
-                  {selectedBooking.cccdFrontImage && (
-                    <Col xs={24} sm={12}>
+                  <Col xs={24} sm={12}>
+                    <div
+                      style={{
+                        border: "2px solid #fbe0a2",
+                        borderRadius: 8,
+                        padding: 8,
+                        background: "#fefdf8",
+                      }}
+                    >
                       <div
                         style={{
-                          border: "2px solid #fbe0a2",
-                          borderRadius: 8,
-                          padding: 8,
-                          background: "#fefdf8",
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          marginBottom: 8,
+                          color: "#83311b",
                         }}
                       >
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            marginBottom: 8,
-                            color: "#83311b",
-                          }}
-                        >
-                          Mặt trước CCCD
-                        </div>
-                        <img
-                          src={selectedBooking.cccdFrontImage}
-                          alt="CCCD Mặt trước"
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                          onClick={() => window.open(selectedBooking.cccdFrontImage, "_blank")}
-                        />
+                        Mặt trước CCCD
                       </div>
-                    </Col>
-                  )}
-                  {selectedBooking.cccdBackImage && (
-                    <Col xs={24} sm={12}>
-                      <div
+                      <img
+                        src={selectedBooking.cccdFrontImage}
+                        alt="CCCD Mặt trước"
                         style={{
-                          border: "2px solid #fbe0a2",
-                          borderRadius: 8,
-                          padding: 8,
-                          background: "#fefdf8",
+                          width: "100%",
+                          height: "auto",
+                          borderRadius: 4,
+                          cursor: "pointer",
                         }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            marginBottom: 8,
-                            color: "#83311b",
-                          }}
-                        >
-                          Mặt sau CCCD
-                        </div>
-                        <img
-                          src={selectedBooking.cccdBackImage}
-                          alt="CCCD Mặt sau"
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                          onClick={() => window.open(selectedBooking.cccdBackImage, "_blank")}
-                        />
-                      </div>
-                    </Col>
-                  )}
+                        onClick={() => window.open(selectedBooking.cccdFrontImage, "_blank")}
+                      />
+                    </div>
+                  </Col>
                 </Row>
               </div>
             )}

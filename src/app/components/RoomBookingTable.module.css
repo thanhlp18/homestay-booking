@@ -649,3 +649,17 @@
   background: #ffcdd2;
   transform: none;
 }
+
+/* Disabled cell - for time slots that don't exist for a room */
+.cell.disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  border: 1px solid #e0e0e0;
+  opacity: 0.5;
+}
+
+.cell.disabled:hover {
+  background: #f5f5f5;
+  transform: none;
+  border-color: #e0e0e0;
+}

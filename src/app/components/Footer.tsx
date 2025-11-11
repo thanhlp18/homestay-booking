@@ -85,7 +85,7 @@ export default function Footer() {
 
       <div className={styles.footerBottom}>
         <p className={styles.footerText}>
-          Hộ kinh doanh O Ni Homestay <br /> Địa chỉ: 9/4 Điềm Phùng Thị, phường
+          O Ni Homestay <br /> Địa chỉ: 9/4 Điềm Phùng Thị, phường
           Vỹ Dạ, Hue, Vietnam
           <br /> Điện thoại: 0941.571.155. <br />
         </p>
@@ -99,7 +99,11 @@ export default function Footer() {
             className={styles.socialIcon}
             target="_blank"
           >
-            f
+            <img
+              src="/facebook-icon.png"
+              alt=""
+              className={styles.facebookIcon}
+            />
           </Link>
           <Link
             href="https://www.instagram.com/onihomestay?igsh=dzcycGMzb213eXow"
@@ -110,6 +114,17 @@ export default function Footer() {
               src="/instagram.webp"
               alt=""
               className={styles.instagramIcon}
+            />
+          </Link>
+          <Link
+            href="https://www.tiktok.com/@onihomestay?_r=1&_t=ZS-91HMBYa2GbY"
+            className={styles.socialIcon}
+            target="_blank"
+          >
+            <img
+              src="/tiktok-icon.png"
+              alt=""
+              className={styles.tiktokIcon}
             />
           </Link>
         </div>
