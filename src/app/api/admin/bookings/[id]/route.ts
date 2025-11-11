@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
+import { sendBookingApproval, sendBookingRejection } from "@/lib/email";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -167,6 +168,49 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     });
 
     console.log("Booking updated successfully:", updatedBooking.id);
+
+    // Send email notification to user
+    if (updatedBooking.email) {
+      try {
+        // Transform booking data to match email template interface
+        const emailData = {
+          id: updatedBooking.id,
+          fullName: updatedBooking.fullName,
+          phone: updatedBooking.phone,
+          email: updatedBooking.email,
+          cccd: updatedBooking.cccd,
+          guests: updatedBooking.guests,
+          notes: updatedBooking.notes || undefined,
+          paymentMethod: updatedBooking.paymentMethod as
+            | "CASH"
+            | "TRANSFER"
+            | "CARD",
+          room: updatedBooking.room?.name || "",
+          location: updatedBooking.room?.branch?.location || "",
+          totalPrice: updatedBooking.totalPrice,
+          basePrice: updatedBooking.basePrice || undefined,
+          discountAmount: updatedBooking.discountAmount || undefined,
+          discountPercentage: updatedBooking.discountPercentage || undefined,
+        };
+
+        if (action === "approve") {
+          await sendBookingApproval(emailData);
+          console.log("Approval email sent to:", updatedBooking.email);
+        } else if (action === "reject") {
+          await sendBookingRejection(
+            emailData,
+            reason || "Bị từ chối bởi admin"
+          );
+          console.log("Rejection email sent to:", updatedBooking.email);
+        }
+      } catch (emailError) {
+        // Log email error but don't fail the API call
+        console.error("Error sending email notification:", emailError);
+        // Continue with the response even if email fails
+      }
+    } else {
+      console.log("Skipping email notification - no email address provided");
+    }
 
     return NextResponse.json({
       success: true,

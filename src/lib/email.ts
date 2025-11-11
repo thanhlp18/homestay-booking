@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 // TypeScript interfaces for booking data
 interface BookingData {
@@ -9,7 +9,7 @@ interface BookingData {
   cccd: string;
   guests: number;
   notes?: string;
-  paymentMethod: 'CASH' | 'TRANSFER' | 'CARD';
+  paymentMethod: "CASH" | "TRANSFER" | "CARD";
   room: string;
   location: string;
   totalPrice: number;
@@ -20,7 +20,7 @@ interface BookingData {
 
 // Email configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
@@ -30,10 +30,17 @@ const transporter = nodemailer.createTransport({
 // Email templates
 export const emailTemplates = {
   bookingConfirmation: (bookingData: BookingData) => {
-    const isTransferPayment = bookingData.paymentMethod === 'TRANSFER' || bookingData.paymentMethod === 'CARD';
-    const paymentMethodText = bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ';
-    
-    const paymentInstructions = isTransferPayment 
+    const isTransferPayment =
+      bookingData.paymentMethod === "TRANSFER" ||
+      bookingData.paymentMethod === "CARD";
+    const paymentMethodText =
+      bookingData.paymentMethod === "CASH"
+        ? "Tiền mặt"
+        : bookingData.paymentMethod === "TRANSFER"
+        ? "Chuyển khoản"
+        : "Thẻ";
+
+    const paymentInstructions = isTransferPayment
       ? `
         <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
           <h3 style="color: #1565c0; margin-top: 0;">💳 Hướng dẫn thanh toán</h3>
@@ -51,7 +58,9 @@ export const emailTemplates = {
           <h3 style="color: #856404; margin-top: 0;">💰 Thanh toán tiền mặt</h3>
           <p style="margin: 0; color: #856404;">Đặt phòng thành công! Vui lòng thanh toán tiền mặt khi đến homestay:</p>
           <ul style="margin: 10px 0 0 20px; color: #856404;">
-            <li>Thanh toán toàn bộ số tiền: <strong>${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</strong></li>
+            <li>Thanh toán toàn bộ số tiền: <strong>${bookingData.totalPrice?.toLocaleString(
+              "vi-VN"
+            )} đ</strong></li>
             <li>Chúng tôi sẽ liên hệ với bạn để xác nhận đặt phòng</li>
             <li>Vui lòng chuẩn bị CCCD để làm thủ tục check-in</li>
           </ul>
@@ -81,9 +90,15 @@ export const emailTemplates = {
               <p><strong>Phòng:</strong> ${bookingData.room}</p>
               <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
               <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-              <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>
+              <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
+                "vi-VN"
+              )} đ</p>
               <p><strong>Phương thức thanh toán:</strong> ${paymentMethodText}</p>
-              ${bookingData.notes ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>` : ''}
+              ${
+                bookingData.notes
+                  ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>`
+                  : ""
+              }
             </div>
             
             <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -113,7 +128,7 @@ export const emailTemplates = {
             <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
           </div>
         </div>
-      `
+      `,
     };
   },
 
@@ -140,9 +155,21 @@ export const emailTemplates = {
             <p><strong>Email:</strong> ${bookingData.email}</p>
             <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
             <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>
-            <p><strong>Phương thức TT:</strong> ${bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ'}</p>
-            ${bookingData.notes ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>` : ''}
+            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
+              "vi-VN"
+            )} đ</p>
+            <p><strong>Phương thức TT:</strong> ${
+              bookingData.paymentMethod === "CASH"
+                ? "Tiền mặt"
+                : bookingData.paymentMethod === "TRANSFER"
+                ? "Chuyển khoản"
+                : "Thẻ"
+            }</p>
+            ${
+              bookingData.notes
+                ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>`
+                : ""
+            }
           </div>
           
           <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
@@ -151,7 +178,9 @@ export const emailTemplates = {
           </div>
           
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin" style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            <a href="${
+              process.env.NEXT_PUBLIC_APP_URL
+            }/admin" style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
               Xem trong Admin Panel
             </a>
           </div>
@@ -161,7 +190,7 @@ export const emailTemplates = {
           <p style="margin: 0;">&copy; 2024 O Ni Homestay - Admin System</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   bookingApproval: (bookingData: BookingData) => ({
@@ -183,8 +212,16 @@ export const emailTemplates = {
             <p><strong>Phòng:</strong> ${bookingData.room}</p>
             <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
             <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString('vi-VN')} đ</p>
-            <p><strong>Phương thức thanh toán:</strong> ${bookingData.paymentMethod === 'CASH' ? 'Tiền mặt' : bookingData.paymentMethod === 'TRANSFER' ? 'Chuyển khoản' : 'Thẻ'}</p>
+            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
+              "vi-VN"
+            )} đ</p>
+            <p><strong>Phương thức thanh toán:</strong> ${
+              bookingData.paymentMethod === "CASH"
+                ? "Tiền mặt"
+                : bookingData.paymentMethod === "TRANSFER"
+                ? "Chuyển khoản"
+                : "Thẻ"
+            }</p>
           </div>
           
           <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -216,7 +253,7 @@ export const emailTemplates = {
           <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
-    `
+    `,
   }),
 
   bookingRejection: (bookingData: BookingData, reason: string) => ({
@@ -255,14 +292,14 @@ export const emailTemplates = {
           <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
-    `
-  })
+    `,
+  }),
 };
 
 // Email sending functions
 export async function sendBookingConfirmation(bookingData: BookingData) {
   const { subject, html } = emailTemplates.bookingConfirmation(bookingData);
-  
+
   try {
     await transporter.sendMail({
       from: `"O Ni Homestay" <${process.env.GMAIL_USER}>`,
@@ -270,37 +307,38 @@ export async function sendBookingConfirmation(bookingData: BookingData) {
       subject,
       html,
     });
-    
-    console.log('Booking confirmation email sent successfully');
+
+    console.log("Booking confirmation email sent successfully");
     return { success: true };
   } catch (error) {
-    console.error('Error sending booking confirmation email:', error);
+    console.error("Error sending booking confirmation email:", error);
     return { success: false, error };
   }
 }
 
 export async function sendAdminNotification(bookingData: BookingData) {
   const { subject, html } = emailTemplates.adminNotification(bookingData);
-  
+
   try {
     await transporter.sendMail({
       from: `"O Ni Homestay System" <${process.env.GMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL,
+      bcc: process.env.BCC_EMAIL,
       subject,
       html,
     });
-    
-    console.log('Admin notification email sent successfully');
+
+    console.log("Admin notification email sent successfully");
     return { success: true };
   } catch (error) {
-    console.error('Error sending admin notification email:', error);
+    console.error("Error sending admin notification email:", error);
     return { success: false, error };
   }
 }
 
 export async function sendBookingApproval(bookingData: BookingData) {
   const { subject, html } = emailTemplates.bookingApproval(bookingData);
-  
+
   try {
     await transporter.sendMail({
       from: `"O Ni Homestay" <${process.env.GMAIL_USER}>`,
@@ -308,18 +346,24 @@ export async function sendBookingApproval(bookingData: BookingData) {
       subject,
       html,
     });
-    
-    console.log('Booking approval email sent successfully');
+
+    console.log("Booking approval email sent successfully");
     return { success: true };
   } catch (error) {
-    console.error('Error sending booking approval email:', error);
+    console.error("Error sending booking approval email:", error);
     return { success: false, error };
   }
 }
 
-export async function sendBookingRejection(bookingData: BookingData, reason: string) {
-  const { subject, html } = emailTemplates.bookingRejection(bookingData, reason);
-  
+export async function sendBookingRejection(
+  bookingData: BookingData,
+  reason: string
+) {
+  const { subject, html } = emailTemplates.bookingRejection(
+    bookingData,
+    reason
+  );
+
   try {
     await transporter.sendMail({
       from: `"O Ni Homestay" <${process.env.GMAIL_USER}>`,
@@ -327,11 +371,11 @@ export async function sendBookingRejection(bookingData: BookingData, reason: str
       subject,
       html,
     });
-    
-    console.log('Booking rejection email sent successfully');
+
+    console.log("Booking rejection email sent successfully");
     return { success: true };
   } catch (error) {
-    console.error('Error sending booking rejection email:', error);
+    console.error("Error sending booking rejection email:", error);
     return { success: false, error };
   }
 }
@@ -340,10 +384,10 @@ export async function sendBookingRejection(bookingData: BookingData, reason: str
 export async function testEmailConnection() {
   try {
     await transporter.verify();
-    console.log('Email connection is working');
+    console.log("Email connection is working");
     return { success: true };
   } catch (error) {
-    console.error('Email connection failed:', error);
+    console.error("Email connection failed:", error);
     return { success: false, error };
   }
-} 
+}

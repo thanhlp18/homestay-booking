@@ -24,6 +24,7 @@ interface TimeSlot {
   time: string;
   price: number;
   duration?: number | null;
+  duration?: number | null;
 }
 
 interface Room {
@@ -41,6 +42,7 @@ interface Room {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  floor?: string;
   floor?: string;
   features: string[];
   policies: string[];
@@ -76,14 +78,18 @@ interface BookingFormData {
   bookingType: string;
   frontIdImageUrl?: string;
   backIdImageUrl?: string;
+  frontIdImageUrl?: string;
+  backIdImageUrl?: string;
 }
 
+export interface SelectedSlot {
 export interface SelectedSlot {
   date: string;
   branchId: string;
   roomId: string;
   timeSlotId: string;
   price: number;
+  checkInTime?: string; // ← Add this optional property
   checkInTime?: string; // ← Add this optional property
 }
 
@@ -96,10 +102,17 @@ interface FullDaySelection {
 
 // Cập nhật interface trong room/[roomSlug]/page.tsx
 
+// Cập nhật interface trong room/[roomSlug]/page.tsx
+
 interface BookingStatus {
   status: "booked" | "available" | "selected" | "promotion" | "mystery";
   price?: number;
   originalPrice?: number;
+  bookedSlots?: Array<{
+    checkIn: string;
+    checkOut: string;
+    bookingId: string;
+  }>;
   bookedSlots?: Array<{
     checkIn: string;
     checkOut: string;
@@ -112,8 +125,12 @@ export default function RoomPage() {
   const router = useRouter();
   const toast = useToast();
 
+  const toast = useToast();
+
   const searchParams = useSearchParams();
   const roomSlug = params.roomSlug as string;
+  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
+  const [timeConflicts, setTimeConflicts] = useState<TimeConflict[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [timeConflicts, setTimeConflicts] = useState<TimeConflict[]>([]);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -122,6 +139,11 @@ export default function RoomPage() {
   const [frontIdPreview, setFrontIdPreview] = useState<string | null>(null);
   const [backIdPreview, setBackIdPreview] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [fullDaySelection, setFullDaySelection] =
+    useState<FullDaySelection | null>(null);
+  const [fullDayValidationError, setFullDayValidationError] = useState<
+    string | null
+  >(null);
   const [fullDaySelection, setFullDaySelection] =
     useState<FullDaySelection | null>(null);
   const [fullDayValidationError, setFullDayValidationError] = useState<
@@ -150,6 +172,8 @@ export default function RoomPage() {
     notes: "",
     paymentMethod: "transfer",
     bookingType: "timeSlots",
+    frontIdImageUrl: "",
+    backIdImageUrl: "",
     frontIdImageUrl: "",
     backIdImageUrl: "",
   });
@@ -314,6 +338,28 @@ export default function RoomPage() {
     }
   }, [selectedSlots, bookingTableBranches]);
 
+  useEffect(() => {
+    if (selectedSlots.length > 0 && bookingTableBranches.length > 0) {
+      // Filter only slots with checkInTime for conflict checking
+      const slotsWithTime = selectedSlots.filter(
+        (slot): slot is SelectedSlotWithTime =>
+          typeof slot.checkInTime === "string" && slot.checkInTime.length > 0
+      );
+
+      if (slotsWithTime.length > 0) {
+        const conflicts = checkTimeConflicts(
+          slotsWithTime,
+          bookingTableBranches
+        );
+        setTimeConflicts(conflicts);
+      } else {
+        setTimeConflicts([]);
+      }
+    } else {
+      setTimeConflicts([]);
+    }
+  }, [selectedSlots, bookingTableBranches]);
+
   const fetchExistingBookings = async () => {
     try {
       const today = new Date();
@@ -335,6 +381,34 @@ export default function RoomPage() {
             Record<string, Record<string, Record<string, BookingStatus>>>
           > = {};
 
+          bookingsData.data.forEach((booking: any) => {
+            if (!booking.checkInDateTime || !booking.checkOutDateTime) return;
+
+            // ✅ Only process ACTIVE bookings (PENDING, PAYMENT_CONFIRMED, APPROVED)
+            // Exclude CANCELLED and REJECTED
+            if (
+              !["PENDING", "PAYMENT_CONFIRMED", "APPROVED"].includes(
+                booking.status
+              )
+            ) {
+              return;
+            }
+
+            const checkIn = new Date(booking.checkInDateTime);
+            const dateKey = checkIn.toISOString().split("T")[0];
+            const branchId = booking.room.branch.id;
+            const roomId = booking.room.id;
+            const timeSlotId = booking.timeSlot.id;
+
+            if (!bookingsMap[dateKey]) {
+              bookingsMap[dateKey] = {};
+            }
+            if (!bookingsMap[dateKey][branchId]) {
+              bookingsMap[dateKey][branchId] = {};
+            }
+            if (!bookingsMap[dateKey][branchId][roomId]) {
+              bookingsMap[dateKey][branchId][roomId] = {};
+            }
           bookingsData.data.forEach((booking: any) => {
             if (!booking.checkInDateTime || !booking.checkOutDateTime) return;
 
@@ -385,7 +459,29 @@ export default function RoomPage() {
             if (booking.timeSlot.isOvernight) {
               bookingsMap[dateKey][branchId][roomId][timeSlotId].status =
                 "booked";
+            // ✅ Initialize if not exists
+            if (!bookingsMap[dateKey][branchId][roomId][timeSlotId]) {
+              bookingsMap[dateKey][branchId][roomId][timeSlotId] = {
+                status: "available",
+                bookedSlots: [],
+              };
             }
+
+            // ✅ Add to bookedSlots array
+            bookingsMap[dateKey][branchId][roomId][
+              timeSlotId
+            ].bookedSlots!.push({
+              checkIn: booking.checkInDateTime,
+              checkOut: booking.checkOutDateTime,
+              bookingId: booking.id,
+            });
+
+            // ✅ If overnight package, mark as fully booked
+            if (booking.timeSlot.isOvernight) {
+              bookingsMap[dateKey][branchId][roomId][timeSlotId].status =
+                "booked";
+            }
+          });
           });
 
           setInitialBookings(bookingsMap);
@@ -402,7 +498,15 @@ export default function RoomPage() {
     branchId: string,
     roomId: string
   ): boolean => {
+  const checkDayAvailability = (
+    date: string,
+    branchId: string,
+    roomId: string
+  ): boolean => {
     const dayBookings = initialBookings[date]?.[branchId]?.[roomId] || {};
+    return Object.values(dayBookings).every(
+      (booking) => booking.status === "available"
+    );
     return Object.values(dayBookings).every(
       (booking) => booking.status === "available"
     );
@@ -414,7 +518,13 @@ export default function RoomPage() {
 
     const isAvailable = checkDayAvailability(date, room.branchId, room.id);
 
+
     if (!isAvailable) {
+      setFullDayValidationError(
+        `Ngày ${new Date(date).toLocaleDateString(
+          "vi-VN"
+        )} có một số khung giờ đã được đặt. Vui lòng chọn ngày khác hoặc đặt theo khung giờ.`
+      );
       setFullDayValidationError(
         `Ngày ${new Date(date).toLocaleDateString(
           "vi-VN"
@@ -426,13 +536,16 @@ export default function RoomPage() {
 
     setFullDayValidationError(null);
 
+
     // Use the room's base price for full day booking (different from time slot pricing)
     const fullDayPrice = room.basePrice;
+
 
     setFullDaySelection({
       date,
       branchId: room.branchId,
       roomId: room.id,
+      price: fullDayPrice,
       price: fullDayPrice,
     });
   };
@@ -442,10 +555,20 @@ export default function RoomPage() {
     const newBookingType = e.target.value;
     const currentBookingType = formData.bookingType;
 
+
     // Check if there are existing selections that would be lost
     const hasExistingSelections = selectedSlots.length > 0 || fullDaySelection;
 
+
     if (hasExistingSelections && newBookingType !== currentBookingType) {
+      const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${
+        currentBookingType === "timeSlots"
+          ? "Đặt theo khung giờ"
+          : "Đặt cả ngày"
+      }" sang "${
+        newBookingType === "timeSlots" ? "Đặt theo khung giờ" : "Đặt cả ngày"
+      }"? Tất cả lựa chọn hiện tại sẽ bị xóa.`;
+
       const confirmMessage = `Bạn có chắc muốn thay đổi loại đặt phòng từ "${
         currentBookingType === "timeSlots"
           ? "Đặt theo khung giờ"
@@ -462,7 +585,10 @@ export default function RoomPage() {
     }
 
     setFormData((prev) => ({
+
+    setFormData((prev) => ({
       ...prev,
+      bookingType: newBookingType,
       bookingType: newBookingType,
     }));
 
@@ -470,6 +596,7 @@ export default function RoomPage() {
     setSelectedSlots([]);
     setFullDaySelection(null);
     setFullDayValidationError(null);
+
 
     // Reset any existing bookings to ensure clean state
     if (newBookingType === "timeSlots") {
@@ -570,6 +697,12 @@ export default function RoomPage() {
         "Chưa chọn khung giờ",
         "Vui lòng chọn ít nhất một khung giờ từ bảng lịch"
       );
+    // Validate slots
+    if (formData.bookingType === "timeSlots" && selectedSlots.length === 0) {
+      toast.warning(
+        "Chưa chọn khung giờ",
+        "Vui lòng chọn ít nhất một khung giờ từ bảng lịch"
+      );
       return;
     }
 
@@ -579,8 +712,37 @@ export default function RoomPage() {
   const handleConfirmBooking = async () => {
     if (isSubmitting) return;
 
+    if (isSubmitting) return;
+
     try {
       setIsSubmitting(true);
+
+      // ✅ Create array of booking requests
+      const bookingRequests = selectedSlots.map((slot) => ({
+        fullName: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        cccd: formData.cccd,
+        guests: parseInt(formData.guests),
+        notes: formData.notes || undefined,
+        paymentMethod: formData.paymentMethod.toUpperCase() as
+          | "CASH"
+          | "TRANSFER"
+          | "CARD",
+        roomId: slot.roomId,
+        timeSlotId: slot.timeSlotId,
+        checkInDateTime: new Date(
+          `${slot.date}T${slot.checkInTime}:00`
+        ).toISOString(),
+        frontIdImageUrl: formData.frontIdImageUrl,
+        backIdImageUrl: formData.backIdImageUrl,
+      }));
+
+      // ✅ Send array to API
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingRequests), // ← Send array
 
       // ✅ Create array of booking requests
       const bookingRequests = selectedSlots.map((slot) => ({
@@ -659,12 +821,17 @@ export default function RoomPage() {
         }
       } else {
         toast.error("Đặt phòng thất bại", result.message);
+        toast.error("Đặt phòng thất bại", result.message);
       }
+    } catch (err) {
+      console.error("Booking error:", err);
+      toast.error("Lỗi hệ thống", "Có lỗi xảy ra. Vui lòng thử lại sau.");
     } catch (err) {
       console.error("Booking error:", err);
       toast.error("Lỗi hệ thống", "Có lỗi xảy ra. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
+      setShowConfirmation(false);
       setShowConfirmation(false);
     }
   };
@@ -683,6 +850,9 @@ export default function RoomPage() {
           const branch = bookingTableBranches.find(
             (b) => b.id === slot.branchId
           );
+          const branch = bookingTableBranches.find(
+            (b) => b.id === slot.branchId
+          );
           const roomData = branch?.rooms.find((r) => r.id === slot.roomId);
           const timeSlot = roomData?.timeSlots.find(
             (ts) => ts.id === slot.timeSlotId
@@ -695,7 +865,11 @@ export default function RoomPage() {
       return `${new Date(fullDaySelection.date).toLocaleDateString(
         "vi-VN"
       )} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
+      return `${new Date(fullDaySelection.date).toLocaleDateString(
+        "vi-VN"
+      )} - Cả ngày (${displaySelectedSlots.length} khung giờ)`;
     }
+
 
     return "Chưa chọn khung giờ";
   };
@@ -703,6 +877,7 @@ export default function RoomPage() {
   const calculateTotalPrice = () => {
     let baseTotal = 0;
     let slotCount = 0;
+
 
     if (formData.bookingType === "timeSlots") {
       baseTotal = selectedSlots.reduce((sum, slot) => sum + slot.price, 0);
@@ -712,11 +887,13 @@ export default function RoomPage() {
       slotCount = 1; // Count as 1 booking for discount purposes
     }
 
+
     // Guest surcharge calculation (50k per guest over 2)
     const priceGuest =
       parseInt(formData.guests) > 2
         ? 50000 * (parseInt(formData.guests) - 2)
         : 0;
+
 
     // Calculate discount (only for time slots, not full day)
     let discount = 0;
@@ -736,11 +913,26 @@ export default function RoomPage() {
       discount,
       finalTotal,
       slotCount,
+
+    return {
+      baseTotal,
+      discount,
+      finalTotal,
+      slotCount,
       priceGuest,
+      subtotalAfterDiscount: Math.round(subtotalAfterDiscount),
       subtotalAfterDiscount: Math.round(subtotalAfterDiscount),
     };
   };
 
+  const {
+    baseTotal,
+    discount,
+    finalTotal,
+    slotCount,
+    priceGuest,
+    subtotalAfterDiscount,
+  } = calculateTotalPrice();
   const {
     baseTotal,
     discount,
@@ -762,7 +954,15 @@ export default function RoomPage() {
             timeSlot.id
           ];
         return !bookingStatus || bookingStatus.status === "available";
+      const availableSlots = room.timeSlots.filter((timeSlot) => {
+        const bookingStatus =
+          initialBookings[fullDaySelection.date]?.[room.branchId]?.[room.id]?.[
+            timeSlot.id
+          ];
+        return !bookingStatus || bookingStatus.status === "available";
       });
+
+      return availableSlots.map((timeSlot) => ({
 
       return availableSlots.map((timeSlot) => ({
         date: fullDaySelection.date,
@@ -770,9 +970,27 @@ export default function RoomPage() {
         roomId: room.id,
         timeSlotId: timeSlot.id,
         price: timeSlot.price,
+        price: timeSlot.price,
       }));
     }
     return [];
+  };
+
+  const handleRemoveSlot = (slotToRemove: SelectedSlot) => {
+    setSelectedSlots((prev) => {
+      const newSlots = prev.filter(
+        (slot) =>
+          !(
+            slot.date === slotToRemove.date &&
+            slot.branchId === slotToRemove.branchId &&
+            slot.roomId === slotToRemove.roomId &&
+            slot.timeSlotId === slotToRemove.timeSlotId &&
+            slot.checkInTime === slotToRemove.checkInTime
+          )
+      );
+      return newSlots;
+    });
+    toast.success("Đã xóa khỏi giỏ", "Khung giờ đã được xóa thành công");
   };
 
   const handleRemoveSlot = (slotToRemove: SelectedSlot) => {
@@ -884,6 +1102,12 @@ export default function RoomPage() {
                     <span className={styles.specText}>{room.floor}</span>
                   </div>
                 )}
+                {room.floor && (
+                  <div className={styles.spec}>
+                    <span className={styles.specIcon}>🏢</span>
+                    <span className={styles.specText}>{room.floor}</span>
+                  </div>
+                )}
               </div>
 
               <div className={styles.pricing}>
@@ -970,7 +1194,22 @@ export default function RoomPage() {
             </p>
 
             {/* <div className={styles.bookingTypeSection}>
+
+            {/* <div className={styles.bookingTypeSection}>
               <label className={styles.label}>Loại đặt phòng *</label>
+              <div className={styles.custom_select_wrapper}>
+                <select
+                  name="bookingType"
+                  className={styles.select}
+                  value={formData.bookingType}
+                  onChange={handleBookingTypeChange}
+                  required
+                >
+                  <option value="timeSlots">Đặt theo khung giờ</option>
+                  <option value="fullDay">Đặt cả ngày</option>
+                </select>
+              </div>
+
               <div className={styles.custom_select_wrapper}>
                 <select
                   name="bookingType"
@@ -989,20 +1228,31 @@ export default function RoomPage() {
                   <strong>Lưu ý:</strong> Bảng lịch bên dưới hiển thị tình trạng
                   thời gian thực. Một số khung giờ có thể đã được đặt bởi khách
                   hàng khác.
+                  <strong>Lưu ý:</strong> Bảng lịch bên dưới hiển thị tình trạng
+                  thời gian thực. Một số khung giờ có thể đã được đặt bởi khách
+                  hàng khác.
                 </p>
                 <p className={styles.noticeText}>
+                  • <strong>Đặt theo khung giờ:</strong> Chọn các khung giờ cụ
+                  thể bạn muốn
                   • <strong>Đặt theo khung giờ:</strong> Chọn các khung giờ cụ
                   thể bạn muốn
                 </p>
                 <p className={styles.noticeText}>
                   • <strong>Đặt cả ngày:</strong> Đặt toàn bộ ngày (ưu tiên cao
                   hơn khung giờ)
+                  • <strong>Đặt cả ngày:</strong> Đặt toàn bộ ngày (ưu tiên cao
+                  hơn khung giờ)
                 </p>
                 <p className={styles.noticeText}>
                   <strong>⚠️ Chú ý:</strong> Thay đổi loại đặt phòng sẽ xóa tất
                   cả lựa chọn hiện tại.
+                  <strong>⚠️ Chú ý:</strong> Thay đổi loại đặt phòng sẽ xóa tất
+                  cả lựa chọn hiện tại.
                 </p>
               </div>
+            </div> */}
+
             </div> */}
 
             {formData.bookingType === "fullDay" && (
@@ -1014,6 +1264,7 @@ export default function RoomPage() {
                       type="date"
                       name="bookingDate"
                       className={styles.input}
+                      min={new Date().toISOString().split("T")[0]}
                       min={new Date().toISOString().split("T")[0]}
                       onChange={handleFullDayDateChange}
                       required
@@ -1031,6 +1282,10 @@ export default function RoomPage() {
                         ? fullDaySelection.price.toLocaleString("vi-VN")
                         : room.basePrice.toLocaleString("vi-VN")}{" "}
                       đ/ngày
+                      {fullDaySelection
+                        ? fullDaySelection.price.toLocaleString("vi-VN")
+                        : room.basePrice.toLocaleString("vi-VN")}{" "}
+                      đ/ngày
                     </div>
                   </div>
                 </div>
@@ -1042,10 +1297,17 @@ export default function RoomPage() {
                         "vi-VN"
                       )}
                     </p>
+                    <p>
+                      ✅ Đã chọn ngày:{" "}
+                      {new Date(fullDaySelection.date).toLocaleDateString(
+                        "vi-VN"
+                      )}
+                    </p>
                   </div>
                 )}
               </div>
             )}
+
 
             <RoomBookingTable
               key={`booking-table-${formData.bookingType}`}
@@ -1056,6 +1318,7 @@ export default function RoomPage() {
               initialSelectedSlots={displaySelectedSlots}
               submitOnSelect={formData.bookingType === "timeSlots"}
               isFullDayBooking={formData.bookingType === "fullDay"}
+              summaryElementId="booking-summary" // ✅ Add summary ID for auto-scroll
               summaryElementId="booking-summary" // ✅ Add summary ID for auto-scroll
             />
             {formData.bookingType === "timeSlots" && (
@@ -1181,11 +1444,19 @@ export default function RoomPage() {
                           "vi-VN"
                         )}{" "}
                         - Cả ngày
+                        {new Date(fullDaySelection.date).toLocaleDateString(
+                          "vi-VN"
+                        )}{" "}
+                        - Cả ngày
                       </div>
                     </div>
                   )}
                 </div>
                 <div className={styles.formRow}>
+                  <div
+                    className={styles.formGroup}
+                    style={{ gridColumn: "1 / -1" }}
+                  >
                   <div
                     className={styles.formGroup}
                     style={{ gridColumn: "1 / -1" }}
@@ -1223,6 +1494,9 @@ export default function RoomPage() {
                           <span>
                             Giảm giá ({(discount * 100).toFixed(0)}%):
                           </span>
+                          <span>
+                            Giảm giá ({(discount * 100).toFixed(0)}%):
+                          </span>
                           <span className={styles.discount}>
                             -{(baseTotal * discount).toLocaleString("vi-VN")} đ
                           </span>
@@ -1230,6 +1504,9 @@ export default function RoomPage() {
                       )}
                       <div className={styles.priceRow}>
                         <span>Tổng sau giảm giá:</span>
+                        <span>
+                          {subtotalAfterDiscount.toLocaleString("vi-VN")} đ
+                        </span>
                         <span>
                           {subtotalAfterDiscount.toLocaleString("vi-VN")} đ
                         </span>
@@ -1244,6 +1521,11 @@ export default function RoomPage() {
                       {fullDaySelection && (
                         <div className={styles.priceRow}>
                           <span>Ngày đặt:</span>
+                          <span>
+                            {new Date(fullDaySelection.date).toLocaleDateString(
+                              "vi-VN"
+                            )}
+                          </span>
                           <span>
                             {new Date(fullDaySelection.date).toLocaleDateString(
                               "vi-VN"
@@ -1315,11 +1597,15 @@ export default function RoomPage() {
                 <div className={styles.formActions}>
                   <button
                     type="submit"
+                  <button
+                    type="submit"
                     className={styles.submitButton}
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? "Đang xử lý..." : "Xác nhận đặt phòng"}
                   </button>
+                  <button
+                    type="button"
                   <button
                     type="button"
                     className={styles.cancelButton}
@@ -1382,7 +1668,13 @@ export default function RoomPage() {
                   <span className={styles.detailLabel}>Khung giờ:</span>
                   <span className={styles.detailValue}>
                     {formData.bookingType === "timeSlots"
+                    {formData.bookingType === "timeSlots"
                       ? formatSelectedSlots()
+                      : fullDaySelection
+                      ? `${new Date(fullDaySelection.date).toLocaleDateString(
+                          "vi-VN"
+                        )} - Cả ngày`
+                      : "Chưa chọn"}
                       : fullDaySelection
                       ? `${new Date(fullDaySelection.date).toLocaleDateString(
                           "vi-VN"
@@ -1407,6 +1699,8 @@ export default function RoomPage() {
               </div>
 
               <div className={styles.modalActions}>
+                <button
+                  className={styles.editButton}
                 <button
                   className={styles.editButton}
                   onClick={handleEditInfo}

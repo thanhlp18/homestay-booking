@@ -53,6 +53,8 @@ interface BookingRecord {
   cccd: string;
   cccdFrontImage?: string;
   cccdBackImage?: string;
+  frontIdImageUrl?: string;
+  backIdImageUrl?: string;
   guests: number;
   notes: string;
   paymentMethod: string;
@@ -69,8 +71,8 @@ interface BookingRecord {
   adminNotes?: string;
   totalPrice: number;
   basePrice: number;
-  discountAmount: number;
-  discountPercentage: number;
+  discountAmount?: number;
+  discountPercentage?: number;
   guestSurcharge: number;
   checkInDateTime: string; // ← Thêm field mới
   checkOutDateTime: string; // ← Thêm field mới
@@ -87,7 +89,7 @@ interface BookingRecord {
   timeSlot: {
     id: string;
     time: string;
-    duration: number | null;
+    duration?: number | null;
   };
 }
 
@@ -403,25 +405,28 @@ export default function BookingsPage() {
       render: (_, record) => {
         const menuItems = [
           {
-            key: 'view',
+            key: "view",
             icon: <EyeOutlined />,
-            label: 'Chi tiết',
+            label: "Chi tiết",
             onClick: () => handleViewDetails(record),
           },
         ];
 
-        if (record.status === "PENDING" || record.status === "PAYMENT_CONFIRMED") {
+        if (
+          record.status === "PENDING" ||
+          record.status === "PAYMENT_CONFIRMED"
+        ) {
           menuItems.push(
             {
-              key: 'approve',
+              key: "approve",
               icon: <CheckCircleOutlined />,
-              label: 'Phê duyệt',
+              label: "Phê duyệt",
               onClick: () => handleApproveBooking(record.id),
             },
             {
-              key: 'reject',
+              key: "reject",
               icon: <CloseCircleOutlined />,
-              label: 'Từ chối',
+              label: "Từ chối",
               onClick: () => handleRejectBooking(record.id),
               // danger: true,
             }
@@ -430,14 +435,14 @@ export default function BookingsPage() {
 
         if (record.status !== "CANCELLED") {
           menuItems.push({
-            key: 'cancel',
+            key: "cancel",
             icon: <CloseCircleOutlined />,
-            label: 'Hủy',
+            label: "Hủy",
             onClick: () => {
               Modal.confirm({
-                title: 'Bạn có chắc chắn muốn hủy đặt phòng này?',
-                okText: 'Có',
-                cancelText: 'Không',
+                title: "Bạn có chắc chắn muốn hủy đặt phòng này?",
+                okText: "Có",
+                cancelText: "Không",
                 onOk: () => handleCancelBooking(record.id),
               });
             },
@@ -448,14 +453,14 @@ export default function BookingsPage() {
         return (
           <Dropdown
             menu={{ items: menuItems }}
-            trigger={['click']}
+            trigger={["click"]}
             placement="bottomRight"
           >
             <Button
               type="text"
               icon={<MoreOutlined />}
               loading={actionLoading === record.id}
-              style={{ fontSize: '20px' }}
+              style={{ fontSize: "20px" }}
             />
           </Dropdown>
         );
@@ -564,23 +569,24 @@ export default function BookingsPage() {
             menu={{
               items: [
                 {
-                  key: 'view',
+                  key: "view",
                   icon: <EyeOutlined />,
-                  label: 'Chi tiết',
+                  label: "Chi tiết",
                   onClick: () => handleViewDetails(booking),
                 },
-                ...(booking.status === "PENDING" || booking.status === "PAYMENT_CONFIRMED"
+                ...(booking.status === "PENDING" ||
+                booking.status === "PAYMENT_CONFIRMED"
                   ? [
                       {
-                        key: 'approve',
+                        key: "approve",
                         icon: <CheckCircleOutlined />,
-                        label: 'Phê duyệt',
+                        label: "Phê duyệt",
                         onClick: () => handleApproveBooking(booking.id),
                       },
                       {
-                        key: 'reject',
+                        key: "reject",
                         icon: <CloseCircleOutlined />,
-                        label: 'Từ chối',
+                        label: "Từ chối",
                         onClick: () => handleRejectBooking(booking.id),
                         danger: true,
                       },
@@ -589,14 +595,14 @@ export default function BookingsPage() {
                 ...(booking.status !== "CANCELLED"
                   ? [
                       {
-                        key: 'cancel',
+                        key: "cancel",
                         icon: <CloseCircleOutlined />,
-                        label: 'Hủy',
+                        label: "Hủy",
                         onClick: () => {
                           Modal.confirm({
-                            title: 'Bạn có chắc chắn muốn hủy đặt phòng này?',
-                            okText: 'Có',
-                            cancelText: 'Không',
+                            title: "Bạn có chắc chắn muốn hủy đặt phòng này?",
+                            okText: "Có",
+                            cancelText: "Không",
                             onOk: () => handleCancelBooking(booking.id),
                           });
                         },
@@ -606,7 +612,7 @@ export default function BookingsPage() {
                   : []),
               ],
             }}
-            trigger={['click']}
+            trigger={["click"]}
             placement="bottomRight"
           >
             <Button
@@ -922,7 +928,9 @@ export default function BookingsPage() {
               <Descriptions.Item label="Email">
                 {selectedBooking.email || "Không có"}
               </Descriptions.Item>
-              {/* CCCD number removed per UI change: no longer display customer's ID number */}
+              <Descriptions.Item label="CCCD">
+                {selectedBooking.cccd}
+              </Descriptions.Item>
               <Descriptions.Item label="Số khách">
                 {selectedBooking.guests} người
               </Descriptions.Item>
@@ -959,14 +967,20 @@ export default function BookingsPage() {
                 )}
               </Descriptions.Item>
               <Descriptions.Item label="Giá cơ bản">
-                {selectedBooking.basePrice.toLocaleString("vi-VN")} đ
+                {selectedBooking.basePrice?.toLocaleString("vi-VN")} đ
               </Descriptions.Item>
-              <Descriptions.Item label="Giảm giá">
-                {selectedBooking.discountAmount.toLocaleString("vi-VN")} đ (
-                {selectedBooking.discountPercentage * 100}%)
-              </Descriptions.Item>
+              {selectedBooking.discountAmount !== undefined &&
+                selectedBooking.discountAmount > 0 && (
+                  <Descriptions.Item label="Giảm giá">
+                    {selectedBooking.discountAmount.toLocaleString("vi-VN")} đ (
+                    {selectedBooking.discountPercentage
+                      ? selectedBooking.discountPercentage * 100
+                      : 0}
+                    %)
+                  </Descriptions.Item>
+                )}
               <Descriptions.Item label="Phụ phí khách">
-                {selectedBooking.guestSurcharge.toLocaleString("vi-VN")} đ
+                {selectedBooking.guestSurcharge?.toLocaleString("vi-VN")} đ
               </Descriptions.Item>
               <Descriptions.Item label="Tổng tiền">
                 <strong>
@@ -997,45 +1011,60 @@ export default function BookingsPage() {
               )}
             </Descriptions>
 
-            {/* Hiển thị ảnh CCCD (chỉ mặt trước) */}
-            {selectedBooking.cccdFrontImage && (
+            {/* Hiển thị ảnh CCCD */}
+            {(selectedBooking.frontIdImageUrl ||
+              selectedBooking.backIdImageUrl ||
+              selectedBooking.cccdFrontImage ||
+              selectedBooking.cccdBackImage) && (
               <div style={{ marginTop: 24 }}>
                 <Title level={5} style={{ color: "#83311b", marginBottom: 16 }}>
                   Ảnh CCCD xác minh
                 </Title>
                 <Row gutter={[16, 16]}>
-                  <Col xs={24} sm={12}>
-                    <div
-                      style={{
-                        border: "2px solid #fbe0a2",
-                        borderRadius: 8,
-                        padding: 8,
-                        background: "#fefdf8",
-                      }}
-                    >
+                  {(selectedBooking.frontIdImageUrl ||
+                    selectedBooking.cccdFrontImage) && (
+                    <Col xs={24} sm={12}>
                       <div
                         style={{
-                          fontSize: "14px",
-                          fontWeight: 600,
-                          marginBottom: 8,
-                          color: "#83311b",
+                          border: "2px solid #fbe0a2",
+                          borderRadius: 8,
+                          padding: 8,
+                          background: "#fefdf8",
                         }}
                       >
-                        Mặt trước CCCD
+                        <div
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 600,
+                            marginBottom: 8,
+                            color: "#83311b",
+                          }}
+                        >
+                          Mặt trước CCCD
+                        </div>
+                        <img
+                          src={
+                            selectedBooking.frontIdImageUrl ||
+                            selectedBooking.cccdFrontImage
+                          }
+                          alt="CCCD Mặt trước"
+                          style={{
+                            width: "100%",
+                            height: "auto",
+                            borderRadius: 4,
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            window.open(
+                              selectedBooking.frontIdImageUrl ||
+                                selectedBooking.cccdFrontImage,
+                              "_blank"
+                            )
+                          }
+                        />
                       </div>
-                      <img
-                        src={selectedBooking.cccdFrontImage}
-                        alt="CCCD Mặt trước"
-                        style={{
-                          width: "100%",
-                          height: "auto",
-                          borderRadius: 4,
-                          cursor: "pointer",
-                        }}
-                        onClick={() => window.open(selectedBooking.cccdFrontImage, "_blank")}
-                      />
-                    </div>
-                  </Col>
+                    </Col>
+                  )}
                 </Row>
               </div>
             )}

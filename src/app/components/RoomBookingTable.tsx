@@ -119,22 +119,22 @@ export default function RoomBookingTable({
   // ✅ Refs for auto-scroll
   const timeSelectorRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
-  
+
   // ✅ Helper function to scroll to summary
   const scrollToSummary = () => {
     setTimeout(() => {
       if (summaryElementId) {
         // Scroll to external summary element by ID
         const summaryElement = document.getElementById(summaryElementId);
-        summaryElement?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        summaryElement?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
         });
       } else if (summaryRef.current) {
         // Scroll to internal ref (if any)
-        summaryRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        summaryRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
         });
       }
     }, 100);
@@ -143,7 +143,7 @@ export default function RoomBookingTable({
   // ✅ Get all unique time slots from all rooms across all branches
   const getAllTimeSlots = (): TimeSlot[] => {
     const timeSlotMap = new Map<string, TimeSlot>();
-    
+
     branches.forEach((branch) => {
       branch.rooms.forEach((room) => {
         room.timeSlots.forEach((timeSlot) => {
@@ -153,7 +153,7 @@ export default function RoomBookingTable({
         });
       });
     });
-    
+
     return Array.from(timeSlotMap.values());
   };
 
@@ -161,7 +161,9 @@ export default function RoomBookingTable({
 
   // ✅ Check if a room has a specific time slot
   const roomHasTimeSlot = (room: any, timeSlotId: string): TimeSlot | null => {
-    const timeSlot = room.timeSlots.find((ts: TimeSlot) => ts.id === timeSlotId);
+    const timeSlot = room.timeSlots.find(
+      (ts: TimeSlot) => ts.id === timeSlotId
+    );
     return timeSlot || null;
   };
 
@@ -247,13 +249,13 @@ export default function RoomBookingTable({
     timeSlotId: string
   ): BookingStatus => {
     const bookingData = bookings[dateKey]?.[branchId]?.[roomId]?.[timeSlotId];
-    
+
     // ✅ Nếu không có booking nào, trả về available
     if (!bookingData) {
       return { status: "available" };
     }
-    
-    // ✅ UU TIÊN: Nếu bookingData đã có status "booked" (từ initialBookings), 
+
+    // ✅ UU TIÊN: Nếu bookingData đã có status "booked" (từ initialBookings),
     // trả về ngay (đây là overnight package đã được mark sẵn)
     if (bookingData.status === "booked") {
       return {
@@ -261,7 +263,7 @@ export default function RoomBookingTable({
         bookedSlots: bookingData.bookedSlots || [],
       };
     }
-    
+
     // ✅ Fallback: Check nếu có bookedSlots nhưng status không phải "booked"
     // → Đây là gói giờ thông thường, vẫn available để đặt thêm
     if (bookingData.bookedSlots && bookingData.bookedSlots.length > 0) {
@@ -270,7 +272,7 @@ export default function RoomBookingTable({
         bookedSlots: bookingData.bookedSlots,
       };
     }
-    
+
     // ✅ Default: available
     return { status: "available" };
   };
@@ -344,7 +346,7 @@ export default function RoomBookingTable({
 
     // ✅ Với gói giờ thông thường, cho phép chọn để pick giờ cụ thể
     // (Conflict check sẽ được xử lý trong TimeSlotSelector)
-    
+
     // ... rest of logic
     const matchingSlots = selectedSlots.filter(
       (slot) =>
@@ -383,7 +385,7 @@ export default function RoomBookingTable({
 
         setSelectedSlots((prev) => [...prev, newSlot]);
         toast.success("Đã thêm vào giỏ", `${timeSlot.time} (Qua đêm)`);
-        
+
         // ✅ Auto-scroll to summary after adding overnight slot
         scrollToSummary();
       } else {
@@ -394,12 +396,12 @@ export default function RoomBookingTable({
           timeSlot,
         });
         setShowTimeSelector(true);
-        
+
         // ✅ Auto-scroll to time selector
         setTimeout(() => {
-          timeSelectorRef.current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
+          timeSelectorRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
           });
         }, 100);
       }
@@ -486,7 +488,7 @@ export default function RoomBookingTable({
         "Đã thêm vào giỏ",
         `${pendingSlot.timeSlot.time} - Check-in: ${checkInTime}`
       );
-      
+
       // ✅ Auto-scroll to summary after confirming time
       scrollToSummary();
     } catch (error) {
@@ -527,7 +529,7 @@ export default function RoomBookingTable({
       return `${styles.cell} ${styles.booked}`;
     }
 
-    // ✅ Với gói giờ thông thường, vẫn hiển thị available (xanh) 
+    // ✅ Với gói giờ thông thường, vẫn hiển thị available (xanh)
     // ngay cả khi đã có booking (vì có thể đặt giờ khác)
     return `${styles.cell} ${styles.available}`;
   };
@@ -729,7 +731,7 @@ export default function RoomBookingTable({
                   branch.rooms.map((room) =>
                     allTimeSlots.map((timeSlot) => {
                       const roomTimeSlot = roomHasTimeSlot(room, timeSlot.id);
-                      
+
                       // ✅ If room doesn't have this time slot, show disabled cell
                       if (!roomTimeSlot) {
                         return (
