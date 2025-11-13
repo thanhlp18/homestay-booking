@@ -9,7 +9,9 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import styles from "./room.module.css";
 import { AMENITY_ICON_MAP } from "@/app/components/HomeCard";
 import BookingSummary from "../../components/BookingSummary";
-import { TimeConflict } from "../../components/ConflictWarning";
+import ConflictWarning, {
+  TimeConflict,
+} from "../../components/ConflictWarning";
 import {
   checkTimeConflicts,
   SelectedSlotWithTime,
@@ -146,7 +148,7 @@ export default function RoomPage() {
     cccd: "",
     guests: "",
     notes: "",
-    paymentMethod: "cash",
+    paymentMethod: "transfer",
     bookingType: "timeSlots",
     frontIdImageUrl: "",
     backIdImageUrl: "",
@@ -553,11 +555,11 @@ export default function RoomPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate CCCD
-    if (!formData.frontIdImageUrl || !formData.backIdImageUrl) {
+    // Validate CCCD (require front image only)
+    if (!formData.frontIdImageUrl) {
       toast.warning(
         "Thiếu ảnh CCCD",
-        "Vui lòng tải lên đầy đủ 2 mặt CCCD/CMND"
+        "Vui lòng tải lên ảnh mặt trước CCCD/CMND"
       );
       return;
     }
@@ -618,13 +620,43 @@ export default function RoomPage() {
           } booking. Tổng: ${result.data.grandTotal.toLocaleString("vi-VN")}đ`
         );
 
-        setTimeout(() => {
-          router.push(
-            `/payment?bookingIds=${result.data.bookings
-              .map((b: any) => b.bookingId)
-              .join(",")}`
-          );
-        }, 1500);
+        // Store bookingData in cookie so payment page can read it
+        try {
+          const bookingIds = result.data.bookings.map((b: any) => b.bookingId);
+          const bookingData = {
+            bookingId: bookingIds[0],
+            price: result.data.grandTotal,
+            fullName: formData.fullName,
+            phone: formData.phone,
+            email: formData.email,
+            cccd: formData.cccd,
+            guests: formData.guests,
+            notes: formData.notes,
+            paymentMethod: formData.paymentMethod,
+            room: room?.name,
+            location: room?.location,
+            selectedSlots: selectedSlots,
+            frontIdImage: formData.frontIdImageUrl,
+            backIdImage: formData.backIdImageUrl,
+          };
+
+          document.cookie = `bookingData=${encodeURIComponent(
+            JSON.stringify(bookingData)
+          )}; path=/; SameSite=Strict`;
+
+          setTimeout(() => {
+            router.push(`/payment?bookingIds=${bookingIds.join(",")}`);
+          }, 1500);
+        } catch (err) {
+          // If cookie set fails for any reason, still navigate to payment
+          setTimeout(() => {
+            router.push(
+              `/payment?bookingIds=${result.data.bookings
+                .map((b: any) => b.bookingId)
+                .join(",")}`
+            );
+          }, 1500);
+        }
       } else {
         toast.error("Đặt phòng thất bại", result.message);
       }
@@ -1028,6 +1060,8 @@ export default function RoomPage() {
             />
             {formData.bookingType === "timeSlots" && (
               <div id="booking-summary">
+                {" "}
+                {/* ✅ Add ID wrapper */}
                 <BookingSummary
                   selectedSlots={selectedSlots} // ✅ Pass same state
                   branches={bookingTableBranches}
@@ -1082,18 +1116,6 @@ export default function RoomPage() {
                       required
                     />
                   </div>
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>CCCD/CMND *</label>
-                    <input
-                      type="text"
-                      name="cccd"
-                      className={styles.input}
-                      placeholder="Nhập số CCCD/CMND"
-                      value={formData.cccd}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
                 </div>
               </div>
               <div className={styles.section}>
@@ -1101,7 +1123,7 @@ export default function RoomPage() {
                   📄 Ảnh CCCD/CMND (Bắt buộc)
                 </h3>
                 <p className={styles.sectionHint}>
-                  Vui lòng chụp rõ 2 mặt CCCD/CMND để xác thực thông tin
+                  Vui lòng chụp rõ mặt trước CCCD/CMND để xác thực thông tin
                 </p>
 
                 <div className={styles.cccdGrid}>
@@ -1110,15 +1132,6 @@ export default function RoomPage() {
                     value={formData.frontIdImageUrl}
                     onChange={(url) =>
                       setFormData((prev) => ({ ...prev, frontIdImageUrl: url }))
-                    }
-                    disabled={isSubmitting}
-                  />
-
-                  <CCCDImageUpload
-                    label="Mặt sau CCCD/CMND"
-                    value={formData.backIdImageUrl}
-                    onChange={(url) =>
-                      setFormData((prev) => ({ ...prev, backIdImageUrl: url }))
                     }
                     disabled={isSubmitting}
                   />
@@ -1269,16 +1282,6 @@ export default function RoomPage() {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="cash"
-                        checked={formData.paymentMethod === "cash"}
-                        onChange={handleInputChange}
-                      />
-                      <span>Thanh toán tiền mặt khi nhận phòng</span>
-                    </label>
-                    <label className={styles.paymentOption}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
                         value="transfer"
                         checked={formData.paymentMethod === "transfer"}
                         onChange={handleInputChange}
@@ -1398,8 +1401,11 @@ export default function RoomPage() {
 
               <div className={styles.bookingNotice}>
                 <strong>
-                  KHÁCH MUỐN BẢO LƯU HAY ĐỔI NGÀY
-                  <br /> VUI LÒNG BẢO TRƯỚC 3 TIẾNG TRƯỚC GIỜ CHECK IN
+                  Hủy phòng trên 3 ngày trước ngày check-in: <br />
+                  hoàn lại 50% tiền cọc.
+                  <br />
+                  <br /> Hủy phòng dưới 3 ngày trước ngày check-in: <br />
+                  không hoàn tiền cọc.
                 </strong>
               </div>
 

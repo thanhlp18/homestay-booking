@@ -1013,45 +1013,6 @@ export default function AdminDashboard() {
                       </div>
                     </Col>
                   )}
-                  {selectedBooking.backIdImageUrl && (
-                    <Col xs={24} sm={12}>
-                      <div
-                        style={{
-                          border: "2px solid #fbe0a2",
-                          borderRadius: 8,
-                          padding: 8,
-                          background: "#fefdf8",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            marginBottom: 8,
-                            color: "#83311b",
-                          }}
-                        >
-                          Mặt sau CCCD
-                        </div>
-                        <img
-                          src={selectedBooking.backIdImageUrl}
-                          alt="CCCD Mặt sau"
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                          onClick={() =>
-                            window.open(
-                              selectedBooking.backIdImageUrl,
-                              "_blank"
-                            )
-                          }
-                        />
-                      </div>
-                    </Col>
-                  )}
                 </Row>
               </div>
             )}

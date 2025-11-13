@@ -69,7 +69,6 @@ export default function UsageGuidePage() {
                   <li>Họ và tên (bắt buộc)</li>
                   <li>Số điện thoại (bắt buộc)</li>
                   <li>Email (không bắt buộc)</li>
-                  <li>Số CCCD (bắt buộc)</li>
                   <li>Số khách (bắt buộc)</li>
                 </ul>
               </div>

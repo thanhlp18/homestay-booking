@@ -34,9 +34,6 @@ function validateSingleBooking(
   if (!data.email || typeof data.email !== "string") {
     throw new Error("Email là bắt buộc");
   }
-  if (!data.cccd || typeof data.cccd !== "string") {
-    throw new Error("Số CCCD là bắt buộc");
-  }
   if (!data.guests || typeof data.guests !== "number" || data.guests < 1) {
     throw new Error("Số khách phải lớn hơn 0");
   }

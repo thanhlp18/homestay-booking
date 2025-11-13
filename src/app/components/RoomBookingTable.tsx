@@ -119,25 +119,52 @@ export default function RoomBookingTable({
   // ✅ Refs for auto-scroll
   const timeSelectorRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
-  
+
   // ✅ Helper function to scroll to summary
   const scrollToSummary = () => {
     setTimeout(() => {
       if (summaryElementId) {
         // Scroll to external summary element by ID
         const summaryElement = document.getElementById(summaryElementId);
-        summaryElement?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        summaryElement?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
         });
       } else if (summaryRef.current) {
         // Scroll to internal ref (if any)
-        summaryRef.current.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        summaryRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
         });
       }
     }, 100);
+  };
+
+  // ✅ Get all unique time slots from all rooms across all branches
+  const getAllTimeSlots = (): TimeSlot[] => {
+    const timeSlotMap = new Map<string, TimeSlot>();
+
+    branches.forEach((branch) => {
+      branch.rooms.forEach((room) => {
+        room.timeSlots.forEach((timeSlot) => {
+          if (!timeSlotMap.has(timeSlot.id)) {
+            timeSlotMap.set(timeSlot.id, timeSlot);
+          }
+        });
+      });
+    });
+
+    return Array.from(timeSlotMap.values());
+  };
+
+  const allTimeSlots = getAllTimeSlots();
+
+  // ✅ Check if a room has a specific time slot
+  const roomHasTimeSlot = (room: any, timeSlotId: string): TimeSlot | null => {
+    const timeSlot = room.timeSlots.find(
+      (ts: TimeSlot) => ts.id === timeSlotId
+    );
+    return timeSlot || null;
   };
 
   useEffect(() => {
@@ -222,13 +249,13 @@ export default function RoomBookingTable({
     timeSlotId: string
   ): BookingStatus => {
     const bookingData = bookings[dateKey]?.[branchId]?.[roomId]?.[timeSlotId];
-    
+
     // ✅ Nếu không có booking nào, trả về available
     if (!bookingData) {
       return { status: "available" };
     }
-    
-    // ✅ UU TIÊN: Nếu bookingData đã có status "booked" (từ initialBookings), 
+
+    // ✅ UU TIÊN: Nếu bookingData đã có status "booked" (từ initialBookings),
     // trả về ngay (đây là overnight package đã được mark sẵn)
     if (bookingData.status === "booked") {
       return {
@@ -236,7 +263,7 @@ export default function RoomBookingTable({
         bookedSlots: bookingData.bookedSlots || [],
       };
     }
-    
+
     // ✅ Fallback: Check nếu có bookedSlots nhưng status không phải "booked"
     // → Đây là gói giờ thông thường, vẫn available để đặt thêm
     if (bookingData.bookedSlots && bookingData.bookedSlots.length > 0) {
@@ -245,7 +272,7 @@ export default function RoomBookingTable({
         bookedSlots: bookingData.bookedSlots,
       };
     }
-    
+
     // ✅ Default: available
     return { status: "available" };
   };
@@ -319,7 +346,7 @@ export default function RoomBookingTable({
 
     // ✅ Với gói giờ thông thường, cho phép chọn để pick giờ cụ thể
     // (Conflict check sẽ được xử lý trong TimeSlotSelector)
-    
+
     // ... rest of logic
     const matchingSlots = selectedSlots.filter(
       (slot) =>
@@ -358,7 +385,7 @@ export default function RoomBookingTable({
 
         setSelectedSlots((prev) => [...prev, newSlot]);
         toast.success("Đã thêm vào giỏ", `${timeSlot.time} (Qua đêm)`);
-        
+
         // ✅ Auto-scroll to summary after adding overnight slot
         scrollToSummary();
       } else {
@@ -369,12 +396,12 @@ export default function RoomBookingTable({
           timeSlot,
         });
         setShowTimeSelector(true);
-        
+
         // ✅ Auto-scroll to time selector
         setTimeout(() => {
-          timeSelectorRef.current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
+          timeSelectorRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
           });
         }, 100);
       }
@@ -461,7 +488,7 @@ export default function RoomBookingTable({
         "Đã thêm vào giỏ",
         `${pendingSlot.timeSlot.time} - Check-in: ${checkInTime}`
       );
-      
+
       // ✅ Auto-scroll to summary after confirming time
       scrollToSummary();
     } catch (error) {
@@ -502,7 +529,7 @@ export default function RoomBookingTable({
       return `${styles.cell} ${styles.booked}`;
     }
 
-    // ✅ Với gói giờ thông thường, vẫn hiển thị available (xanh) 
+    // ✅ Với gói giờ thông thường, vẫn hiển thị available (xanh)
     // ngay cả khi đã có booking (vì có thể đặt giờ khác)
     return `${styles.cell} ${styles.available}`;
   };
@@ -641,22 +668,21 @@ export default function RoomBookingTable({
       <div className={styles.tableWrapper}>
         <table className={styles.bookingTable}>
           <thead>
+            {/* Row 1: Branch headers */}
             <tr className={styles.branchRow}>
               <th className={styles.dateHeader}>Ngày</th>
               {branches.map((branch) => (
                 <th
                   key={branch.id}
                   className={styles.branchHeader}
-                  colSpan={branch.rooms.reduce(
-                    (sum, room) => sum + room.timeSlots.length,
-                    0
-                  )}
+                  colSpan={branch.rooms.length * allTimeSlots.length}
                 >
                   {branch.name}
                 </th>
               ))}
             </tr>
 
+            {/* Row 2: Room headers */}
             <tr className={styles.roomRow}>
               <th className={styles.dateHeader}></th>
               {branches.map((branch) =>
@@ -664,7 +690,7 @@ export default function RoomBookingTable({
                   <th
                     key={`${branch.id}-${room.id}`}
                     className={styles.roomHeader}
-                    colSpan={room.timeSlots.length}
+                    colSpan={allTimeSlots.length}
                   >
                     {room.name}
                   </th>
@@ -672,11 +698,12 @@ export default function RoomBookingTable({
               )}
             </tr>
 
+            {/* Row 3: Time slot headers - DYNAMIC */}
             <tr className={styles.timeRow}>
               <th className={styles.dateHeader}>Khung giờ</th>
               {branches.map((branch) =>
                 branch.rooms.map((room) =>
-                  room.timeSlots.map((timeSlot) => (
+                  allTimeSlots.map((timeSlot) => (
                     <th
                       key={`${branch.id}-${room.id}-${timeSlot.id}`}
                       className={styles.timeHeader}
@@ -702,32 +729,49 @@ export default function RoomBookingTable({
                 </td>
                 {branches.map((branch) =>
                   branch.rooms.map((room) =>
-                    room.timeSlots.map((timeSlot) => (
-                      <td
-                        key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
-                        className={getCellClass(
-                          dateInfo.key,
-                          branch.id,
-                          room.id,
-                          timeSlot.id
-                        )}
-                        onClick={() =>
-                          handleCellClick(
+                    allTimeSlots.map((timeSlot) => {
+                      const roomTimeSlot = roomHasTimeSlot(room, timeSlot.id);
+
+                      // ✅ If room doesn't have this time slot, show disabled cell
+                      if (!roomTimeSlot) {
+                        return (
+                          <td
+                            key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
+                            className={`${styles.cell} ${styles.disabled}`}
+                          >
+                            <span style={{ opacity: 0.3 }}>—</span>
+                          </td>
+                        );
+                      }
+
+                      // ✅ Room has this time slot, show normal cell
+                      return (
+                        <td
+                          key={`${dateInfo.key}-${branch.id}-${room.id}-${timeSlot.id}`}
+                          className={getCellClass(
                             dateInfo.key,
                             branch.id,
                             room.id,
-                            timeSlot
-                          )
-                        }
-                      >
-                        {getCellContent(
-                          dateInfo.key,
-                          branch.id,
-                          room.id,
-                          timeSlot.id
-                        )}
-                      </td>
-                    ))
+                            timeSlot.id
+                          )}
+                          onClick={() =>
+                            handleCellClick(
+                              dateInfo.key,
+                              branch.id,
+                              room.id,
+                              roomTimeSlot
+                            )
+                          }
+                        >
+                          {getCellContent(
+                            dateInfo.key,
+                            branch.id,
+                            room.id,
+                            timeSlot.id
+                          )}
+                        </td>
+                      );
+                    })
                   )
                 )}
               </tr>

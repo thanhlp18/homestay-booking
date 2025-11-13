@@ -1065,50 +1065,6 @@ export default function BookingsPage() {
                       </div>
                     </Col>
                   )}
-                  {(selectedBooking.backIdImageUrl ||
-                    selectedBooking.cccdBackImage) && (
-                    <Col xs={24} sm={12}>
-                      <div
-                        style={{
-                          border: "2px solid #fbe0a2",
-                          borderRadius: 8,
-                          padding: 8,
-                          background: "#fefdf8",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: 600,
-                            marginBottom: 8,
-                            color: "#83311b",
-                          }}
-                        >
-                          Mặt sau CCCD
-                        </div>
-                        <img
-                          src={
-                            selectedBooking.backIdImageUrl ||
-                            selectedBooking.cccdBackImage
-                          }
-                          alt="CCCD Mặt sau"
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                          onClick={() =>
-                            window.open(
-                              selectedBooking.backIdImageUrl ||
-                                selectedBooking.cccdBackImage,
-                              "_blank"
-                            )
-                          }
-                        />
-                      </div>
-                    </Col>
-                  )}
                 </Row>
               </div>
             )}
