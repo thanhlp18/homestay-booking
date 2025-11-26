@@ -133,6 +133,12 @@ export async function POST(request: NextRequest) {
             basePrice: booking.basePrice,
             discountAmount: booking.discountAmount,
             discountPercentage: booking.discountPercentage,
+            checkInDateTime: booking.checkInDateTime || undefined,
+            checkOutDateTime: booking.checkOutDateTime || undefined,
+            checkInTime: booking.room?.checkIn,
+            checkOutTime: booking.room?.checkOut,
+            branchAddress: booking.room?.branch?.address,
+            googleMapUrl: booking.room?.branch?.googleMapUrl || undefined,
           };
 
           await sendBookingApproval(emailData);

@@ -228,10 +228,12 @@ export async function POST(request: NextRequest) {
         basePrice: booking.basePrice,
         discountAmount: booking.discountAmount,
         discountPercentage: booking.discountPercentage,
-        guestSurcharge: booking.guestSurcharge,
-        checkIn: booking.checkInDateTime,
-        checkOut: booking.checkOutDateTime,
-        package: booking.timeSlot.time,
+        checkInDateTime: booking.checkInDateTime!,
+        checkOutDateTime: booking.checkOutDateTime!,
+        checkInTime: booking.room.checkIn,
+        checkOutTime: booking.room.checkOut,
+        branchAddress: booking.room.branch.address,
+        googleMapUrl: booking.room.branch.googleMapUrl || undefined,
       };
 
       await sendBookingConfirmation(emailData);
