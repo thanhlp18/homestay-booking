@@ -113,30 +113,46 @@ export const emailTemplates = {
 
             <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ff9800;">
               <h3 style="color: #856404; margin-top: 0;">💳 HƯỚNG DẪN THANH TOÁN</h3>
-              <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
-                ${
-                  bookingData.paymentMethod === "TRANSFER"
-                    ? `Để hoàn tất đặt phòng, vui lòng chuyển khoản theo thông tin sau:`
-                    : bookingData.paymentMethod === "CASH"
-                    ? `Bạn đã chọn hình thức thanh toán bằng tiền mặt khi nhận phòng.`
-                    : `Bạn đã chọn hình thức thanh toán bằng thẻ.`
-                }
-              </p>
               ${
                 bookingData.paymentMethod === "TRANSFER"
                   ? `
-              <div style="background: white; padding: 12px; border-radius: 5px; margin: 10px 0;">
-                <p style="margin: 5px 0; color: #333;"><strong>Ngân hàng:</strong> Vietcombank</p>
-                <p style="margin: 5px 0; color: #333;"><strong>Số tài khoản:</strong> 1234567890</p>
-                <p style="margin: 5px 0; color: #333;"><strong>Chủ tài khoản:</strong> NGUYEN VAN A</p>
-                <p style="margin: 5px 0; color: #333;"><strong>Nội dung:</strong> <span style="color: #ff9800; font-weight: bold;">${bookingData.id} ${bookingData.fullName}</span></p>
-                <p style="margin: 5px 0; color: #333;"><strong>Số tiền:</strong> <span style="color: #ff9800; font-weight: bold;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</span></p>
+              <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
+                Để hoàn tất đặt phòng, vui lòng thanh toán qua chuyển khoản ngân hàng:
+              </p>
+              <div style="background: white; padding: 15px; border-radius: 5px; margin: 15px 0; text-align: center;">
+                <p style="margin: 0 0 15px 0; color: #333; font-size: 16px;">
+                  <strong>Ngân hàng TPBank</strong><br/>
+                  Số TK: <strong>43218082002</strong><br/>
+                  Chủ TK: <strong>Lê Phước Thành</strong><br/>
+                  Số tiền: <strong style="color: #ff9800; font-size: 18px;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</strong><br/>
+                  Nội dung: <strong style="color: #ff9800;">${bookingData.id}</strong>
+                </p>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://onihomestay.com"}/payment?bookingIds=${bookingData.id}"
+                   style="display: inline-block; background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 10px;">
+                  🔗 Mở trang thanh toán QR
+                </a>
+                <p style="margin: 15px 0 0 0; color: #666; font-size: 13px;">
+                  Trang thanh toán có mã QR để bạn quét trực tiếp bằng app ngân hàng
+                </p>
               </div>
               <p style="margin: 10px 0 5px 0; color: #856404; font-size: 14px;">
-                <em>*Sau khi chuyển khoản, vui lòng gửi ảnh chụp màn hình biên lai qua Zalo/số điện thoại: <strong>094.157.1155</strong></em>
+                <em>💡 Lưu ý: Vui lòng ghi đúng nội dung chuyển khoản <strong>${bookingData.id}</strong> để hệ thống tự động xác nhận thanh toán</em>
               </p>
               `
-                  : ""
+                  : bookingData.paymentMethod === "CASH"
+                  ? `
+              <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
+                Bạn đã chọn hình thức thanh toán bằng <strong>tiền mặt khi nhận phòng</strong>.
+              </p>
+              <p style="margin: 10px 0; color: #856404; font-size: 14px;">
+                Vui lòng chuẩn bị đầy đủ số tiền <strong style="color: #ff9800;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</strong> khi đến homestay.
+              </p>
+              `
+                  : `
+              <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
+                Bạn đã chọn hình thức thanh toán bằng thẻ.
+              </p>
+              `
               }
             </div>
 
@@ -149,8 +165,21 @@ export const emailTemplates = {
                 <li>Hướng dẫn check-in chi tiết</li>
                 <li>Mã vào cửa chính (gửi qua Zalo/SMS)</li>
                 <li>Nội quy homestay</li>
-                <li>Cẩm nang du lịch Huế</li>
+                <li>Thông tin liên hệ hỗ trợ</li>
               </ul>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #667eea;">
+              <h3 style="color: #667eea; margin-top: 0;">📚 CẨM NANG DU LỊCH HUẾ</h3>
+              <p style="margin: 5px 0; color: #555;">Để chuẩn bị cho chuyến đi, hãy xem ngay cẩm nang du lịch Huế của chúng tôi:</p>
+              <p style="margin: 10px 0;">
+                <a href="https://drive.google.com/file/d/1waKwKk9inxFd2TdWYCdJ0X0zfT4Ju2pf/view?usp=drive_link" style="color: #667eea; text-decoration: none; font-weight: bold;">
+                  📖 Cẩm nang du lịch Huế.pdf
+                </a>
+              </p>
+              <p style="margin: 5px 0; color: #666; font-size: 14px; line-height: 1.6;">
+                Tài liệu bao gồm: Điểm tham quan nổi tiếng, quán ăn ngon, kinh nghiệm du lịch Huế và nhiều thông tin hữu ích khác! ✨
+              </p>
             </div>
 
             <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
