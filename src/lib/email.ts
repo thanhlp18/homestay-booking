@@ -16,6 +16,12 @@ interface BookingData {
   basePrice?: number;
   discountAmount?: number;
   discountPercentage?: number;
+  checkInDateTime?: Date | string;
+  checkOutDateTime?: Date | string;
+  checkInTime?: string; // e.g., "14:00"
+  checkOutTime?: string; // e.g., "12:00"
+  branchAddress?: string;
+  googleMapUrl?: string;
 }
 
 // Email configuration
@@ -30,100 +36,185 @@ const transporter = nodemailer.createTransport({
 // Email templates
 export const emailTemplates = {
   bookingConfirmation: (bookingData: BookingData) => {
-    const isTransferPayment =
-      bookingData.paymentMethod === "TRANSFER" ||
-      bookingData.paymentMethod === "CARD";
     const paymentMethodText =
       bookingData.paymentMethod === "CASH"
         ? "Tiền mặt"
         : bookingData.paymentMethod === "TRANSFER"
-        ? "Chuyển khoản"
+        ? "Đã chuyển khoản"
         : "Thẻ";
 
-    const paymentInstructions = isTransferPayment
-      ? `
-        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
-          <h3 style="color: #1565c0; margin-top: 0;">💳 Hướng dẫn thanh toán</h3>
-          <p style="margin: 0; color: #1565c0; font-weight: bold;">Vui lòng hoàn tất quy trình thanh toán để xác nhận đặt phòng:</p>
-          <ul style="margin: 10px 0 0 20px; color: #1565c0;">
-            <li>Kiểm tra email thanh toán đã được gửi</li>
-            <li>Thực hiện chuyển khoản theo thông tin trong email</li>
-            <li>Chờ xác nhận thanh toán từ hệ thống</li>
-            <li>Chúng tôi sẽ liên hệ để xác nhận sau khi nhận được thanh toán</li>
-          </ul>
-        </div>
-      `
-      : `
-        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
-          <h3 style="color: #856404; margin-top: 0;">💰 Thanh toán tiền mặt</h3>
-          <p style="margin: 0; color: #856404;">Đặt phòng thành công! Vui lòng thanh toán tiền mặt khi đến homestay:</p>
-          <ul style="margin: 10px 0 0 20px; color: #856404;">
-            <li>Thanh toán toàn bộ số tiền: <strong>${bookingData.totalPrice?.toLocaleString(
-              "vi-VN"
-            )} đ</strong></li>
-            <li>Chúng tôi sẽ liên hệ với bạn để xác nhận đặt phòng</li>
-            <li>Vui lòng chuẩn bị CCCD để làm thủ tục check-in</li>
-          </ul>
-        </div>
-      `;
-
-    const statusMessage = isTransferPayment
-      ? `<p style="margin: 0; color: #856404;">Đơn đặt phòng của bạn đang chờ thanh toán. Vui lòng hoàn tất quy trình thanh toán để xác nhận.</p>`
-      : `<p style="margin: 0; color: #856404;">Đơn đặt phòng của bạn đang được xử lý. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận.</p>`;
+    // Format dates if available
+    const formatDate = (date?: Date | string) => {
+      if (!date) return "Chưa xác định";
+      const d = typeof date === "string" ? new Date(date) : date;
+      return d.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
 
     return {
       subject: `Xác nhận đặt phòng - ${bookingData.room} | O Ni Homestay`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
-            <h1 style="margin: 0;">💚 O Ni Homestay</h1>
-            <p style="margin: 10px 0 0 0;">Xác nhận đặt phòng</p>
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; border-bottom: 3px solid #667eea;">
+            <h1 style="margin: 0; color: #333; font-size: 24px;">O Ni Homestay</h1>
           </div>
-          
+
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; text-align: center;">
+            <h2 style="margin: 0; font-size: 18px;">XÁC NHẬN ĐẶT PHÒNG THÀNH CÔNG</h2>
+          </div>
+
           <div style="padding: 20px; background: #f9f9f9;">
             <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
-            <p>Chúng tôi đã nhận được yêu cầu đặt phòng của bạn. Dưới đây là thông tin chi tiết:</p>
-            
+            <p>Cảm ơn bạn đã lựa chọn O Ni Homestay cho kỳ nghỉ của mình tại Huế 💛</p>
+            <p>O Ni xin xác nhận rằng đơn đặt phòng của bạn đã được ghi nhận thành công. Dưới đây là thông tin chi tiết:</p>
+
             <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <h3 style="color: #667eea; margin-top: 0;">Thông tin đặt phòng</h3>
-              <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
-              <p><strong>Phòng:</strong> ${bookingData.room}</p>
-              <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
-              <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-              <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
-                "vi-VN"
-              )} đ</p>
-              <p><strong>Phương thức thanh toán:</strong> ${paymentMethodText}</p>
-              ${
-                bookingData.notes
-                  ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>`
-                  : ""
-              }
+              <h3 style="color: #667eea; margin-top: 0;">🏡 Thông tin đặt phòng</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Mã đặt phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.id}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày nhận phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(
+                    bookingData.checkInDateTime
+                  )}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày trả phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(
+                    bookingData.checkOutDateTime
+                  )}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Số khách:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${
+                    bookingData.guests
+                  } người</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Loại phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${
+                    bookingData.room
+                  }</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Tổng tiền:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.totalPrice?.toLocaleString(
+                    "vi-VN"
+                  )} đ</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Hình thức thanh toán:</strong></td>
+                  <td style="padding: 8px 0;">${paymentMethodText}</td>
+                </tr>
+              </table>
+
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #f0f0f0;">
+                <table style="width: 100%;">
+                  <tr>
+                    <td style="width: 50%; padding: 5px 0;"><strong>Giờ nhận phòng:</strong><br/>${
+                      bookingData.checkInTime || "14:00"
+                    }</td>
+                    <td style="width: 50%; padding: 5px 0;"><strong>Giờ trả phòng:</strong><br/>${
+                      bookingData.checkOutTime || "12:00"
+                    }</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="margin-top: 15px;">
+                <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> ${
+                  bookingData.branchAddress ||
+                  "9/4 Điềm Phùng Thị, phường Vỹ Dạ, thành phố Huế"
+                }</p>
+                ${
+                  bookingData.googleMapUrl
+                    ? `<p style="margin: 5px 0;"><a href="${bookingData.googleMapUrl}" style="color: #667eea; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+                    : `<p style="margin: 5px 0;"><a href="https://maps.app.goo.gl/vL3pG4wCuAH4Nwyn6?g_st=ipc" style="color: #667eea; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+                }
+              </div>
             </div>
-            
+
             <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-              <h3 style="color: #667eea; margin-top: 0;">Thông tin khách hàng</h3>
-              <p><strong>Họ tên:</strong> ${bookingData.fullName}</p>
-              <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
-              <p><strong>Email:</strong> ${bookingData.email}</p>
-              <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
+              <h3 style="color: #667eea; margin-top: 0;">🗝️ HƯỚNG DẪN CHECK-IN</h3>
+
+              <div style="margin-bottom: 15px;">
+                <p style="margin: 5px 0 10px 0;"><strong style="color: #555;">Bước 1: Vào cửa chính</strong></p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;">
+                  Khi đến O Ni, sử dụng mã điện tử được gửi qua số điện thoại/Zalo sau khi đặt phòng thành công.
+                </p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;"><strong>Cách nhập mã:</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px; color: #666;">
+                  <li>Chạm vào màn hình để hiển thị số</li>
+                  <li>Nhập mã và nhấn #</li>
+                </ul>
+                <p style="margin: 10px 0; padding: 10px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404; font-size: 14px;">
+                  <em>*Nếu không nhận được mã, vui lòng liên hệ với O Bé qua số điện thoại (094.157.1155) khi tới nơi</em>
+                </p>
+              </div>
+
+              <div style="margin-top: 15px;">
+                <p style="margin: 5px 0 10px 0;"><strong style="color: #555;">Bước 2: Nhận chìa khóa phòng</strong></p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;">
+                  Chìa khóa phòng sẽ được để trong hộp chìa trước cửa phòng của bạn. Để mở hộp, nhập mã <strong>0000</strong> và lấy chìa khóa.
+                </p>
+                <p style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-left: 3px solid #2196f3; color: #1565c0; font-size: 14px;">
+                  <em>Lưu ý: Luôn khóa cửa phòng khi ra ngoài.</em>
+                </p>
+              </div>
             </div>
-            
-            ${paymentInstructions}
-            
-            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ffc107;">
-              <h3 style="color: #856404; margin-top: 0;">Trạng thái đặt phòng</h3>
-              ${statusMessage}
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">CHÍNH SÁCH HỦY PHÒNG</h3>
+              <ul style="color: #666; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
+                <li>Hủy phòng >3 ngày trước ngày nhận: hoàn lại 50% tiền cọc</li>
+                <li>Hủy phòng <3 ngày trước ngày nhận: không hoàn tiền cọc</li>
+              </ul>
             </div>
-            
-            <div style="margin: 20px 0;">
-              <p>Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của O Ni Homestay!</p>
-              <p>Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua:</p>
-              <p>📞 Hotline: 0939000000</p>
-              <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">📖 NỘI QUY HOMESTAY</h3>
+              <ul style="color: #666; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
+                <li>Nghiêm cấm mọi hành vi hoạt động mại dâm, buôn bán, tổ chức sử dụng chất cấm</li>
+                <li>Không hút thuốc trong phòng (có khu vực riêng bên ngoài)</li>
+                <li>Không đưa bạn bè lên phòng khi chưa thông báo</li>
+                <li>Giữ yên tĩnh sau 22:00</li>
+                <li>Khi trả phòng, vui lòng bàn giao lại chìa khóa và kiểm tra đồ cá nhân</li>
+                <li>Mọi hư hại hoặc mất mát sẽ được tính phí theo quy định</li>
+                <li>Không mang thú cưng nếu chưa báo trước</li>
+              </ul>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #667eea;">
+              <h3 style="color: #667eea; margin-top: 0;">📚 CẨM NANG DU LỊCH HUẾ</h3>
+              <p style="margin: 5px 0; color: #555;">Để chuyến đi của bạn thêm thú vị, hãy xem ngay:</p>
+              <p style="margin: 10px 0;">
+                <a href="https://drive.google.com/file/d/1waKwKk9inxFd2TdWYCdJ0X0zfT4Ju2pf/view?usp=drive_link" style="color: #667eea; text-decoration: none; font-weight: bold;">
+                  📖 Cẩm nang du lịch Huế.pdf
+                </a>
+              </p>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">📞 THÔNG TIN LIÊN HỆ</h3>
+              <p style="color: #666; margin: 5px 0;">Nếu cần hỗ trợ gì, hãy liên hệ với tụi mình qua:</p>
+              <p style="margin: 8px 0;"><strong>Sđt/Zalo:</strong> <a href="tel:0941571155" style="color: #667eea; text-decoration: none;">094.157.1155</a></p>
+              <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:onihomestay@gmail.com" style="color: #667eea; text-decoration: none;">onihomestay@gmail.com</a></p>
+            </div>
+
+            <div style="margin: 20px 0; text-align: center; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 5px;">
+              <p style="color: #2d3436; font-size: 16px; margin: 0;">
+                Cảm ơn bạn đã chọn O Ni cho chuyến đi này,<br/>
+                hy vọng bạn sẽ có nhiều trải nghiệm thú vị với tụi mình nha! 💛
+              </p>
             </div>
           </div>
-          
+
           <div style="background: #333; color: white; padding: 20px; text-align: center;">
             <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
           </div>
@@ -132,168 +223,357 @@ export const emailTemplates = {
     };
   },
 
-  adminNotification: (bookingData: BookingData) => ({
-    subject: `🔔 Đặt phòng mới - ${bookingData.room} | ${bookingData.fullName}`,
-    html: `
+  adminNotification: (bookingData: BookingData) => {
+    const formatDate = (date?: Date | string) => {
+      if (!date) return "Chưa xác định";
+      const d = typeof date === "string" ? new Date(date) : date;
+      return d.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    return {
+      subject: `🔔 Đặt phòng mới - ${bookingData.room} | ${bookingData.fullName}`,
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">🔔 Thông báo đặt phòng mới</h1>
-          <p style="margin: 10px 0 0 0;">O Ni Homestay Admin Panel</p>
+        <div style="background: #f5f5f5; padding: 20px; text-align: center; border-bottom: 3px solid #667eea;">
+          <h1 style="margin: 0; color: #333; font-size: 24px;">O Ni Homestay</h1>
         </div>
-        
+
+        <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 15px; text-align: center;">
+          <h2 style="margin: 0; font-size: 18px;">🔔 THÔNG BÁO ĐẶT PHÒNG MỚI</h2>
+        </div>
+
         <div style="padding: 20px; background: #f9f9f9;">
           <h2 style="color: #333;">Đặt phòng mới cần xử lý</h2>
           <p>Có một đơn đặt phòng mới cần được xem xét và phê duyệt.</p>
-          
+
           <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #dc3545; margin-top: 0;">Thông tin đặt phòng</h3>
-            <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
-            <p><strong>Phòng:</strong> ${bookingData.room}</p>
-            <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
-            <p><strong>Khách hàng:</strong> ${bookingData.fullName}</p>
-            <p><strong>Điện thoại:</strong> ${bookingData.phone}</p>
-            <p><strong>Email:</strong> ${bookingData.email}</p>
-            <p><strong>CCCD:</strong> ${bookingData.cccd}</p>
-            <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
-              "vi-VN"
-            )} đ</p>
-            <p><strong>Phương thức TT:</strong> ${
-              bookingData.paymentMethod === "CASH"
-                ? "Tiền mặt"
-                : bookingData.paymentMethod === "TRANSFER"
-                ? "Chuyển khoản"
-                : "Thẻ"
-            }</p>
-            ${
-              bookingData.notes
-                ? `<p><strong>Ghi chú:</strong> ${bookingData.notes}</p>`
-                : ""
-            }
+            <h3 style="color: #dc3545; margin-top: 0;">📋 Thông tin đặt phòng</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Mã đặt phòng:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.id}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày nhận phòng:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkInDateTime)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày trả phòng:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkOutDateTime)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Phòng:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.room}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Địa điểm:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.location}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Số khách:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.guests} người</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Tổng tiền:</strong></td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong style="color: #dc3545;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</strong></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0;"><strong>Phương thức thanh toán:</strong></td>
+                <td style="padding: 8px 0;">${
+                  bookingData.paymentMethod === "CASH"
+                    ? "Tiền mặt"
+                    : bookingData.paymentMethod === "TRANSFER"
+                    ? "Chuyển khoản"
+                    : "Thẻ"
+                }</td>
+              </tr>
+            </table>
           </div>
-          
+
+          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #dc3545; margin-top: 0;">👤 Thông tin khách hàng</h3>
+            <p style="margin: 5px 0;"><strong>Họ tên:</strong> ${bookingData.fullName}</p>
+            <p style="margin: 5px 0;"><strong>Điện thoại:</strong> <a href="tel:${bookingData.phone}" style="color: #667eea; text-decoration: none;">${bookingData.phone}</a></p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${bookingData.email}" style="color: #667eea; text-decoration: none;">${bookingData.email}</a></p>
+            <p style="margin: 5px 0;"><strong>CCCD:</strong> ${bookingData.cccd}</p>
+            ${bookingData.notes ? `<p style="margin: 5px 0;"><strong>Ghi chú:</strong> ${bookingData.notes}</p>` : ""}
+          </div>
+
           <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
-            <h3 style="color: #155724; margin-top: 0;">Hành động cần thực hiện</h3>
+            <h3 style="color: #155724; margin-top: 0;">⚡ Hành động cần thực hiện</h3>
             <p style="margin: 0; color: #155724;">Vui lòng đăng nhập vào admin panel để xem chi tiết và phê duyệt đơn đặt phòng này.</p>
           </div>
-          
+
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${
-              process.env.NEXT_PUBLIC_APP_URL
-            }/admin" style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin" style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
               Xem trong Admin Panel
             </a>
           </div>
         </div>
-        
-        <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 O Ni Homestay - Admin System</p>
-        </div>
-      </div>
-    `,
-  }),
 
-  bookingApproval: (bookingData: BookingData) => ({
-    subject: `✅ Đặt phòng được phê duyệt - ${bookingData.room} | O Ni Homestay`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">✅ Đặt phòng thành công!</h1>
-          <p style="margin: 10px 0 0 0;">O Ni Homestay</p>
-        </div>
-        
-        <div style="padding: 20px; background: #f9f9f9;">
-          <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
-          <p>Chúc mừng! Đơn đặt phòng của bạn đã được phê duyệt. Dưới đây là thông tin chi tiết:</p>
-          
-          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #28a745; margin-top: 0;">Thông tin đặt phòng</h3>
-            <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
-            <p><strong>Phòng:</strong> ${bookingData.room}</p>
-            <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
-            <p><strong>Số khách:</strong> ${bookingData.guests}</p>
-            <p><strong>Tổng tiền:</strong> ${bookingData.totalPrice?.toLocaleString(
-              "vi-VN"
-            )} đ</p>
-            <p><strong>Phương thức thanh toán:</strong> ${
-              bookingData.paymentMethod === "CASH"
-                ? "Tiền mặt"
-                : bookingData.paymentMethod === "TRANSFER"
-                ? "Chuyển khoản"
-                : "Thẻ"
-            }</p>
-          </div>
-          
-          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #28a745; margin-top: 0;">Thông tin liên hệ</h3>
-            <p><strong>Địa chỉ:</strong> ${bookingData.location}</p>
-            <p><strong>Giờ nhận phòng:</strong> 14:00</p>
-            <p><strong>Giờ trả phòng:</strong> 12:00</p>
-            <p><strong>Hotline hỗ trợ:</strong> 0939000000</p>
-          </div>
-          
-          <div style="background: #d1ecf1; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #17a2b8;">
-            <h3 style="color: #0c5460; margin-top: 0;">Lưu ý quan trọng</h3>
-            <ul style="color: #0c5460; margin: 0; padding-left: 20px;">
-              <li>Vui lòng mang theo CCCD/CMND khi nhận phòng</li>
-              <li>Liên hệ hotline nếu cần hỗ trợ</li>
-              <li>Tuân thủ các quy định của homestay</li>
-            </ul>
-          </div>
-          
-          <div style="margin: 20px 0;">
-            <p>Cảm ơn bạn đã tin tưởng O Ni Homestay! Chúng tôi mong được phục vụ bạn.</p>
-            <p>Chúc bạn có một kỳ nghỉ tuyệt vời!</p>
-            <p>📞 Hotline: 0939000000</p>
-            <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
-          </div>
-        </div>
-        
         <div style="background: #333; color: white; padding: 20px; text-align: center;">
           <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
         </div>
       </div>
     `,
-  }),
+    };
+  },
 
-  bookingRejection: (bookingData: BookingData, reason: string) => ({
-    subject: `❌ Đặt phòng bị từ chối - ${bookingData.room} | O Ni Homestay`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 20px; text-align: center;">
-          <h1 style="margin: 0;">❌ Thông báo đặt phòng</h1>
-          <p style="margin: 10px 0 0 0;">O Ni Homestay</p>
-        </div>
-        
-        <div style="padding: 20px; background: #f9f9f9;">
-          <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
-          <p>Chúng tôi rất tiếc phải thông báo rằng đơn đặt phòng của bạn không thể được xử lý.</p>
-          
-          <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #dc3545; margin-top: 0;">Thông tin đặt phòng</h3>
-            <p><strong>Mã đặt phòng:</strong> ${bookingData.id}</p>
-            <p><strong>Phòng:</strong> ${bookingData.room}</p>
-            <p><strong>Địa điểm:</strong> ${bookingData.location}</p>
+  bookingApproval: (bookingData: BookingData) => {
+    const paymentMethodText =
+      bookingData.paymentMethod === "CASH"
+        ? "Tiền mặt"
+        : bookingData.paymentMethod === "TRANSFER"
+        ? "Đã chuyển khoản"
+        : "Thẻ";
+
+    const formatDate = (date?: Date | string) => {
+      if (!date) return "Chưa xác định";
+      const d = typeof date === "string" ? new Date(date) : date;
+      return d.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    return {
+      subject: `✅ Đặt phòng được phê duyệt - ${bookingData.room} | O Ni Homestay`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; border-bottom: 3px solid #28a745;">
+            <h1 style="margin: 0; color: #333; font-size: 24px;">O Ni Homestay</h1>
           </div>
-          
-          <div style="background: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc3545;">
-            <h3 style="color: #721c24; margin-top: 0;">Lý do từ chối</h3>
-            <p style="margin: 0; color: #721c24;">${reason}</p>
+
+          <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 15px; text-align: center;">
+            <h2 style="margin: 0; font-size: 18px;">✅ ĐẶT PHÒNG THÀNH CÔNG</h2>
           </div>
-          
-          <div style="margin: 20px 0;">
-            <p>Chúng tôi xin lỗi vì sự bất tiện này. Vui lòng liên hệ với chúng tôi để được hỗ trợ tốt nhất.</p>
-            <p>📞 Hotline: 0939000000</p>
-            <p>📧 Email: ${process.env.ADMIN_EMAIL}</p>
+
+          <div style="padding: 20px; background: #f9f9f9;">
+            <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
+            <p>Chúc mừng! Đơn đặt phòng của bạn đã được phê duyệt 🎉</p>
+            <p>Cảm ơn bạn đã lựa chọn O Ni Homestay cho kỳ nghỉ của mình tại Huế 💛</p>
+            <p>Dưới đây là thông tin chi tiết:</p>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin-top: 0;">🏡 Thông tin đặt phòng</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Mã đặt phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.id}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày nhận phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkInDateTime)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày trả phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkOutDateTime)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Số khách:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.guests} người</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Loại phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.room}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Tổng tiền:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Hình thức thanh toán:</strong></td>
+                  <td style="padding: 8px 0;">${paymentMethodText}</td>
+                </tr>
+              </table>
+
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #f0f0f0;">
+                <table style="width: 100%;">
+                  <tr>
+                    <td style="width: 50%; padding: 5px 0;"><strong>Giờ nhận phòng:</strong><br/>${bookingData.checkInTime || "14:00"}</td>
+                    <td style="width: 50%; padding: 5px 0;"><strong>Giờ trả phòng:</strong><br/>${bookingData.checkOutTime || "12:00"}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <div style="margin-top: 15px;">
+                <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> ${bookingData.branchAddress || "9/4 Điềm Phùng Thị, phường Vỹ Dạ, thành phố Huế"}</p>
+                ${
+                  bookingData.googleMapUrl
+                    ? `<p style="margin: 5px 0;"><a href="${bookingData.googleMapUrl}" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+                    : `<p style="margin: 5px 0;"><a href="https://maps.app.goo.gl/vL3pG4wCuAH4Nwyn6?g_st=ipc" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+                }
+              </div>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin-top: 0;">🗝️ HƯỚNG DẪN CHECK-IN</h3>
+
+              <div style="margin-bottom: 15px;">
+                <p style="margin: 5px 0 10px 0;"><strong style="color: #555;">Bước 1: Vào cửa chính</strong></p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;">
+                  Khi đến O Ni, sử dụng mã điện tử được gửi qua số điện thoại/Zalo sau khi đặt phòng thành công.
+                </p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;"><strong>Cách nhập mã:</strong></p>
+                <ul style="margin: 5px 0; padding-left: 20px; color: #666;">
+                  <li>Chạm vào màn hình để hiển thị số</li>
+                  <li>Nhập mã và nhấn #</li>
+                </ul>
+                <p style="margin: 10px 0; padding: 10px; background: #fff3cd; border-left: 3px solid #ffc107; color: #856404; font-size: 14px;">
+                  <em>*Nếu không nhận được mã, vui lòng liên hệ với O Bé qua số điện thoại (094.157.1155) khi tới nơi</em>
+                </p>
+              </div>
+
+              <div style="margin-top: 15px;">
+                <p style="margin: 5px 0 10px 0;"><strong style="color: #555;">Bước 2: Nhận chìa khóa phòng</strong></p>
+                <p style="margin: 5px 0; color: #666; line-height: 1.6;">
+                  Chìa khóa phòng sẽ được để trong hộp chìa trước cửa phòng của bạn. Để mở hộp, nhập mã <strong>0000</strong> và lấy chìa khóa.
+                </p>
+                <p style="margin: 10px 0; padding: 10px; background: #e3f2fd; border-left: 3px solid #2196f3; color: #1565c0; font-size: 14px;">
+                  <em>Lưu ý: Luôn khóa cửa phòng khi ra ngoài.</em>
+                </p>
+              </div>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin-top: 0;">CHÍNH SÁCH HỦY PHÒNG</h3>
+              <ul style="color: #666; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
+                <li>Hủy phòng >3 ngày trước ngày nhận: hoàn lại 50% tiền cọc</li>
+                <li>Hủy phòng <3 ngày trước ngày nhận: không hoàn tiền cọc</li>
+              </ul>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin-top: 0;">📖 NỘI QUY HOMESTAY</h3>
+              <ul style="color: #666; line-height: 1.8; margin: 10px 0; padding-left: 20px;">
+                <li>Nghiêm cấm mọi hành vi hoạt động mại dâm, buôn bán, tổ chức sử dụng chất cấm</li>
+                <li>Không hút thuốc trong phòng (có khu vực riêng bên ngoài)</li>
+                <li>Không đưa bạn bè lên phòng khi chưa thông báo</li>
+                <li>Giữ yên tĩnh sau 22:00</li>
+                <li>Khi trả phòng, vui lòng bàn giao lại chìa khóa và kiểm tra đồ cá nhân</li>
+                <li>Mọi hư hại hoặc mất mát sẽ được tính phí theo quy định</li>
+                <li>Không mang thú cưng nếu chưa báo trước</li>
+              </ul>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #28a745;">
+              <h3 style="color: #28a745; margin-top: 0;">📚 CẨM NANG DU LỊCH HUẾ</h3>
+              <p style="margin: 5px 0; color: #555;">Để chuyến đi của bạn thêm thú vị, hãy xem ngay:</p>
+              <p style="margin: 10px 0;">
+                <a href="https://drive.google.com/file/d/1waKwKk9inxFd2TdWYCdJ0X0zfT4Ju2pf/view?usp=drive_link" style="color: #28a745; text-decoration: none; font-weight: bold;">
+                  📖 Cẩm nang du lịch Huế.pdf
+                </a>
+              </p>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin-top: 0;">📞 THÔNG TIN LIÊN HỆ</h3>
+              <p style="color: #666; margin: 5px 0;">Nếu cần hỗ trợ gì, hãy liên hệ với tụi mình qua:</p>
+              <p style="margin: 8px 0;"><strong>Sđt/Zalo:</strong> <a href="tel:0941571155" style="color: #28a745; text-decoration: none;">094.157.1155</a></p>
+              <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:onihomestay@gmail.com" style="color: #28a745; text-decoration: none;">onihomestay@gmail.com</a></p>
+            </div>
+
+            <div style="margin: 20px 0; text-align: center; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 5px;">
+              <p style="color: #2d3436; font-size: 16px; margin: 0;">
+                Cảm ơn bạn đã chọn O Ni cho chuyến đi này,<br/>
+                hy vọng bạn sẽ có nhiều trải nghiệm thú vị với tụi mình nha! 💛
+              </p>
+            </div>
+          </div>
+
+          <div style="background: #333; color: white; padding: 20px; text-align: center;">
+            <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
           </div>
         </div>
-        
-        <div style="background: #333; color: white; padding: 20px; text-align: center;">
-          <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
+      `,
+    };
+  },
+
+  bookingRejection: (bookingData: BookingData, reason: string) => {
+    const formatDate = (date?: Date | string) => {
+      if (!date) return "Chưa xác định";
+      const d = typeof date === "string" ? new Date(date) : date;
+      return d.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    return {
+      subject: `❌ Đặt phòng bị từ chối - ${bookingData.room} | O Ni Homestay`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: #f5f5f5; padding: 20px; text-align: center; border-bottom: 3px solid #dc3545;">
+            <h1 style="margin: 0; color: #333; font-size: 24px;">O Ni Homestay</h1>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 15px; text-align: center;">
+            <h2 style="margin: 0; font-size: 18px;">❌ THÔNG BÁO ĐẶT PHÒNG</h2>
+          </div>
+
+          <div style="padding: 20px; background: #f9f9f9;">
+            <h2 style="color: #333;">Chào ${bookingData.fullName},</h2>
+            <p>Chúng tôi rất tiếc phải thông báo rằng đơn đặt phòng của bạn không thể được xử lý.</p>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #dc3545; margin-top: 0;">📋 Thông tin đặt phòng</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Mã đặt phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.id}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày nhận phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkInDateTime)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày trả phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(bookingData.checkOutDateTime)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Phòng:</strong></td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.room}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Địa điểm:</strong></td>
+                  <td style="padding: 8px 0;">${bookingData.location}</td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background: #f8d7da; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #dc3545;">
+              <h3 style="color: #721c24; margin-top: 0;">⚠️ Lý do từ chối</h3>
+              <p style="margin: 0; color: #721c24; line-height: 1.6;">${reason}</p>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h3 style="color: #667eea; margin-top: 0;">📞 THÔNG TIN LIÊN HỆ</h3>
+              <p style="color: #666; margin: 5px 0;">Chúng tôi xin lỗi vì sự bất tiện này. Vui lòng liên hệ với chúng tôi để được hỗ trợ tốt nhất:</p>
+              <p style="margin: 8px 0;"><strong>Sđt/Zalo:</strong> <a href="tel:0941571155" style="color: #667eea; text-decoration: none;">094.157.1155</a></p>
+              <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:onihomestay@gmail.com" style="color: #667eea; text-decoration: none;">onihomestay@gmail.com</a></p>
+            </div>
+
+            <div style="margin: 20px 0; text-align: center; padding: 15px; background: #f8d7da; border-radius: 5px; border: 1px solid #f5c6cb;">
+              <p style="color: #721c24; font-size: 14px; margin: 0;">
+                Chúng tôi rất mong được phục vụ bạn trong những lần tiếp theo.<br/>
+                Cảm ơn bạn đã quan tâm đến O Ni Homestay! 💛
+              </p>
+            </div>
+          </div>
+
+          <div style="background: #333; color: white; padding: 20px; text-align: center;">
+            <p style="margin: 0;">&copy; 2024 O Ni Homestay - Hệ thống đặt phòng homestay</p>
+          </div>
         </div>
-      </div>
-    `,
-  }),
+      `,
+    };
+  },
 };
 
 // Email sending functions

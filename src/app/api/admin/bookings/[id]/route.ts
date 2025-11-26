@@ -191,6 +191,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           basePrice: updatedBooking.basePrice || undefined,
           discountAmount: updatedBooking.discountAmount || undefined,
           discountPercentage: updatedBooking.discountPercentage || undefined,
+          checkInDateTime: updatedBooking.checkInDateTime || undefined,
+          checkOutDateTime: updatedBooking.checkOutDateTime || undefined,
+          checkInTime: updatedBooking.room?.checkIn,
+          checkOutTime: updatedBooking.room?.checkOut,
+          branchAddress: updatedBooking.room?.branch?.address,
+          googleMapUrl: updatedBooking.room?.branch?.googleMapUrl || undefined,
         };
 
         if (action === "approve") {
