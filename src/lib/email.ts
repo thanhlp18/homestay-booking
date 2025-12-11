@@ -40,8 +40,8 @@ export const emailTemplates = {
       bookingData.paymentMethod === "CASH"
         ? "Tiền mặt"
         : bookingData.paymentMethod === "TRANSFER"
-        ? "Đã chuyển khoản"
-        : "Thẻ";
+          ? "Đã chuyển khoản"
+          : "Thẻ";
 
     // Format dates if available
     const formatDate = (date?: Date | string) => {
@@ -81,41 +81,38 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày nhận phòng:</strong></td>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(
-                    bookingData.checkInDateTime
-                  )}</td>
+        bookingData.checkInDateTime
+      )}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Ngày trả phòng:</strong></td>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${formatDate(
-                    bookingData.checkOutDateTime
-                  )}</td>
+        bookingData.checkOutDateTime
+      )}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Loại phòng:</strong></td>
-                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${
-                    bookingData.room
-                  }</td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.room
+        }</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; border-bottom: 1px solid #eee;"><strong>Số khách:</strong></td>
-                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${
-                    bookingData.guests
-                  } người</td>
+                  <td style="padding: 8px 0; border-bottom: 1px solid #eee;">${bookingData.guests
+        } người</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0;"><strong>Tổng tiền:</strong></td>
                   <td style="padding: 8px 0;"><strong style="color: #ff9800; font-size: 18px;">${bookingData.totalPrice?.toLocaleString(
-                    "vi-VN"
-                  )} đ</strong></td>
+          "vi-VN"
+        )} đ</strong></td>
                 </tr>
               </table>
             </div>
 
             <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ff9800;">
               <h3 style="color: #856404; margin-top: 0;">💳 HƯỚNG DẪN THANH TOÁN</h3>
-              ${
-                bookingData.paymentMethod === "TRANSFER"
-                  ? `
+              ${bookingData.paymentMethod === "TRANSFER"
+          ? `
               <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
                 Để hoàn tất đặt phòng, vui lòng thanh toán qua chuyển khoản ngân hàng:
               </p>
@@ -139,8 +136,8 @@ export const emailTemplates = {
                 <em>💡 Lưu ý: Vui lòng ghi đúng nội dung chuyển khoản <strong>${bookingData.id}</strong> để hệ thống tự động xác nhận thanh toán</em>
               </p>
               `
-                  : bookingData.paymentMethod === "CASH"
-                  ? `
+          : bookingData.paymentMethod === "CASH"
+            ? `
               <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
                 Bạn đã chọn hình thức thanh toán bằng <strong>tiền mặt khi nhận phòng</strong>.
               </p>
@@ -148,12 +145,12 @@ export const emailTemplates = {
                 Vui lòng chuẩn bị đầy đủ số tiền <strong style="color: #ff9800;">${bookingData.totalPrice?.toLocaleString("vi-VN")} đ</strong> khi đến homestay.
               </p>
               `
-                  : `
+            : `
               <p style="margin: 5px 0; color: #856404; line-height: 1.6;">
                 Bạn đã chọn hình thức thanh toán bằng thẻ.
               </p>
               `
-              }
+        }
             </div>
 
             <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #2196f3;">
@@ -190,7 +187,7 @@ export const emailTemplates = {
             </div>
 
             <div style="margin: 20px 0; text-align: center; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 5px;">
-              <p style="color: #2d3436; font-size: 16px; margin: 0;">
+              <p style="margin: 0; color: #000000; font-size: 16px; font-weight: 500;">
                 Cảm ơn bạn đã tin tưởng lựa chọn O Ni Homestay! 💛<br/>
                 Chúng tôi rất mong được đón tiếp bạn tại Huế.
               </p>
@@ -265,13 +262,12 @@ export const emailTemplates = {
               </tr>
               <tr>
                 <td style="padding: 8px 0;"><strong>Phương thức thanh toán:</strong></td>
-                <td style="padding: 8px 0;">${
-                  bookingData.paymentMethod === "CASH"
-                    ? "Tiền mặt"
-                    : bookingData.paymentMethod === "TRANSFER"
-                    ? "Chuyển khoản"
-                    : "Thẻ"
-                }</td>
+                <td style="padding: 8px 0;">${bookingData.paymentMethod === "CASH"
+          ? "Tiền mặt"
+          : bookingData.paymentMethod === "TRANSFER"
+            ? "Chuyển khoản"
+            : "Thẻ"
+        }</td>
               </tr>
             </table>
           </div>
@@ -310,8 +306,8 @@ export const emailTemplates = {
       bookingData.paymentMethod === "CASH"
         ? "Tiền mặt"
         : bookingData.paymentMethod === "TRANSFER"
-        ? "Đã chuyển khoản"
-        : "Thẻ";
+          ? "Đã chuyển khoản"
+          : "Thẻ";
 
     const formatDate = (date?: Date | string) => {
       if (!date) return "Chưa xác định";
@@ -385,11 +381,10 @@ export const emailTemplates = {
 
               <div style="margin-top: 15px;">
                 <p style="margin: 5px 0;"><strong>Địa chỉ:</strong> ${bookingData.branchAddress || "9/4 Điềm Phùng Thị, phường Vỹ Dạ, thành phố Huế"}</p>
-                ${
-                  bookingData.googleMapUrl
-                    ? `<p style="margin: 5px 0;"><a href="${bookingData.googleMapUrl}" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
-                    : `<p style="margin: 5px 0;"><a href="https://maps.app.goo.gl/vL3pG4wCuAH4Nwyn6?g_st=ipc" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
-                }
+                ${bookingData.googleMapUrl
+          ? `<p style="margin: 5px 0;"><a href="${bookingData.googleMapUrl}" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+          : `<p style="margin: 5px 0;"><a href="https://maps.app.goo.gl/vL3pG4wCuAH4Nwyn6?g_st=ipc" style="color: #28a745; text-decoration: none;">📍 Xem trên Google Maps</a></p>`
+        }
               </div>
             </div>
 
@@ -461,7 +456,7 @@ export const emailTemplates = {
             </div>
 
             <div style="margin: 20px 0; text-align: center; padding: 15px; background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); border-radius: 5px;">
-              <p style="color: #2d3436; font-size: 16px; margin: 0;">
+              <p style="margin: 0; color: #000000; font-size: 16px; font-weight: 500;">
                 Cảm ơn bạn đã chọn O Ni cho chuyến đi này,<br/>
                 hy vọng bạn sẽ có nhiều trải nghiệm thú vị với tụi mình nha! 💛
               </p>
